@@ -19,4 +19,38 @@
 module jtkcpu(
 );
 
+wire [ 7:0] alu_op, rslt8;
+wire [15:0] opnd0, opnd1, rslt16;
+wire [ 7:0] cc, nx_cc8, nx_cc16;
+
+jtkcpu_alu8(
+    .op     ( alu_op    ), 
+    .opnd0  ( opnd0[7:0]), 
+    .opnd1  ( opnd1[7:0]), 
+    .cc_in  ( cc        ),
+    .cc_out ( nx_cc8    ),
+    .rslt   ( rslt8     )
+);
+
+jtkcpu_alu16(
+    .op     ( alu_op    ), 
+    .opnd0  ( opnd0     ), 
+    .opnd1  ( opnd1     ), 
+    .cc_in  ( cc        ),
+    .cc_out ( nx_cc16   ),
+    .rslt   ( rslt16    )
+);
+
+jtkcpu_idxdecode(
+    .postbyte   (      ), 
+    .regnum     (      ), 
+    .mode       (      ), 
+    .indirect   (      ),
+);
+
+jtkcpu_branch(
+    .op      (      ), 
+    .cc_in   ( cc   ), 
+);
+
 endmodule

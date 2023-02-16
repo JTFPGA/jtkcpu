@@ -24,28 +24,23 @@ module jtkcpu_idxdecode(
 );
 
 always @* begin
-    indirect   =  0;
-    mode       =  0;
+    indirect     = 0;
+    mode         = 0;
 
-    if (postbyte[7] == 0)           // 5-bit
+    if (postbyte[7] == 0)                           // 5-bit-offset
     begin
-        mode   =  IDX_MODE_5BIT_OFFSET;
+        mode     =  5'b00000;
     end
     else
     begin
-        mode   =  postbyte[3:0];
-        indirect   =  postbyte[4];
+        mode     = postbyte[3:0];
+        indirect = postbyte[4];
     end
-    /*if ((mode != IDX_MODE_8BIT_OFFSET_PC) && (mode != IDX_MODE_16BIT_OFFSET_PC))
-        regnum[2:0]    =  {1'b0,postbyte[6:5]};
-    else
-        regnum[2:0]    =  IDX_REG_PC;*/
-    if ((mode[6:5] != 2'b00) && (mode[6:5] != 2'b01) && (mode[6:5] != 2'b10) && (mode[6:5] != 2'b11))
-        regnum[2:0]    =  IDX_REG_PC;
-    else
-        regnum[2:0]    =  {1'b0,postbyte[6:5]};
 
+    if ((mode != 4'b1100) && (mode != 4'b1101))
+        regnum[2:0] = {1'b0,postbyte[6:5]};         // Register field (X,Y,U,S)
+    else
+        regnum[2:0] = PCR;                          // Register PC 
 end
-endfunction
 
 endmodule
