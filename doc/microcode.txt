@@ -1,0 +1,31 @@
+
+// BNE
+
+JumpBNE:
+	M -> temp
+	Zzero loop
+	RNI
+
+loop:
+	PC -> temp
+	ADD temp 
+	RNI
+
+// ADD 8bit
+	
+	R -> tempA
+	ADD tempA
+	RNI
+
+
+// CMP 8bits
+
+	R -> tempA
+	M -> tempB
+	SUB tempA
+	RNI
+
+
+
+
+
