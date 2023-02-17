@@ -19,38 +19,47 @@
 module jtkcpu(
 );
 
-wire [ 7:0] alu_op, rslt8;
-wire [15:0] opnd0, opnd1, rslt16;
+wire [15:0] opnd0, opnd1, rslt16, data, idx_addr, idx_reg;
+wire [ 7:0] alu_op, rslt8, postbyte;
 wire [ 7:0] cc, nx_cc8, nx_cc16;
+wire [ 2:0] idx_sel;
+wire        indirect, branch, rst, clr;
 
 jtkcpu_alu8(
-    .op     ( alu_op    ), 
-    .opnd0  ( opnd0[7:0]), 
-    .opnd1  ( opnd1[7:0]), 
-    .cc_in  ( cc        ),
-    .cc_out ( nx_cc8    ),
-    .rslt   ( rslt8     )
+    .op       ( alu_op     ), 
+    .opnd0    ( opnd0[7:0] ), 
+    .opnd1    ( opnd1[7:0] ), 
+    .cc_in    ( cc         ),
+    .cc_out   ( nx_cc8     ),
+    .rslt     ( rslt8      )
 );
 
 jtkcpu_alu16(
-    .op     ( alu_op    ), 
-    .opnd0  ( opnd0     ), 
-    .opnd1  ( opnd1     ), 
-    .cc_in  ( cc        ),
-    .cc_out ( nx_cc16   ),
-    .rslt   ( rslt16    )
-);
-
-jtkcpu_idxdecode(
-    .postbyte   (      ), 
-    .regnum     (      ), 
-    .mode       (      ), 
-    .indirect   (      ),
+    .op       ( alu_op     ), 
+    .opnd0    ( opnd0      ), 
+    .opnd1    ( opnd1      ), 
+    .cc_in    ( cc         ),
+    .cc_out   ( nx_cc16    ),
+    .rslt     ( rslt16     )
 );
 
 jtkcpu_branch(
-    .op      (      ), 
-    .cc_in   ( cc   ), 
+    .op       ( alu_op     ), 
+    .cc_in    ( cc         ), 
+    .branch   ( branch     ), 
+);
+
+jtkcpu_idx(
+    .postbyte ( postbyte   ), 
+    .idx_reg  ( idxReg     ), 
+    .a        ( reg_a      ), 
+    .b        ( reg_b      ), 
+    .data     ( data       ), 
+    .idx_sel  ( idx_sel    ), 
+    .idx_addr ( idx_addr   ), 
+    .indirect ( indirect   ),
+    .rst      ( rst        ), 
+    .clk      ( clk        ), 
 );
 
 endmodule
