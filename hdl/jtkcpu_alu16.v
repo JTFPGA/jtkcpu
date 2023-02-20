@@ -91,8 +91,8 @@ always @* begin
             rslt = (opnd0 & opnd1);
         8'h3D:  // ORCC
             rslt = (opnd0 | opnd1);
-        8'hB3: begin  // MUL
-            rslt = {opnd0, opnd1}
+        8'hB3: begin  // MUL incompleto
+            rslt         = {opnd0, opnd1}
             cc_out[CC_Z] = (rslt == 0);
             cc_out[CC_C] = rslt[7];
         end
