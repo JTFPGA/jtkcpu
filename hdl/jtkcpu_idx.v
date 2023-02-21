@@ -64,7 +64,7 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin
         idx_addr <= 0;
     end else begin
-        idx_addr <= idx_addr + offset;
+        idx_addr <= idx_reg + offset;
     end
 end
 
