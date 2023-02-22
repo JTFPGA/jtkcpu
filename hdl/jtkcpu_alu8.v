@@ -75,7 +75,7 @@ always @* begin
             rslt[7:0]        = (opnd0 & opnd1);
             cc_out[CC_V] = 1'b0;
         end
-        8'h2C,8'h2D,8'hE,8'hF: begin    // EOR
+        8'h2C,8'h2D,8'h2E,8'h2F: begin    // EOR
             rslt[7:0]        = (opnd0 ^ opnd1);
             cc_out[CC_V] = 1'b0;
         end
@@ -114,19 +114,28 @@ always @* begin
             {cc_out[CC_C], rslt[7:0]} = {1'b0, opnd0} - {1'b0, opnd1} - {8'd0,cc_in[CC_C]};
             cc_out[CC_V]              = (opnd0[7] & ~opnd1[7] & ~rslt[7]) | (~opnd0[7] & opnd1[7] & rslt[7]);
         end
+        8'h3C:  // ANDCC
+            rslt = (opnd0 & opnd1);
+        8'h3D:  // ORCC
+            rslt = (opnd0 | opnd1);
+
+
+
+
+
         8'hB2: begin  // SEX
             {cc_out[CC_N], rslt[7:0]} = opnd0[7];
             cc_out[CC_V]              = 1'b0;
         end
         8'hB1: begin  // DAA
-            if ( ((cc[CC_C]) || (opnd0[7:4] > 4'H9)) || ((opnd0[7:4] > 4'H8) && (opnd0[3:0] > 4'H9)) )
-                tmp[7:4] = 4'H6;
+            if ( ((cc_out[CC_C]) || (opnd0[7:4] > 4'h9)) || ((opnd0[7:4] > 4'h8) && (opnd0[3:0] > 4'h9)) )
+                tmp[7:4] = 4'h6;
             else
-                tmp[7:4] = 4'H0;
-            if ((cc[CC_H]) || (a[3:0] > 4'H9))
-                tmp[3:0] = 4'H6;
+                tmp[7:4] = 4'h0;
+            if ((cc_out[CC_H]) || (a[3:0] > 4'h9))
+                tmp[3:0] = 4'h6;
             else
-                tmp[3:0] = 4'H0;
+                tmp[3:0] = 4'h0;
             {tmp[8], rslt} = {1'b0, opnd0} + tmp[7:0];
             cc_out[CC_C]   = cc_out[CC_C] | tmp[8];
             cc_out[CC_N]   = rslt[7];

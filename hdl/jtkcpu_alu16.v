@@ -48,10 +48,7 @@ always @* begin
         8'h4A,8'h4B,8'h4C,8'h4D,8'h4E,8'h4F,8'h50,8'h51,8'h52,8'h53: begin // CMP
             {cc_out[CC_C], rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             cc_out[CC_V]         = (opnd0[15] & ~opnd1[15] & ~rslt[15]) | (~opnd0[15] & opnd1[15] & rslt[15]);
-        end        
-        8'h08,8'h09,8'h0A,8'h0B: begin // LEA
-            rslt  =  opnd0;
-        end
+        end              
         8'hC2,8'hC3: begin // CLRD , CLRW
             rslt[15:0]   = 0;
             cc_out[CC_V] = 1'b0;
@@ -85,12 +82,12 @@ always @* begin
         end
         8'hA4,8'hBA,8'hBB: // RORW , RORD
             {rslt, cc_out[CC_C]} = {cc_in[CC_C], opnd0};
+
+
+
         8'hB0:  // ABX
             rslt = opnd0 + opnd1;
-        8'h3C:  // ANDCC
-            rslt = (opnd0 & opnd1);
-        8'h3D:  // ORCC
-            rslt = (opnd0 | opnd1);
+        
         8'hB3: begin  // MUL incompleto
             rslt         = {opnd0, opnd1}
             cc_out[CC_Z] = (rslt == 0);

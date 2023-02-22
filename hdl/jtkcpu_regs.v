@@ -65,10 +65,10 @@ end
 // indexed idx_reg
 always @* begin
     case ( op_sel[6:5] ) 
-        1'b00  : idx_reg = x;
-        1'b01  : idx_reg = y; 
-        1'b10  : idx_reg = u;
-        1'b11  : idx_reg = s;
+        2'b00  : idx_reg = x;
+        2'b01  : idx_reg = y; 
+        2'b10  : idx_reg = u;
+        2'b11  : idx_reg = s;
         default: idx_reg = pc; 
     endcase  
 end

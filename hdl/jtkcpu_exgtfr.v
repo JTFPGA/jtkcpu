@@ -32,9 +32,26 @@ module jtkcpu_exgtfr(
     output   reg [ 7:0]  b,
 );
 
+
 always @* begin
 
-    if ( op == 8'h3E ) begin
+    if ( op == 8'h3F ) begin
+        case ( opnd0[3:0] )
+            4'b0000: {a, b} = mux;
+            4'b0001:      x = mux;
+            4'b0010:      y = mux;
+            4'b0011:      u = mux;
+            4'b0100:      s = mux;
+            4'b0101:     pc = mux;
+            4'b1000:     dp = mux[7:0];
+            4'b1001:     cc = mux[7:0];
+            4'b1010:      a = mux[7:0];
+            4'b1011:      b = mux[7:0];
+            default:      0
+        endcase           
+    end 
+
+    /*else if ( op == 8'h3E ) begin
         case ( opnd0[7:4] )
             4'b0000: {a, b} = ;
             4'b0001:      x = ;
@@ -61,22 +78,7 @@ always @* begin
             4'b1011:      b = ;
             default:      0
         endcase
-    end
-    else if ( op == 8'h3F ) begin
-        case ( opnd0[3:0] )
-            4'b0000: {a, b} = mux;
-            4'b0001:      x = mux;
-            4'b0010:      y = mux;
-            4'b0011:      u = mux;
-            4'b0100:      s = mux;
-            4'b0101:     pc = mux;
-            4'b1000:     dp = mux[7:0];
-            4'b1001:     cc = mux[7:0];
-            4'b1010:      a = mux[7:0];
-            4'b1011:      b = mux[7:0];
-            default:      0
-        endcase           
-    end
+    end*/
 
 end
 endmodule
