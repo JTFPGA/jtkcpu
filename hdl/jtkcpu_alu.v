@@ -43,7 +43,6 @@ wire       alu16 = op==8'h40 || op==8'h41 || op==8'h42 || op==8'h43 || op==8'h44
                    op==8'hBC || op==8'hBD || op==8'hBE || op==8'hBF || op==8'hC0 || op==8'hC1 || op==8'hC2 || op==8'hC3 || op==8'hC4 || op==8'hC5 ||
                    op==8'hC6 || op==8'hC7 || op==8'hC8 || op==8'hC9 || op==8'hCA || op==8'hCB || op==8'hCE;
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
-wire       msb_m1   = msb - 1;
 
 always @* begin
     c_out = cc_in[CC_C];
@@ -51,7 +50,6 @@ always @* begin
     z_out = cc_in[CC_Z];
     n_out = cc_in[CC_N];
     h_out = cc_in[CC_H];
-    rslt = opnd0;
     case (op)
         8'h08,8'h09,8'h0A,8'h0B: begin // LEA  // RAVISAR
             rslt  =  opnd0;
@@ -81,7 +79,7 @@ always @* begin
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         8'h24,8'h25,8'h26,8'h27,8'h28,8'h29,8'h2A,8'h2B,8'h3C: begin  // AND, BIT, ANDCC
-            rslt  = (opnd0 & opnd1);
+            rslt = (opnd0 & opnd1);
             if ( op!=8'h3C )
                 v_out = 0;
         end
@@ -98,13 +96,13 @@ always @* begin
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        8'h80,8'h81,8'h82,8'hC2,8'hC3: begin  // CLR, CLRD, CLRW  // REVISAR
+        8'h80,8'h81,8'h82,8'hC2,8'hC3: begin  // CLR, CLRD, CLRW 
             rslt  = 0;
             c_out = 0;
             v_out = 0;
         end
         8'h83,8'h84,8'h85: begin  // COM
-            rslt =  ~opnd0;
+            rslt  = ~opnd0;
             c_out = 1'b1;
             v_out = 1'b0;
         end
@@ -121,56 +119,67 @@ always @* begin
             rslt  = opnd0 - 1'b1;
             v_out = (opnd0[msb] & ~rslt[msb]);
         end
-        8'h93,8'h94,8'h95,8'hA3,8'hB8,8'hB9: begin  // LSR, LSRW, LSRD // REVISAR
-            {rslt, c_out} = {1'b0, opnd0};
+        8'h93,8'h94,8'h95,8'hA3,8'hB8,8'hB9: begin  // LSR, LSRW, LSRD
+            // {rslt, c_out} = {1'b0, opnd0};
+            rslt  = opnd0 >> 1;
+            c_out = opnd0[msb];
         end
-        8'h96,8'h97,8'h98,8'hA4,8'hBA,8'hBB: begin  // ROR, RORW, RORD // REVISAR
-            {rslt, c_out} = {cc_in[CC_C], opnd0};
+        8'h96,8'h97,8'h98,8'hA4,8'hBA,8'hBB: begin  // ROR, RORW, RORD 
+            {rslt, c_out} = {c_out, opnd0};
         end
         8'h99,8'h9A,8'h9B,8'hA5,8'hBC,8'hBD: begin  // ASR, ASRW, ASRD 
             {rslt, c_out} = {opnd0[msb], opnd0};
         end
         8'h9C,8'h9D,8'h9E,8'hA6,8'hBE,8'hBF: begin  // LSL, ASL, ASLW, ASLD
-            {c_out, rslt} = {opnd0, 1'b0};
-            v_out         = opnd0[msb] ^ opnd0[msb-1];
+            // {c_out, rslt} = {opnd0, 1'b0};
+            rslt  = opnd0 << 1;
+            c_out = opnd0[msb];
+            // v_out = opnd0[msb] ^ opnd0[msb-1];
+            v_out = opnd0[msb] ^ rslt[msb];
         end
         8'hA0,8'hA1,8'hA2,8'hA7,8'hC0,8'hC1: begin  // ROL, ROLW, ROLD
             {c_out, rslt} = {opnd0, cc_in[CC_C]};
-            v_out         =  opnd0[msb] ^ opnd0[msb-1];
+            v_out         =  opnd0[msb] ^ rslt[msb];
         end
         8'hB0: rslt = {1'b0, opnd0} + {1'b0, opnd1};  // ABX  
-        8'hB2: begin  // SEX
-            rslt  = {{8{opnd0[msb]}}, opnd0};
-            v_out = 1'b0;
-        end
-
-//
         8'hB1: begin  // DAA
-            if ( ((cc[CC_C]) || (opnd0[7:4] > 4'H9)) || ((opnd0[7:4] > 4'H8) && (opnd0[3:0] > 4'H9)) )
-                tmp[7:4] = 4'H6;
+            if ( ((c_out) || (opnd0[7:4] > 4'H9)) || ((opnd0[7:4] > 4'H8) && (opnd0[3:0] > 4'H9)) )
+                rslt[7:4] = 4'H6;
             else
-                tmp[7:4] = 4'H0;
-            if ((cc[CC_H]) || (a[3:0] > 4'H9))
-                tmp[3:0] = 4'H6;
+                rslt[7:4] = 4'H0;
+            if ((h_out) || (opnd0[3:0] > 4'H9))
+                rslt[3:0] = 4'H6;
             else
-                tmp[3:0] = 4'H0;
-            {tmp[8], rslt} = {1'b0, opnd0} + tmp[7:0];
-            cc_out[CC_C]   = cc_out[CC_C] | tmp[8];
-        end        
-//        
-        8'hB3: begin  // MUL 
-            rslt         = {opnd0, opnd1}
-            cc_out[CC_Z] = (rslt == 0);
-            cc_out[CC_C] = rslt[7];
+                rslt[3:0] = 4'H0;
+            {rslt[8], rslt} = {1'b0, opnd0} + rslt[7:0];
+            c_out = c_out | rslt[8];
         end
-// FALTA LA INSTRUCCION ABS
+        8'hB2: begin  // SEX
+            rslt  = {{8{opnd0[7]}}, opnd0};
+            v_out = 1'b0;
+        end                
+        8'hB3,8'hB4: begin  // MUL, LMUL 
+            rslt  = opnd0 * opnd1
+            c_out = rslt[7];
+        end
+        // FALTA LA INSTRUCCION ABS
+        8'hCC,8'hCD,8'hCE: begin
+            if (opnd0 >= 0)
+                rslt = opnd0;
+            else 
+                rslt = ~opnd0;
+            c_out = 0
+            v_out = 0
+        end
+        default: 
+            rslt = opnd0;
 
     endcase
 
-
-    z_out = (rslt == 0);
-    if ( op!=8'h08 || op!=8'h09 || op!=8'h0A || op!=8'h0B || op!=8'hB0 || op!=8'hB2 )
-        cc_out[CC_N] = rslt[msb];
+    if ( op!=8'hB0 )
+        z_out = (rslt == 0);
+    if ( op!=8'h08 || op!=8'h09 || op!=8'h0A || op!=8'h0B || op!=8'hB0 || op!=8'hB3 || op!=8'hB4 )
+        n_out = rslt[msb];
 end
 
 endmodule
