@@ -23,6 +23,7 @@ module jtkcpu_regs(
     input        [ 7:0] psh_sel,
     input               psh_hilon,
     input               psh_ussel,
+    input               pul_en,
     input        [ 7:0] pul_sel,
     input        [ 7:0] cc,
     input        [15:0] pc,
@@ -88,6 +89,31 @@ always @* begin
     endcase    
 end
 
+// PULL
+always @* begin
+    up_pull_cc = 0; // output
+    up_pull_a  = 0; // define all as regs
+    up_pull_b  = 0; 
+    up_pull_dp = 0; 
+    up_pull_x  = 0; 
+    up_pull_y  = 0; 
+    up_pull_other = 0;
+    up_pull_pc = 0; // output    
+    casez( pul_sel )
+        8'b????_???1: up_pull_cc = pul_en; 
+        8'b????_??10: up_pull_a  = pul_en; 
+        8'b????_?100: up_pull_b  = pul_en; 
+        8'b????_1000: up_pull_dp = pul_en; 
+        8'b???1_0000: up_pull_x  = pul_en; 
+        8'b??10_0000: up_pull_y  = pul_en; 
+        8'b?100_0000: up_pull_other = pul_en; 
+        default:      up_pull_pc = pul_en; 
+    endcase    
+    inc_pul = |{ up_pull_cc, up_pull_a, up_pull_b, up_pull_dp, up_pull_x, 
+        up_pull_y, up_pull_other, up_pull_pc };
+end
+
+
 // indexed idx_reg
 always @* begin
     case ( op_sel[6:5] ) 
@@ -109,16 +135,22 @@ always @(posedge clk, posedge rst) begin
         u  <= 0;
         s  <= 0;
     end else begin
-        if( up_a  ) a  <= alu[7:0];
-        if( up_b  ) b  <= alu[7:0];
-        if( up_dp ) dp <= alu;
-        if( up_x  ) x  <= alu;
-        if( up_y  ) y  <= alu;
-        if( up_u  ) u  <= alu;
-        if( up_s  ) s  <= alu;
+        if( up_a  || up_pull_a  ) a  <= : alu[7:0]; // pull must let fetched data through ALU
+        if( up_b  || up_pull_b  ) b  <= : alu[7:0];
+        if( up_dp || up_pull_dp ) dp <= : alu[7:0];
+        if( up_x  ) x  <= : alu;
+        if( up_y  ) y  <= : alu;
+        if( up_u  ) u  <= : alu;
+        if( up_s  ) s  <= : alu;
+        // 16-bit registers from memory (PULL)
+        if( up_pull_x &&  psh_hilon ) x[15:8] <= alu[7:0];
+        if( up_pull_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
+        // y, u, s
         // Special operations
-        if( dec_u ) u  <= u - 16'd1;
+        // To do: manage dec_u/s for push operations
+        if( dec_u ) u  <= u - 16'd1; // add +1 and inc_u/s...
         if( dec_s ) u  <= s - 16'd1;
+        // use inc_pul and psh_ussel to increment u/s...
     end
 end
 
