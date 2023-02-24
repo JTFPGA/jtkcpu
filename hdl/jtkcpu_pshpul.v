@@ -17,221 +17,52 @@
     Date: 14-02-2023 */
 
 module jtkcpu_pshpul(
-	input      [ 7:0] op,
-    input      [ 7:0] u, 
-    input      [ 7:0] s,
-    input      [ 7:0] postbyte,
+    input               rst,
+    input               clk,
 
-    output reg [15:0] addr, 
-    output reg        rslt, 
+    input        [ 7:0] op,
+    input        [ 7:0] postbyte,
+
+    input               psh_go,
+    input        [ 7:0] psh_bit,
+    output   reg        hi_lon,
+
+    output   reg [15:0] addr,
+    output   reg [ 7:0] psh_sel,
+    output              idle,
+    output   reg        us_sel
 );
 
-reg [15:0] s_nxt;
-reg [15:0] u_nxt;
+reg  [7:0]  psh_sel;
 
-always @* begin
 
-    //addr = (op[0]) ? u : s;
-    if ( ( op==8'h0C ) || ( op==8'h0D )) begin  // PUSH
-        if ( postbyte[7] & ~(postbyte[15] )) begin  // PC_LO
-            addr = (op[0]) ? u-1 : s-1;
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1; 
-            rslt = pc[7:0];
+assign idle = psh_sel==0;
 
-        end else if ( postbyte[7] & (postbyte[15] ))  begin  // PC_HI
-
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = pc[15:8];
-
-        end else if ( postbyte[6] & ~(postbyte[15] )) begin  // U/S LO
-        
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = (op[0]) ? s[7:0] : u[7:0];
-
-        end else if ( postbyte[6] & (postbyte[15] ))  begin  // U/S HI
-            
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = (op[0]) ? s[15:0] : u[15:0];
-
-        end else if ( postbyte[5] & ~(postbyte[15] )) begin  // Y LO
-            
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = y[7:0];
-
-        end else if ( postbyte[5] & (postbyte[15] ))  begin  // Y HI
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = y[15:8];
-
-        end else if ( postbyte[4] & ~(postbyte[15] )) begin  // X LO 
-
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = x[7:0];
-
-        end else if ( postbyte[4] & (postbyte[15] ))  begin  // X HI
-            
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = x[15:8];
-
-        end else if ( postbyte[3] ) begin  // DP
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = dp;
-
-        end else if ( postbyte[2] ) begin  // B
-
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = b;
-
-        end else if ( postbyte[1] ) begin  // A
-
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = a;
-
-        end else if ( postbyte[0] ) begin  // CC
-            if ( op==8'h0D)
-                u_nxt = u-1;
-            else
-                s_nxt = s-1;
-            rslt = cc;
+always @(posedge clk or posedge rst) begin 
+    if(rst) begin
+        psh_sel <= 0;
+        hi_lon  <= 0;
+        us_sel  <= 0;
+    end else begin
+        if( idle ) begin
+            if( psh_go ) begin
+                psh_sel <= postbyte;
+                us_sel  <= op[0];
+                hi_lon  <= 1;
+            end
+        end else begin
+            if( psh_bit[7:4]!=0 && hi_lon ) begin
+                hi_lon <= 0;
+            end else begin
+                hi_lon <= 1;
+                psh_sel <= psh_sel & ~psh_bit;
+            end
         end
-
     end
+end
 
-    else if ( ( op == 8'h0E ) || ( op == 8'h0F )) begin  // PULL
-        
-        if ( postbyte[0] ) begin  // CC
 
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = cc
-
-        end else if ( postbyte[1] ) begin  // A
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = a
-
-        end else if ( postbyte[2] ) begin  // B
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = b
-
-        end else if ( postbyte[3] ) begin  // DP
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = dp
-
-        end else if ( postbyte[4] & (postbyte[15] ))  begin  // X HI
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = x[15:8]
-
-        end else if ( postbyte[4] & ~(postbyte[15] )) begin  // X LO 
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = x[7:0]
-
-        end else if ( postbyte[5] & (postbyte[15] ))  begin  // Y HI
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = y[15:8]
-
-        end else if ( postbyte[5] & ~(postbyte[15] )) begin  // Y LO
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = y[7:0]
-
-        end else if ( postbyte[6] & (postbyte[15] ))  begin  // U/S HI
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = (op[0]) ? s[15:8] : u[15:8]; 
-
-        end else if ( postbyte[6] & ~(postbyte[15] )) begin  // U/S LO
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = (op[0]) ? s[7:0] : u[7:0];
-
-        end else if ( postbyte[7] & (postbyte[15] ))  begin  // PC_HI
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = pc[15:8]
-
-        end else if ( postbyte[7] & ~(postbyte[15] )) begin  // PC_LO
-
-            if ( op==8'h0F)
-                u_nxt = u+1;
-            else
-                s_nxt = s+1;
-            rslt = pc[7:0]
-
-        end
-
-    end
-
-end  
 
 endmodule
+
 

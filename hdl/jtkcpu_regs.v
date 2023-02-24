@@ -20,6 +20,10 @@ module jtkcpu_regs(
     input               rst,
     input               clk,
     input        [ 7:0] op_sel,     // op code used to select specific registers
+    input        [ 7:0] psh_sel,
+    input               psh_hilon,
+    input               psh_ussel,
+    input        [ 7:0] pul_sel,
     input        [ 7:0] cc,
     input        [15:0] pc,
 
@@ -34,15 +38,24 @@ module jtkcpu_regs(
     input               up_u,
     input               up_s,
 
+    input               dec_u,
+
     output   reg [15:0] mux,
+    output   reg [ 7:0] psh_mux,
+    output   reg [ 7:0] psh_bit,
     output   reg [15:0] idx_reg,
+    output       [15:0] psh_addr,
     output       [15:0] acc
 );
 
 reg  [ 7:0] a, b, dp;
-reg  [15:0] x, y, u, s, 
+reg  [15:0] x, y, u, s; 
+wire [15:0] psh_other;
 
 assign acc = { b, a };
+assign psh_addr  = psh_ussel ? u : s;
+assign psh_other = psh_ussel ? s : u;
+
 
 // exg/tfr mux
 always @* begin
@@ -59,7 +72,20 @@ always @* begin
         4'b1011: mux = {8'hFF, dp};
         default: mux = 0
     endcase 
+end
 
+// PUSH
+always @* begin
+    casez( psh_sel )
+        8'b????_???1: begin psh_mux = cc; psh_bit = 8'h1; end
+        8'b????_??10: begin psh_mux =  a; psh_bit = 8'h2; end
+        8'b????_?100: begin psh_mux =  b; psh_bit = 8'h4; end
+        8'b????_1000: begin psh_mux = dp; psh_bit = 8'h8; end
+        8'b???1_0000: begin psh_mux =  psh_hilon ? x[15:8] : x[7:0]; psh_bit = 8'h10; end
+        8'b??10_0000: begin psh_mux =  psh_hilon ? y[15:8] : y[7:0]; psh_bit = 8'h20; end
+        8'b?100_0000: begin psh_mux =  psh_hilon ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
+        default:      begin psh_mux =  psh_hilon ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
+    endcase    
 end
 
 // indexed idx_reg
@@ -83,13 +109,16 @@ always @(posedge clk, posedge rst) begin
         u  <= 0;
         s  <= 0;
     end else begin
-        if( up_a  ) a  <= sel16 ? alu16[7:0] : alu8;
-        if( up_b  ) b  <= alu8;
-        if( up_dp ) dp <= alu8;
-        if( up_x  ) x  <= alu16;
-        if( up_y  ) y  <= alu16;
-        if( up_u  ) u  <= alu16;
-        if( up_s  ) s  <= alu16;
+        if( up_a  ) a  <= alu[7:0];
+        if( up_b  ) b  <= alu[7:0];
+        if( up_dp ) dp <= alu;
+        if( up_x  ) x  <= alu;
+        if( up_y  ) y  <= alu;
+        if( up_u  ) u  <= alu;
+        if( up_s  ) s  <= alu;
+        // Special operations
+        if( dec_u ) u  <= u - 16'd1;
+        if( dec_s ) u  <= s - 16'd1;
     end
 end
 

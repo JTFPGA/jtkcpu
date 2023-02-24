@@ -162,23 +162,25 @@ always @* begin
             rslt  = opnd0 * opnd1
             c_out = rslt[7];
         end
-        // FALTA LA INSTRUCCION ABS
-        8'hCC,8'hCD,8'hCE: begin
-            if (opnd0 >= 0)
-                rslt = opnd0;
+        // 
+        8'hCC,8'hCD,8'hCE: begin  // ABS
+            if (opnd0[msb] )
+                rslt = alu16 ? -opnd0 : {opnd0[15:8],-opnd0[7:0]};
             else 
-                rslt = ~opnd0;
+                rslt = opnd0;
             c_out = 0
             v_out = 0
         end
+        //8'hB6,8'h7: begin  //BMOVE
+            
         default: 
             rslt = opnd0;
 
     endcase
 
-    if ( op!=8'hB0 )
+    if ( op!=8'hB0 || op!=8'hB6 || op!=8'hB7 )
         z_out = (rslt == 0);
-    if ( op!=8'h08 || op!=8'h09 || op!=8'h0A || op!=8'h0B || op!=8'hB0 || op!=8'hB3 || op!=8'hB4 )
+    if ( op!=8'h08 || op!=8'h09 || op!=8'h0A || op!=8'h0B || op!=8'hB0 || op!=8'hB3 || op!=8'hB4 || op!=8'hB6 || op!=8'hB7 )
         n_out = rslt[msb];
 end
 
