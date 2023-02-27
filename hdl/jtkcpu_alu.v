@@ -21,7 +21,6 @@ module jtkcpu_alu(
     input      [15:0] opnd0, 
     input      [15:0] opnd1, 
     input      [ 7:0] cc_in,
-    output     [ 7:0] cc_out,
     output reg        c_out,
     output reg        v_out,
     output reg        z_out,
@@ -170,9 +169,7 @@ always @* begin
                 rslt = opnd0;
             c_out = 0
             v_out = 0
-        end
-        //8'hB6,8'h7: begin  //BMOVE
-            
+        end        
         default: 
             rslt = opnd0;
 

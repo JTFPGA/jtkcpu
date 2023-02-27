@@ -24,13 +24,11 @@ module jtkcpu_regs(
     input               psh_hilon,
     input               psh_ussel,
     input               pul_en,
-    input        [ 7:0] pul_sel,
     input        [ 7:0] cc,
     input        [15:0] pc,
 
     // Register update
-    input        [ 7:0] alu8,
-    input        [15:0] alu16,
+    input        [15:0] alu,
     input               up_a,
     input               up_b,
     input               up_dp,
@@ -39,18 +37,21 @@ module jtkcpu_regs(
     input               up_u,
     input               up_s,
 
-    input               dec_u,
+    input               dec_us,
 
     output   reg [15:0] mux,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
     output   reg [15:0] idx_reg,
     output       [15:0] psh_addr,
-    output       [15:0] acc
+    output       [15:0] acc,
+    output       [ 7:0] up_pull_cc,
+    output       [15:0] up_pull_pc,
 );
 
-reg  [ 7:0] a, b, dp;
-reg  [15:0] x, y, u, s; 
+reg         dec_u, dec_s;
+reg  [ 7:0] a, b, dp, inc_pul, up_pull_a, up_pull_b, up_pull_dp;
+reg  [15:0] x, y, u, s, up_pull_x, up_pull_y, up_pull_other; 
 wire [15:0] psh_other;
 
 assign acc = { b, a };
@@ -75,6 +76,17 @@ always @* begin
     endcase 
 end
 
+always @* begin
+    dec_u = 0;
+    dec_s = 0;
+    if ( dec_us && !psh_mux) begin
+        if (psh_ussel) 
+            dec_u = 1;
+        else 
+            dec_s = 1;
+    end 
+end
+
 // PUSH
 always @* begin
     casez( psh_sel )
@@ -82,11 +94,11 @@ always @* begin
         8'b????_??10: begin psh_mux =  a; psh_bit = 8'h2; end
         8'b????_?100: begin psh_mux =  b; psh_bit = 8'h4; end
         8'b????_1000: begin psh_mux = dp; psh_bit = 8'h8; end
-        8'b???1_0000: begin psh_mux =  psh_hilon ? x[15:8] : x[7:0]; psh_bit = 8'h10; end
-        8'b??10_0000: begin psh_mux =  psh_hilon ? y[15:8] : y[7:0]; psh_bit = 8'h20; end
-        8'b?100_0000: begin psh_mux =  psh_hilon ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
-        default:      begin psh_mux =  psh_hilon ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
-    endcase    
+        8'b???1_0000: begin psh_mux = psh_hilon ? x[15:8] : x[7:0]; psh_bit = 8'h10; end
+        8'b??10_0000: begin psh_mux = psh_hilon ? y[15:8] : y[7:0]; psh_bit = 8'h20; end
+        8'b?100_0000: begin psh_mux = psh_hilon ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
+        default:      begin psh_mux = psh_hilon ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
+    endcase
 end
 
 // PULL
@@ -99,28 +111,27 @@ always @* begin
     up_pull_y  = 0; 
     up_pull_other = 0;
     up_pull_pc = 0; // output    
-    casez( pul_sel )
-        8'b????_???1: up_pull_cc = pul_en; 
-        8'b????_??10: up_pull_a  = pul_en; 
-        8'b????_?100: up_pull_b  = pul_en; 
-        8'b????_1000: up_pull_dp = pul_en; 
-        8'b???1_0000: up_pull_x  = pul_en; 
-        8'b??10_0000: up_pull_y  = pul_en; 
+    casez( psh_sel )
+        8'b????_???1: up_pull_cc    = pul_en; 
+        8'b????_??10: up_pull_a     = pul_en; 
+        8'b????_?100: up_pull_b     = pul_en; 
+        8'b????_1000: up_pull_dp    = pul_en; 
+        8'b???1_0000: up_pull_x     = pul_en; 
+        8'b??10_0000: up_pull_y     = pul_en; 
         8'b?100_0000: up_pull_other = pul_en; 
-        default:      up_pull_pc = pul_en; 
+        default:      up_pull_pc    = pul_en; 
     endcase    
     inc_pul = |{ up_pull_cc, up_pull_a, up_pull_b, up_pull_dp, up_pull_x, 
         up_pull_y, up_pull_other, up_pull_pc };
-end
-
+end 
 
 // indexed idx_reg
 always @* begin
     case ( op_sel[6:5] ) 
-        2'b00  : idx_reg = x;
-        2'b01  : idx_reg = y; 
-        2'b10  : idx_reg = u;
-        2'b11  : idx_reg = s;
+        2'b00  : idx_reg =  x;
+        2'b01  : idx_reg =  y; 
+        2'b10  : idx_reg =  u;
+        2'b11  : idx_reg =  s;
         default: idx_reg = pc; 
     endcase  
 end
@@ -145,12 +156,20 @@ always @(posedge clk, posedge rst) begin
         // 16-bit registers from memory (PULL)
         if( up_pull_x &&  psh_hilon ) x[15:8] <= alu[7:0];
         if( up_pull_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
+        if( up_pull_y &&  psh_hilon ) y[15:8] <= alu[7:0];
+        if( up_pull_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
+        if( up_pull_other &&  psh_hilon ) psh_other[15:8] <= alu[7:0];
+        if( up_pull_other && !psh_hilon ) psh_other[ 7:0] <= alu[7:0];
         // y, u, s
         // Special operations
         // To do: manage dec_u/s for push operations
-        if( dec_u ) u  <= u - 16'd1; // add +1 and inc_u/s...
-        if( dec_s ) u  <= s - 16'd1;
-        // use inc_pul and psh_ussel to increment u/s...
+        if( dec_u ) u  <= u - 16'd1;
+        if( dec_s ) s  <= s - 16'd1;
+        if( inc_pul && psh_ussel )
+            u <= u + 16'd1; 
+        if( inc_pul && !psh_ussel )
+            s <= s + 16'd1;
+
     end
 end
 
