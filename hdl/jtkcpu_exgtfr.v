@@ -19,21 +19,20 @@
 module jtkcpu_exgtfr(
 	input        [ 7:0] op, 
     input        [ 7:0] opnd0,
-    input        [15:0] mux,
-    output   reg [15:0] rslt
-    output   reg [15:0] x,
-    output   reg [15:0] y,
-    output   reg [15:0] u,
-    output   reg [15:0] s,
-    output   reg [15:0] pc,
-    output   reg [ 7:0] dp,
-    output   reg [ 7:0] cc,
-    output   reg [ 7:0]  a,
-    output   reg [ 7:0]  b,
+    input        [ 7:0] mux,
+
 );
 
 
-always @* begin
+always @(posedge clk or negedge rst) begin
+    if(rst) begin
+         <= 0;
+    end else begin
+         <= ;
+    end
+end
+
+ /*always @* begin
 
     if ( op == 8'h3F ) begin
         case ( opnd0[3:0] )
@@ -51,7 +50,7 @@ always @* begin
         endcase           
     end 
 
-    /*else if ( op == 8'h3E ) begin
+   else if ( op == 8'h3E ) begin
         case ( opnd0[7:4] )
             4'b0000: {a, b} = ;
             4'b0001:      x = ;
@@ -78,7 +77,7 @@ always @* begin
             4'b1011:      b = ;
             default:      0
         endcase
-    end*/
+    end
 
-end
+end*/
 endmodule

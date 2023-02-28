@@ -29,15 +29,11 @@ module jtkcpu_alu(
     output reg [15:0] rslt
 );
 
-localparam CC_C = 8'h01;
-localparam CC_V = 8'h02;
-localparam CC_Z = 8'h04;
-localparam CC_N = 8'h08;
-localparam CC_H = 8'h20;
+`include "jtkcpu.inc"
 
 wire       alu16 = op==8'h40 || op==8'h41 || op==8'h42 || op==8'h43 || op==8'h44 || op==8'h45 || op==8'h46 || op==8'h47 || op==8'h48 || op==8'h49 ||
                    op==8'h4A || op==8'h4B || op==8'h4C || op==8'h4D || op==8'h4E || op==8'h4F || op==8'h50 || op==8'h51 || op==8'h52 || op==8'h53 || 
-                   op==8'h54 || op==8'h55 || op==8'h56 || op==8'h57 || op==8'h58 || op==8'h59 || op==8'h5A || op==8'h5B || op==8'h5C || 0p==8'hA3 ||
+                   op==8'h54 || op==8'h55 || op==8'h56 || op==8'h57 || op==8'h58 || op==8'h59 || op==8'h5A || op==8'h5B || op==8'h5C || op==8'hA3 || 
                    op==8'hA4 || op==8'hA5 || op==8'hA6 || op==8'hA7 || op==8'hB0 || op==8'hB2 || op==8'hB8 || op==8'hB9 || op==8'hBA || op==8'hBB ||
                    op==8'hBC || op==8'hBD || op==8'hBE || op==8'hBF || op==8'hC0 || op==8'hC1 || op==8'hC2 || op==8'hC3 || op==8'hC4 || op==8'hC5 ||
                    op==8'hC6 || op==8'hC7 || op==8'hC8 || op==8'hC9 || op==8'hCA || op==8'hCB || op==8'hCE;
@@ -65,7 +61,7 @@ always @* begin
                 h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
         8'h18,8'h19,8'h1A,8'h1B: begin  // ADC
-            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {8'd0,cc_in[CC_C]};
+            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {8'd0,c_out};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
@@ -74,7 +70,7 @@ always @* begin
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         8'h20,8'h21,8'h22,8'h23: begin   // SBC
-            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {8'd0,cc_in[CC_C]};
+            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {8'd0,c_out};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         8'h24,8'h25,8'h26,8'h27,8'h28,8'h29,8'h2A,8'h2B,8'h3C: begin  // AND, BIT, ANDCC
@@ -137,10 +133,10 @@ always @* begin
             v_out = opnd0[msb] ^ rslt[msb];
         end
         8'hA0,8'hA1,8'hA2,8'hA7,8'hC0,8'hC1: begin  // ROL, ROLW, ROLD
-            {c_out, rslt} = {opnd0, cc_in[CC_C]};
+            {c_out, rslt} = {opnd0, c_out};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        8'hB0: rslt = {1'b0, opnd0} + {1'b0, opnd1};  // ABX  
+        8'hB0: rslt = opnd0 + opnd1;  // ABX  
         8'hB1: begin  // DAA
             if ( ((c_out) || (opnd0[7:4] > 4'H9)) || ((opnd0[7:4] > 4'H8) && (opnd0[3:0] > 4'H9)) )
                 rslt[7:4] = 4'H6;
@@ -154,11 +150,11 @@ always @* begin
             c_out = c_out | rslt[8];
         end
         8'hB2: begin  // SEX
-            rslt  = {{8{opnd0[7]}}, opnd0};
+            rslt  = {{8{opnd0[7]}}, opnd0[7:0]};
             v_out = 1'b0;
         end                
         8'hB3,8'hB4: begin  // MUL, LMUL 
-            rslt  = opnd0 * opnd1
+            rslt  = opnd0 * opnd1;
             c_out = rslt[7];
         end
         // 
@@ -167,12 +163,11 @@ always @* begin
                 rslt = alu16 ? -opnd0 : {opnd0[15:8],-opnd0[7:0]};
             else 
                 rslt = opnd0;
-            c_out = 0
-            v_out = 0
+            c_out = 0;
+            v_out = 0;
         end        
         default: 
             rslt = opnd0;
-
     endcase
 
     if ( op!=8'hB0 || op!=8'hB6 || op!=8'hB7 )

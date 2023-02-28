@@ -42,16 +42,18 @@ module jtkcpu_regs(
     output   reg [15:0] mux,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
+    output   reg [15:0] nx_u,    
+    output   reg [15:0] nx_s,    
     output   reg [15:0] idx_reg,
     output       [15:0] psh_addr,
     output       [15:0] acc,
-    output       [ 7:0] up_pull_cc,
-    output       [15:0] up_pull_pc,
+    output   reg        up_pul_cc,
+    output   reg        up_pul_pc
 );
 
-reg         dec_u, dec_s;
-reg  [ 7:0] a, b, dp, inc_pul, up_pull_a, up_pull_b, up_pull_dp;
-reg  [15:0] x, y, u, s, up_pull_x, up_pull_y, up_pull_other; 
+reg         dec_u, dec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_pul_b, up_pul_dp, inc_pul;
+reg  [ 7:0] a, b, dp;
+reg  [15:0] x, y, u, s; 
 wire [15:0] psh_other;
 
 assign acc = { b, a };
@@ -72,10 +74,11 @@ always @* begin
         4'b1001: mux = {8'hFF,  b};
         4'b1010: mux = {8'hFF, cc};
         4'b1011: mux = {8'hFF, dp};
-        default: mux = 0
+        default: mux = 0;
     endcase 
 end
 
+// U/S next value
 always @* begin
     dec_u = 0;
     dec_s = 0;
@@ -85,6 +88,25 @@ always @* begin
         else 
             dec_s = 1;
     end 
+    nx_u = u;
+    nx_s = s;
+    if( up_u  ) nx_u = alu;
+    if( up_s  ) nx_s = alu;
+    if( dec_u ) nx_u = u - 16'd1;    
+    if( dec_s ) nx_s = s - 16'd1;    
+    if( up_pul_other &&  psh_hilon ) begin
+        if( psh_ussel ) 
+            nx_s[15:8] = alu[7:0]; 
+        else 
+            nx_u[15:8] = alu[7:0]; 
+    end
+    if( up_pul_other && !psh_hilon ) begin
+        if( psh_ussel ) 
+            nx_s[ 7:0] = alu[7:0]; 
+        else 
+            nx_u[ 7:0] = alu[7:0]; 
+    end
+
 end
 
 // PUSH
@@ -103,26 +125,26 @@ end
 
 // PULL
 always @* begin
-    up_pull_cc = 0; // output
-    up_pull_a  = 0; // define all as regs
-    up_pull_b  = 0; 
-    up_pull_dp = 0; 
-    up_pull_x  = 0; 
-    up_pull_y  = 0; 
-    up_pull_other = 0;
-    up_pull_pc = 0; // output    
+    up_pul_cc = 0; // output
+    up_pul_a  = 0; // define all as regs
+    up_pul_b  = 0; 
+    up_pul_dp = 0; 
+    up_pul_x  = 0; 
+    up_pul_y  = 0; 
+    up_pul_other = 0;
+    up_pul_pc = 0; // output    
     casez( psh_sel )
-        8'b????_???1: up_pull_cc    = pul_en; 
-        8'b????_??10: up_pull_a     = pul_en; 
-        8'b????_?100: up_pull_b     = pul_en; 
-        8'b????_1000: up_pull_dp    = pul_en; 
-        8'b???1_0000: up_pull_x     = pul_en; 
-        8'b??10_0000: up_pull_y     = pul_en; 
-        8'b?100_0000: up_pull_other = pul_en; 
-        default:      up_pull_pc    = pul_en; 
+        8'b????_???1: up_pul_cc    = pul_en; 
+        8'b????_??10: up_pul_a     = pul_en; 
+        8'b????_?100: up_pul_b     = pul_en; 
+        8'b????_1000: up_pul_dp    = pul_en; 
+        8'b???1_0000: up_pul_x     = pul_en; 
+        8'b??10_0000: up_pul_y     = pul_en; 
+        8'b?100_0000: up_pul_other = pul_en; 
+        default:      up_pul_pc    = pul_en; 
     endcase    
-    inc_pul = |{ up_pull_cc, up_pull_a, up_pull_b, up_pull_dp, up_pull_x, 
-        up_pull_y, up_pull_other, up_pull_pc };
+    inc_pul = |{ up_pul_cc, up_pul_a, up_pul_b, up_pul_dp, up_pul_x, 
+        up_pul_y, up_pul_other, up_pul_pc };
 end 
 
 // indexed idx_reg
@@ -146,30 +168,24 @@ always @(posedge clk, posedge rst) begin
         u  <= 0;
         s  <= 0;
     end else begin
-        if( up_a  || up_pull_a  ) a  <= : alu[7:0]; // pull must let fetched data through ALU
-        if( up_b  || up_pull_b  ) b  <= : alu[7:0];
-        if( up_dp || up_pull_dp ) dp <= : alu[7:0];
-        if( up_x  ) x  <= : alu;
-        if( up_y  ) y  <= : alu;
-        if( up_u  ) u  <= : alu;
-        if( up_s  ) s  <= : alu;
+        u <= nx_u;
+
+        if( up_a  || up_pul_a  ) a  <= alu[7:0]; // pul must let fetched data through ALU
+        if( up_b  || up_pul_b  ) b  <= alu[7:0];
+        if( up_dp || up_pul_dp ) dp <= alu[7:0];
+        if( up_x  ) x  <= alu;
+        if( up_y  ) y  <= alu;
+        if( up_s  ) s  <= alu;
         // 16-bit registers from memory (PULL)
-        if( up_pull_x &&  psh_hilon ) x[15:8] <= alu[7:0];
-        if( up_pull_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
-        if( up_pull_y &&  psh_hilon ) y[15:8] <= alu[7:0];
-        if( up_pull_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
-        if( up_pull_other &&  psh_hilon ) psh_other[15:8] <= alu[7:0];
-        if( up_pull_other && !psh_hilon ) psh_other[ 7:0] <= alu[7:0];
-        // y, u, s
-        // Special operations
-        // To do: manage dec_u/s for push operations
-        if( dec_u ) u  <= u - 16'd1;
-        if( dec_s ) s  <= s - 16'd1;
+        if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[7:0];
+        if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
+        if( up_pul_y &&  psh_hilon ) y[15:8] <= alu[7:0];
+        if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
+
         if( inc_pul && psh_ussel )
             u <= u + 16'd1; 
         if( inc_pul && !psh_ussel )
             s <= s + 16'd1;
-
     end
 end
 

@@ -30,14 +30,11 @@ module jtkcpu_pshpul(
     output   reg        pul_en,
     output   reg        dec_us,
 
-    output   reg [15:0] addr,
     output   reg [ 7:0] psh_sel,
-    output   reg [ 7:0] pul_sel,
     output              idle,
     output   reg        us_sel
 );
 
-reg  [7:0]  psh_sel;
 
 assign idle = psh_sel==0;
 

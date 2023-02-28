@@ -18,50 +18,31 @@
 
 module jtkcpu_branch(
 	input      [7:0] op, 
-	input      [7:0] cc_in,
-    output reg       branch, 
+	input      [7:0] cc,
+    output reg       branch 
 );
 
-localparam CC_C = 8'h01;
-localparam CC_V = 8'h02;
-localparam CC_Z = 8'h04;
-localparam CC_N = 8'h08;
+`include "jtkcpu.inc"
 
 always @* begin
     case( op )
-        8'h60,8'h68,8'hAA,8'hAB: // BRA , LBRA , BSR , LBSR
-            branch = 1;
-        8'h70,8'h78: // BRN , LBRN
-            branch = 0;
-        8'h61,8'h69: // BHI , LBHI
-            branch = !( cc_in[CC_Z] | cc_in[CC_C] )
-        8'h71,8'h79: // BLS , LBLS
-            branch = ( cc_in[CC_Z] | cc_in[CC_C] )
-        8'h62,8'h6A: // BCC , LBCC
-            branch = !cc_in[CC_C]
-        8'h72,8'h7A: // BCS , LBCS
-            branch = cc_in[CC_C]
-        8'h63,8'h6B: // BNE , LBNE
-            branch = !cc_in[CC_Z]
-        8'h73,8'h7B: // BEQ , LBEQ
-            branch = cc_in[CC_Z]
-        8'h64,8'h6C: // BVC , LBVC
-            branch = !cc_in[CC_V];
-        8'h74,8'h7C: // BVS , LBVS
-            branch = cc_in[CC_V]
-        8'h65,8'h6D: // BPL , LBPL
-            branch = !cc_in[CC_N]
-        8'h75,8'h7D: // BMI , LBMI
-            branch = cc_in[CC_N]
-        8'h66,8'h6E: // BGE , LBGE
-            branch = !( cc_in[CC_N] ^ cc_in[CC_V] )
-        8'h76,8'h7E: // BLT , LBLT
-            branch = ( cc_in[CC_N] ^ cc_in[CC_V] )
-        8'h67,8'h6F: // BGT , LBGT
-            branch = !( cc_in[CC_N] ^ cc_in[CC_V] ) & !( cc_in[CC_Z] ) 
-        8'h77,8'h7F: // BLE , LBLE
-            branch = ( cc_in[CC_N] ^ cc_in[CC_V] ) | ( cc_in[CC_Z] )
-        default: branch = 0;
+        8'h60,8'h68,8'hAA,8'hAB: branch = 1;  // BRA , LBRA , BSR , LBSR
+        8'h70,8'h78: branch = 0; // BRN , LBRN
+        8'h61,8'h69: branch = !( cc[CC_Z] | cc[CC_C] ); // BHI , LBHI
+        8'h71,8'h79: branch = ( cc[CC_Z] | cc[CC_C] );  // BLS , LBLS
+        8'h62,8'h6A: branch = !cc[CC_C]; // BCC , LBCC
+        8'h72,8'h7A: branch = cc[CC_C];  // BCS , LBCS
+        8'h63,8'h6B: branch = !cc[CC_Z]; // BNE , LBNE
+        8'h73,8'h7B: branch = cc[CC_Z];  // BEQ , LBEQ
+        8'h64,8'h6C: branch = !cc[CC_V]; // BVC , LBVC
+        8'h74,8'h7C: branch = cc[CC_V];  // BVS , LBVS
+        8'h65,8'h6D: branch = !cc[CC_N]; // BPL , LBPL
+        8'h75,8'h7D: branch = cc[CC_N];  // BMI , LBMI
+        8'h66,8'h6E: branch = !( cc[CC_N] ^ cc[CC_V] ); // BGE , LBGE
+        8'h76,8'h7E: branch = ( cc[CC_N] ^ cc[CC_V] );  // BLT , LBLT
+        8'h67,8'h6F: branch = !( cc[CC_N] ^ cc[CC_V] ) & !( cc[CC_Z] ); // BGT , LBGT
+        8'h77,8'h7F: branch = ( cc[CC_N] ^ cc[CC_V] ) | ( cc[CC_Z] );   // BLE , LBLE
+        default:     branch = 0;
     endcase
 end
 

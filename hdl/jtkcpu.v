@@ -19,13 +19,20 @@
 module jtkcpu(
 );
 
-wire [15:0] opnd0, opnd1, rslt, data, idx_addr, idx_reg;
+wire [15:0] opnd0, opnd1, rslt; 
+wire [15:0] data, addr, idx_reg, mux, acc;
+wire [15:0] x, y, u, s, pc, nx_u, nx_s; 
 wire [ 7:0] alu_op, postbyte;
-wire [ 7:0] cc, c_out, n_out, z_out, v_out;
+wire [ 7:0] reg_a, reg_b;
+wire [ 7:0] cc, c_out, n_out, z_out, v_out, h_out;
+wire [ 7:0] psh_bit, psh_sel, psh_mux;
 wire [ 2:0] idx_sel;
-wire        indirect, branch, rst, clr;
+wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
+wire        rst, clr; 
+wire        indirect, branch, rst, clk; 
+wire        pul_go, psh_go, hi_lon, pul_en, dec_us, us_sel, idle;
 
-jtkcpu_alu(
+jtkcpu_alu u_alu(
     .op         ( alu_op     ), 
     .opnd0      ( opnd0      ), 
     .opnd1      ( opnd1      ), 
@@ -38,78 +45,91 @@ jtkcpu_alu(
     .rslt       ( rslt       )
 );
 
-jtkcpu_branch(
+jtkcpu_branch u_branch(
     .op         ( alu_op     ), 
-    .cc_in      ( cc         ), 
-    .branch     ( branch     ), 
+    .cc         ( cc         ), 
+    .branch     ( branch     ) 
 );
 
-jtkcpu_exgtfr(
-    .op         (      ), 
-    .oprn0      (      ), 
-    .mux        (      ), 
+// jtkcpu_exgtfr(
+//     .op         (      ), 
+//     .oprn0      (      ), 
+//     .mux        (      ), 
+// );
+
+jtkcpu_pshpul u_pshpul(
+    .rst        ( rst        ),
+    .clk        ( clk        ),
+    .op         ( alu_op     ), 
+    .pul_go     ( pul_go     ),
+    .psh_go     ( psh_go     ),
+    .psh_bit    ( psh_bit    ),
+    .hi_lon     ( hi_lon     ),
+    .pul_en     ( pul_en     ),
+    .dec_us     ( dec_us     ),
+    .psh_sel    ( psh_sel    ),
+    .idle       ( idle       ),
+    .us_sel     ( us_sel     ),
+    .postbyte   ( postbyte   )
 );
 
-jtkcpu_pshpul(
-    .rst        (      ),
-    .clk        (      ),
-    .op         (      ), 
-    .cc_in      (      ), 
-    .branch     (      ),
-    .pul_go     (      ),
-    .psh_go     (      ),
-    .psh_bit    (      ),
-    .hi_lon     (      ),
-    .pul_en     (      ),
-    .dec_us     (      ),
-    .addr       (      ),
-    .psh_sel    (      ),
-    .pul_sel    (      ),
-    .idle       (      ),
-    .us_sel     (      ),
+jtkcpu_regs u_regs(
+    .rst        ( rst        ),
+    .clk        ( clk        ),
+    .op_sel     ( alu_op     ), 
+    .psh_sel    ( psh_sel    ),
+    .psh_hilon  ( hi_lon     ),
+    .psh_ussel  ( us_sel     ),
+    .pul_en     ( pul_en     ),
+    .psh_mux    ( psh_mux    ),
+    .psh_bit    ( psh_bit    ),
+    .psh_addr   ( addr       ),
+    .dec_us     ( dec_us     ),
+    .cc         ( cc         ),
+    .pc         ( pc         ),
+    .alu        ( rslt       ),
+    .up_a       ( up_a       ),
+    .up_b       ( up_b       ),
+    .up_dp      ( up_dp      ),
+    .up_x       ( up_x       ),
+    .up_y       ( up_y       ),
+    .up_u       ( up_u       ),
+    .up_s       ( s          ),
+    .mux        ( mux        ),
+    .idx_reg    ( idx_reg    ),
+    .acc        ( acc        ),
+    .up_pul_cc  ( up_cc      ),
+    .up_pul_pc  ( up_pc      ),
+    .nx_u       ( nx_u       ),
+    .nx_s       ( nx_s       )
 );
 
-jtkcpu_regs(
-    .rst        (    ),
-    .clk        (    ),
-    .op_sel     (    ),
-    .postbyte   (    ), 
-    .psh_sel    (    ),
-    .psh_hilon  (    ),
-    .psh_ussel  (    ),
-    .pul_en     (    ),
-    .cc         (    ),
-    .pc         (    ),
-    .alu        (    ),
-    .up_a       (    ),
-    .up_b       (    ),
-    .up_dp      (    ),
-    .up_x       (    ),
-    .up_y       (    ),
-    .up_u       (    ),
-    .up_s       (    ),
-    .dec_us     (    ),
-    .mux        (    ),
-    .psh_mux    (    ),
-    .psh_bit    (    ),
-    .idx_reg    (    ),
-    .psh_addr   (    ),
-    .acc        (    ),
-    .up_pull_cc (    ),
-    .up_pull_pc (    ),
-);
-
-jtkcpu_idx(
+jtkcpu_idx u_idx(
+    .rst        ( rst        ), 
+    .clk        ( clk        ), 
     .postbyte   ( postbyte   ), 
-    .idx_reg    ( idxReg     ), 
+    .idx_reg    ( idx_reg    ), 
     .a          ( reg_a      ), 
     .b          ( reg_b      ), 
     .data       ( data       ), 
     .idx_sel    ( idx_sel    ), 
-    .idx_addr   ( idx_addr   ), 
-    .indirect   ( indirect   ),
-    .rst        ( rst        ), 
-    .clk        ( clk        ), 
+    .idx_addr   ( addr       ), 
+    .indirect   ( indirect   )
+);
+
+jtkcpu_div u_div(
+    .rst        ( rst        ),
+    .clk        ( clk        ),
+    .cen        (         ),
+    .opnd0      (         ),
+    .opnd1      (         ),
+    .len        (         ),
+    .start      (         ),
+    .sign       (         ),
+    .quot       (         ),
+    .rem        (         ),
+    .busy       (         ),
+    .v          (         ),
 );
 
 endmodule
