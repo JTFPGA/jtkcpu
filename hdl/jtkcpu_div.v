@@ -20,13 +20,13 @@ module jtkcpu_div(
     input             rst,
     input             clk,
     input             cen,
-    input      [15:0] opnd0, // dividend
-    input      [ 7:0] opnd1, // divisor
+    input      [15:0] op0, // dividend
+    input      [ 7:0] op1, // divisor
     input             len,
     input             start,
     input             sign,
-    output     [15:0] quot,
-    output reg [15:0] rem,
+    output     [ 7:0] quot,
+    output reg [ 7:0] rem,
     output reg        busy,
     output reg        v
 );
@@ -41,17 +41,17 @@ reg         sign0, sign1, rsi;
 
 assign larger = sub>=divor;
 assign rslt   = sub - { 8'd0, divor };
-assign nx_quot= { fullq[15:0], larger };
-assign quot   = fullq[15:0];
+assign nx_quot= { fullq[14:0], larger };
+assign quot   = fullq[7:0];
 
 always @* begin
-    op0_unsig = opnd0;
-    op1_unsig = opnd1;
-    sign0     = len ? opnd0[15] : opnd0[7];
-    sign1     = opnd1[7];
+    op0_unsig = op0;
+    op1_unsig = op1;
+    sign0     = op0[15];
+    sign1     = op1[7];
     if( sign ) begin
-        if( sign0 ) opnd0_unsig = ~opnd0 + 16'd1;
-        if( sign1 ) opnd1_unsig = ~opnd1 +  8'd1;
+        if( sign0 ) op0_unsig = ~op0 + 16'd1;
+        if( sign1 ) op1_unsig = ~op1 + 8'd1;
     end
 end
 
@@ -73,20 +73,22 @@ always @(posedge clk or posedge rst) begin
             busy   <= 1;
             fullq  <= 0;
             rem    <= 0;
-            { sub, divend } <= { 15'd0, len ? op0_unsig : { op0_unsig[7:0], 15'd0 }, 1'b0 };
-            divor  <= len ? opnd1_unsig : { 8'd0, op1_unsig[7:0] };
-            st     <= len ? 0 : 16;
-            v      <= opnd1 == 0;
+            { sub, divend } <= op0_unsig;
+            // { sub, divend } <= { 15'd0, len ? op0_unsig : { op0_unsig[7:0], 8'd0 }, 1'b0 };
+            divor  <= op1_unsig;
+            st     <= 0;
+            v      <= op1 == 0;
             rsi    <= sign & (sign0 ^ sign1);
         end else if( busy ) begin
             fullq <= nx_quot;
-            { sub, divend } <= { larger ? rslt[15:0] : sub[15:0], divend, 1'b0 };
+            // { sub, divend } <= { larger ? rslt[14:0] : sub[14:0], divend, 1'b0 };
+            { sub, divend } <= { larger ? rslt[14:0] : sub[14:0], divend, 1'b0 };
             st <= st+1'd1;
             if( &st ) begin
                 busy <= 0;
-                rem   <= larger ? rslt[15:0] : sub[15:0];
+                rem   <= larger ? rslt[7:0] : sub[7:0];
                 if( rsi ) fullq <= ~nx_quot+1'd1;
-                if( len ? nx_quot[31:16]!=0 : nx_quot[15:8]!=0 ) v <= 1;
+                if( len ? nx_quot[15:8]!=0 : nx_quot[7:0]!=0 ) v <= 1;
             end
         end
     end

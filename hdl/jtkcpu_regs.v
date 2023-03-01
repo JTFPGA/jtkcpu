@@ -56,26 +56,70 @@ reg  [ 7:0] a, b, dp;
 reg  [15:0] x, y, u, s; 
 wire [15:0] psh_other;
 
+wire [15:0] s_mux;
+wire [15:0] d_mux;
+
 assign acc = { b, a };
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
 
 
+
 // exg/tfr mux
 always @* begin
-    case( op_sel[7:4] )
-        4'b0000: mux = {a, b};
-        4'b0001: mux = x;
-        4'b0010: mux = y;
-        4'b0011: mux = u;
-        4'b0100: mux = s;
-        4'b0101: mux = pc;
-        4'b1000: mux = {8'hFF,  a};
-        4'b1001: mux = {8'hFF,  b};
-        4'b1010: mux = {8'hFF, cc};
-        4'b1011: mux = {8'hFF, dp};
-        default: mux = 0;
-    endcase 
+
+        case( op_sel[7:4] )
+            4'b0000: mux = {a, b};
+            4'b0001: mux = x;
+            4'b0010: mux = y;
+            4'b0011: mux = u;
+            4'b0100: mux = s;
+            4'b0101: mux = pc;
+            4'b1000: mux = {8'hFF,  a};
+            4'b1001: mux = {8'hFF,  b};
+            4'b1010: mux = {8'hFF, cc};
+            4'b1011: mux = {8'hFF, dp};
+            default: mux = 0;
+        endcase 
+        //
+        case( op_sel[7:4] )
+            4'b0000: {a, b} = d_mux 
+            4'b0001: x      = d_mux 
+            4'b0010: y      = d_mux 
+            4'b0011: u      = d_mux 
+            4'b0100: s      = d_mux 
+            4'b0101: pc     = d_mux 
+            4'b1000: a      = d_mux[7:0] 
+            4'b1001: b      = d_mux[7:0] 
+            4'b1010: cc     = d_mux[7:0] 
+            4'b1011: dp     = d_mux[7:0] 
+            default: begin end
+        endcase 
+        case( op_sel[3:0] )
+            4'b0000: {a, b} = s_mux 
+            4'b0001: x      = s_mux 
+            4'b0010: y      = s_mux 
+            4'b0011: u      = s_mux 
+            4'b0100: s      = s_mux 
+            4'b0101: pc     = s_mux 
+            4'b1000: a      = s_mux[7:0] 
+            4'b1001: b      = s_mux[7:0] 
+            4'b1010: cc     = s_mux[7:0] 
+            4'b1011: dp     = s_mux[7:0] 
+            default: begin end
+        endcase
+    end
+end
+
+always @* begin
+
+    if ( op == 8'h3F ) begin
+        s_mux = src[7:4];
+
+    end 
+    else if ( op == 8'h3E ) begin
+        d_mux = dst[3:0];
+    end
 end
 
 // U/S next value

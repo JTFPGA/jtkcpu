@@ -39,6 +39,21 @@ wire       alu16 = op==8'h40 || op==8'h41 || op==8'h42 || op==8'h43 || op==8'h44
                    op==8'hC6 || op==8'hC7 || op==8'hC8 || op==8'hC9 || op==8'hCA || op==8'hCB || op==8'hCE;
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
+// jtkcpu_div u_div(
+//     .rst        ( rst     ),
+//     .clk        ( clk     ),
+//     .cen        (         ),
+//     .opnd0      (         ),
+//     .opnd1      (         ),
+//     .len        (         ),
+//     .start      (         ),
+//     .sign       (         ),
+//     .quot       (         ),
+//     .rem        (         ),
+//     .busy       (         ),
+//     .v          (         ),
+// );
+
 always @* begin
     c_out = cc_in[CC_C];
     v_out = cc_in[CC_V];
@@ -61,7 +76,7 @@ always @* begin
                 h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
         8'h18,8'h19,8'h1A,8'h1B: begin  // ADC
-            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {8'd0,c_out};
+            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {16'd0,c_out};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
@@ -70,7 +85,7 @@ always @* begin
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         8'h20,8'h21,8'h22,8'h23: begin   // SBC
-            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {8'd0,c_out};
+            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,c_out};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         8'h24,8'h25,8'h26,8'h27,8'h28,8'h29,8'h2A,8'h2B,8'h3C: begin  // AND, BIT, ANDCC
@@ -146,7 +161,7 @@ always @* begin
                 rslt[3:0] = 4'H6;
             else
                 rslt[3:0] = 4'H0;
-            {rslt[8], rslt} = {1'b0, opnd0} + rslt[7:0];
+            {rslt[8], rslt[7:0]} = {1'b0, opnd0[7:0]} + rslt[7:0];
             c_out = c_out | rslt[8];
         end
         8'hB2: begin  // SEX

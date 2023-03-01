@@ -117,19 +117,4 @@ jtkcpu_idx u_idx(
     .indirect   ( indirect   )
 );
 
-jtkcpu_div u_div(
-    .rst        ( rst        ),
-    .clk        ( clk        ),
-    .cen        (         ),
-    .opnd0      (         ),
-    .opnd1      (         ),
-    .len        (         ),
-    .start      (         ),
-    .sign       (         ),
-    .quot       (         ),
-    .rem        (         ),
-    .busy       (         ),
-    .v          (         ),
-);
-
 endmodule
