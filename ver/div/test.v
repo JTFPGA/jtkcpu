@@ -50,7 +50,7 @@ initial begin
         end
     end
     $display("PASS");
-    #20 $finish;
+    #20 $finish; 
 end
 
 jtkcpu_div uut_div (

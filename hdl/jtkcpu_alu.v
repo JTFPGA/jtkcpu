@@ -17,6 +17,9 @@
     Date: 14-02-2023 */
 
 module jtkcpu_alu(
+    input             rst,
+    input             clk,
+    input             cen,
     input      [ 7:0] op, 
     input      [15:0] opnd0, 
     input      [15:0] opnd1, 
@@ -39,20 +42,28 @@ wire       alu16 = op==8'h40 || op==8'h41 || op==8'h42 || op==8'h43 || op==8'h44
                    op==8'hC6 || op==8'hC7 || op==8'hC8 || op==8'hC9 || op==8'hCA || op==8'hCB || op==8'hCE;
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
-// jtkcpu_div u_div(
-//     .rst        ( rst     ),
-//     .clk        ( clk     ),
-//     .cen        (         ),
-//     .opnd0      (         ),
-//     .opnd1      (         ),
-//     .len        (         ),
-//     .start      (         ),
-//     .sign       (         ),
-//     .quot       (         ),
-//     .rem        (         ),
-//     .busy       (         ),
-//     .v          (         ),
-// );
+// Divider
+reg         div_start = 0, div_len = 0, div_sign = 0;
+wire        div_v, div_busy;
+wire [ 7:0] div_quot, div_rem;
+
+reg [ 7:0]  div_op1 = opnd1[7:0];
+
+
+jtkcpu_div u_div(
+    .rst  ( rst         ),
+    .clk  ( clk         ),
+    .cen  ( cen         ),
+    .op0  ( opnd0       ),
+    .op1  ( div_op1     ),
+    .len  ( div_len     ),
+    .sign ( div_sign    ),
+    .start( div_start   ),
+    .quot ( div_quot    ),
+    .rem  ( div_rem     ),
+    .busy ( div_busy    ),
+    .v    ( div_v       )
+);
 
 always @* begin
     c_out = cc_in[CC_C];

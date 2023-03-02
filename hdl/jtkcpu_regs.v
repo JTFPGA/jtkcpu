@@ -56,13 +56,12 @@ reg  [ 7:0] a, b, dp;
 reg  [15:0] x, y, u, s; 
 wire [15:0] psh_other;
 
-wire [15:0] s_mux;
-wire [15:0] d_mux;
+// wire [15:0] s_mux;
+// wire [15:0] d_mux;
 
 assign acc = { b, a };
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
-
 
 
 // exg/tfr mux
@@ -82,45 +81,44 @@ always @* begin
             default: mux = 0;
         endcase 
         //
-        case( op_sel[7:4] )
-            4'b0000: {a, b} = d_mux 
-            4'b0001: x      = d_mux 
-            4'b0010: y      = d_mux 
-            4'b0011: u      = d_mux 
-            4'b0100: s      = d_mux 
-            4'b0101: pc     = d_mux 
-            4'b1000: a      = d_mux[7:0] 
-            4'b1001: b      = d_mux[7:0] 
-            4'b1010: cc     = d_mux[7:0] 
-            4'b1011: dp     = d_mux[7:0] 
-            default: begin end
-        endcase 
-        case( op_sel[3:0] )
-            4'b0000: {a, b} = s_mux 
-            4'b0001: x      = s_mux 
-            4'b0010: y      = s_mux 
-            4'b0011: u      = s_mux 
-            4'b0100: s      = s_mux 
-            4'b0101: pc     = s_mux 
-            4'b1000: a      = s_mux[7:0] 
-            4'b1001: b      = s_mux[7:0] 
-            4'b1010: cc     = s_mux[7:0] 
-            4'b1011: dp     = s_mux[7:0] 
-            default: begin end
-        endcase
-    end
+        // case( op_sel[7:4] )
+        //     4'b0000: {a, b} = d_mux 
+        //     4'b0001: x      = d_mux 
+        //     4'b0010: y      = d_mux 
+        //     4'b0011: u      = d_mux 
+        //     4'b0100: s      = d_mux 
+        //     4'b0101: pc     = d_mux 
+        //     4'b1000: a      = d_mux[7:0] 
+        //     4'b1001: b      = d_mux[7:0] 
+        //     4'b1010: cc     = d_mux[7:0] 
+        //     4'b1011: dp     = d_mux[7:0] 
+        //     default: begin end
+        // endcase 
+        // case( op_sel[3:0] )
+        //     4'b0000: {a, b} = s_mux 
+        //     4'b0001: x      = s_mux 
+        //     4'b0010: y      = s_mux 
+        //     4'b0011: u      = s_mux 
+        //     4'b0100: s      = s_mux 
+        //     4'b0101: pc     = s_mux 
+        //     4'b1000: a      = s_mux[7:0] 
+        //     4'b1001: b      = s_mux[7:0] 
+        //     4'b1010: cc     = s_mux[7:0] 
+        //     4'b1011: dp     = s_mux[7:0] 
+        //     default: begin end
+        // endcase
 end
 
-always @* begin
+// always @* begin
 
-    if ( op == 8'h3F ) begin
-        s_mux = src[7:4];
+//     if ( op == 8'h3F ) begin
+//         s_mux = src[7:4];
 
-    end 
-    else if ( op == 8'h3E ) begin
-        d_mux = dst[3:0];
-    end
-end
+//     end 
+//     else if ( op == 8'h3E ) begin
+//         d_mux = dst[3:0];
+//     end
+// end
 
 // U/S next value
 always @* begin
@@ -213,13 +211,14 @@ always @(posedge clk, posedge rst) begin
         s  <= 0;
     end else begin
         u <= nx_u;
+        s <= nx_s;
 
         if( up_a  || up_pul_a  ) a  <= alu[7:0]; // pul must let fetched data through ALU
         if( up_b  || up_pul_b  ) b  <= alu[7:0];
         if( up_dp || up_pul_dp ) dp <= alu[7:0];
         if( up_x  ) x  <= alu;
         if( up_y  ) y  <= alu;
-        if( up_s  ) s  <= alu;
+        // if( up_s  ) s  <= alu;
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[7:0];
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
