@@ -34,7 +34,7 @@ module jtkcpu_div(
 reg  [15:0] divend, sub, fullq, op0_unsig;
 reg  [ 7:0] divor, op1_unsig;
 wire [15:0] rslt, nx_quot;
-reg  [ 4:0] st;
+reg  [ 3:0] st;
 wire        larger;
 reg         start_l;
 reg         sign0, sign1, rsi;
@@ -73,22 +73,20 @@ always @(posedge clk or posedge rst) begin
             busy   <= 1;
             fullq  <= 0;
             rem    <= 0;
-            { sub, divend } <= op0_unsig;
-            // { sub, divend } <= { 15'd0, len ? op0_unsig : { op0_unsig[7:0], 8'd0 }, 1'b0 };
+            { sub, divend } <= { 15'd0, len ? op0_unsig : { op0_unsig[7:0], 8'd0 }, 1'b0 };
             divor  <= op1_unsig;
-            st     <= 0;
+            st     <= len ? 0 : 8;
             v      <= op1 == 0;
             rsi    <= sign & (sign0 ^ sign1);
         end else if( busy ) begin
             fullq <= nx_quot;
-            // { sub, divend } <= { larger ? rslt[14:0] : sub[14:0], divend, 1'b0 };
             { sub, divend } <= { larger ? rslt[14:0] : sub[14:0], divend, 1'b0 };
             st <= st+1'd1;
             if( &st ) begin
                 busy <= 0;
                 rem   <= larger ? rslt[7:0] : sub[7:0];
                 if( rsi ) fullq <= ~nx_quot+1'd1;
-                if( len ? nx_quot[15:8]!=0 : nx_quot[7:0]!=0 ) v <= 1;
+                if( len && nx_quot[15:8]!=0 ) v <= 1;
             end
         end
     end
