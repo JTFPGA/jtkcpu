@@ -27,10 +27,6 @@ wire  [ 7:0] psh_mux, psh_bit;
 wire  up_pul_cc, up_pull_pc;
 
 
-integer up_random;
-integer up_cc, up_pc;
-
-
 initial begin
     clk = 0;
     forever #5 clk = ~clk;
@@ -44,53 +40,18 @@ end
 
 initial begin
     rst = 1;
-    op_sel = 8'h88; 
-    psh_sel = 8'b00100000; 
-    psh_ussel = 0;  
-    psh_hilon = 0; 
+    op_sel = 8'h88; // 
+    psh_sel = 8'b00010000; // d16, h10
+    psh_ussel = 0; // u 
+    psh_hilon = 0; // hi
     pul_en = 0;
     dec_us = 0;
-
-    up_random = 0;
     alu = 127;
-
-    up_cc = 0;
-    up_pc = 0;
 
     #5 rst = 0;
     repeat (30) begin
     	// $display("");
- 		alu = $random;
- 		up_random = {$random} %10;
-		@(posedge clk);
-    	case (up_random) 
- 			1 : up_a = 1; 
- 			2 : up_b = 1; 
-  			3 : up_dp = 1; 
- 			4 : up_x = 1; 
- 			5 : up_y  = 1;  
-			6 : up_u  = 1; 
-			7 :	up_s  = 1; 
-			8 : up_cc  = 1; 
-			9 : up_pc  = 1; 
-			default begin end 
- 		endcase // up_random
- 		if (up_pc) 
- 			pc <= alu[15:0];
- 		if (up_cc)
- 			cc <= alu[7:0];     		
- 
-     	@(posedge clk);
-     	@(posedge clk);
- 		up_a = 0;
- 		up_b = 0;
- 		up_dp = 0;
- 		up_x = 0; 
- 		up_y = 0; 
- 		up_u = 0; 
- 		up_s = 0; 
- 		up_cc = 0; 
- 		up_pc = 0; 
+ 		
      			
     end
     $finish;
@@ -126,6 +87,22 @@ jtkcpu_regs uut_regs (
     .up_pul_pc  ( up_pul_pc  ),
     .nx_u       ( nx_u       ),
     .nx_s       ( nx_s       )    
+);
+
+jtkcpu_pshpul uut_pshpul(
+    .rst        ( rst        ),
+    .clk        ( clk        ),
+    .op         ( op         ), 
+    .pul_go     ( pul_go     ),
+    .psh_go     ( psh_go     ),
+    .psh_bit    ( psh_bit    ),
+    .hi_lon     ( hi_lon     ),
+    .pul_en     ( pul_en     ),
+    .dec_us     ( dec_us     ),
+    .psh_sel    ( psh_sel    ),
+    .idle       ( idle       ),
+    .us_sel     ( us_sel     ),
+    .postbyte   ( postbyte   )
 );
 
 

@@ -48,6 +48,7 @@ always @(posedge clk or posedge rst) begin
     end else begin
         if( idle ) begin
             pul_en <= 0;
+            dec_us <= 0;
             if( psh_go || pul_go ) begin
                 psh_sel <= postbyte;
                 us_sel  <= op[0];

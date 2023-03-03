@@ -19,6 +19,7 @@
 module jtkcpu_regs(
     input               rst,
     input               clk,
+    input        [ 7:0] op,
     input        [ 7:0] op_sel,     // op code used to select specific registers
     input        [ 7:0] psh_sel,
     input               psh_hilon,
@@ -56,18 +57,14 @@ reg  [ 7:0] a, b, dp;
 reg  [15:0] x, y, u, s; 
 wire [15:0] psh_other;
 
-// wire [15:0] s_mux;
-// wire [15:0] d_mux;
-
 assign acc = { b, a };
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
 
-
 // exg/tfr mux
 always @* begin
 
-        case( op_sel[7:4] )
+        case(op_sel[7:4] )
             4'b0000: mux = {a, b};
             4'b0001: mux = x;
             4'b0010: mux = y;
@@ -80,45 +77,25 @@ always @* begin
             4'b1011: mux = {8'hFF, dp};
             default: mux = 0;
         endcase 
-        //
-        // case( op_sel[7:4] )
-        //     4'b0000: {a, b} = d_mux 
-        //     4'b0001: x      = d_mux 
-        //     4'b0010: y      = d_mux 
-        //     4'b0011: u      = d_mux 
-        //     4'b0100: s      = d_mux 
-        //     4'b0101: pc     = d_mux 
-        //     4'b1000: a      = d_mux[7:0] 
-        //     4'b1001: b      = d_mux[7:0] 
-        //     4'b1010: cc     = d_mux[7:0] 
-        //     4'b1011: dp     = d_mux[7:0] 
-        //     default: begin end
-        // endcase 
-        // case( op_sel[3:0] )
-        //     4'b0000: {a, b} = s_mux 
-        //     4'b0001: x      = s_mux 
-        //     4'b0010: y      = s_mux 
-        //     4'b0011: u      = s_mux 
-        //     4'b0100: s      = s_mux 
-        //     4'b0101: pc     = s_mux 
-        //     4'b1000: a      = s_mux[7:0] 
-        //     4'b1001: b      = s_mux[7:0] 
-        //     4'b1010: cc     = s_mux[7:0] 
-        //     4'b1011: dp     = s_mux[7:0] 
-        //     default: begin end
-        // endcase
+
+    // if ( op == 8'h3F ) begin
+
+    //     case( op_sel[3:0] )
+    //         4'b0000: {a, b} = mux; 
+    //         4'b0001: x      = mux; 
+    //         4'b0010: y      = mux; 
+    //         4'b0011: u      = mux;
+    //         4'b0100: s      = mux;
+    //         4'b0101: pc     = mux;
+    //         4'b1000: a      = mux[7:0]; 
+    //         4'b1001: b      = mux[7:0]; 
+    //         4'b1010: cc     = mux[7:0]; 
+    //         4'b1011: dp     = mux[7:0]; 
+    //         default: begin end
+    //     endcase 
+    // end
 end
 
-// always @* begin
-
-//     if ( op == 8'h3F ) begin
-//         s_mux = src[7:4];
-
-//     end 
-//     else if ( op == 8'h3E ) begin
-//         d_mux = dst[3:0];
-//     end
-// end
 
 // U/S next value
 always @* begin
@@ -192,7 +169,7 @@ end
 // indexed idx_reg
 always @* begin
     case ( op_sel[6:5] ) 
-        2'b00  : idx_reg =  x;
+        2'b00  : idx_reg =  x;      
         2'b01  : idx_reg =  y; 
         2'b10  : idx_reg =  u;
         2'b11  : idx_reg =  s;
@@ -220,9 +197,9 @@ always @(posedge clk, posedge rst) begin
         if( up_y  ) y  <= alu;
         // if( up_s  ) s  <= alu;
         // 16-bit registers from memory (PULL)
-        if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[7:0];
+        if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[15:8];
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
-        if( up_pul_y &&  psh_hilon ) y[15:8] <= alu[7:0];
+        if( up_pul_y &&  psh_hilon ) y[15:8] <= alu[15:8];
         if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
 
         if( inc_pul && psh_ussel )
