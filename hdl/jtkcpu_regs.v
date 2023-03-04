@@ -19,6 +19,8 @@
 module jtkcpu_regs(
     input               rst,
     input               clk,
+    input               cen,
+
     input        [ 7:0] op,
     input        [ 7:0] op_sel,     // op code used to select specific registers
     input        [ 7:0] psh_sel,
@@ -186,7 +188,7 @@ always @(posedge clk, posedge rst) begin
         y  <= 0;
         u  <= 0;
         s  <= 0;
-    end else begin
+    end else if(cen) begin
         u <= nx_u;
         s <= nx_s;
 

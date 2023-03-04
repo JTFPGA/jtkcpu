@@ -19,6 +19,7 @@
 module jtkcpu_idx(
     input             rst,
     input             clk,
+    input             cen,
     
     input      [15:0] idx_reg, 
     input      [15:0] data,  // offset encoded in the data after the op
@@ -36,7 +37,7 @@ reg [15:0] offset;
 assign idx_sel = { postbyte[1], postbyte[6:5] };
 
 always @* begin
-    indirect     = postbyte[4];
+    indirect = postbyte[4];
 
     if ( !postbyte[7] ) begin // 5-bit-offset    
         case( postbyte[3:0] )
@@ -63,7 +64,7 @@ end
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
         idx_addr <= 0;
-    end else begin
+    end else if (cen) begin
         idx_addr <= idx_reg + offset;
     end
 end

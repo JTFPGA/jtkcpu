@@ -19,6 +19,7 @@
 module jtkcpu_pshpul(
     input               rst,
     input               clk,
+    input               cen,
 
     input        [ 7:0] op,
     input        [ 7:0] postbyte,
@@ -56,7 +57,7 @@ always @(posedge clk or posedge rst) begin
                 pul_en  <= 1;
                 dec_us  <= psh_go;
             end
-        end else begin
+        end else if(cen) begin
             if( psh_bit[7:4]!=0 && hi_lon ) begin
                 hi_lon <= 0;
             end else begin

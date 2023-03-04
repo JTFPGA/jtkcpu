@@ -20,10 +20,12 @@ module jtkcpu_alu(
     input             rst,
     input             clk,
     input             cen,
+
     input      [ 7:0] op, 
     input      [15:0] opnd0, 
     input      [15:0] opnd1, 
     input      [ 7:0] cc_in,
+
     output reg        c_out,
     output reg        v_out,
     output reg        z_out,

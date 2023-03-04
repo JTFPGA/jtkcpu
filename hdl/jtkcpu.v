@@ -17,6 +17,18 @@
     Date: 14-02-2023 */
 
 module jtkcpu(
+    input               rst,
+    input               clk,
+    input               cen,
+
+    // memory bus
+    input        [ 7:0] din,
+    output       [ 7:0] dout,
+    output       [15:0] addr,
+    output              we,     // write enable
+
+    // to do: add the rest of pins, check AJAX schematics
+    // pins must connect to modules below and all must be driven
 );
 
 wire [15:0] opnd0, opnd1, rslt; 
@@ -32,6 +44,23 @@ wire        rst, clr;
 wire        indirect, branch, rst, clk; 
 wire        pul_go, psh_go, hi_lon, pul_en, dec_us, us_sel, idle;
 
+jtkcpu_ctrl u_ctrl(
+    .rst        ( rst        ),
+    .clk        ( clk        ),
+    .cen        ( cen        ),
+
+    // to do: fill in the rest
+);
+
+jtkcpu_memctrl u_memctrl(
+    .rst        ( rst        ),
+    .clk        ( clk        ),
+    .cen        ( cen        ),
+
+    .addr       ( addr       ),
+    // to do: fill in the rest
+);
+
 jtkcpu_alu u_alu(
     .op         ( alu_op     ), 
     .opnd0      ( opnd0      ), 
@@ -45,37 +74,11 @@ jtkcpu_alu u_alu(
     .rslt       ( rslt       )
 );
 
-jtkcpu_branch u_branch(
-    .op         ( alu_op     ), 
-    .cc         ( cc         ), 
-    .branch     ( branch     ) 
-);
-
-// jtkcpu_exgtfr(
-//     .op         (      ), 
-//     .oprn0      (      ), 
-//     .mux        (      ), 
-// );
-
-jtkcpu_pshpul u_pshpul(
-    .rst        ( rst        ),
-    .clk        ( clk        ),
-    .op         ( alu_op     ), 
-    .pul_go     ( pul_go     ),
-    .psh_go     ( psh_go     ),
-    .psh_bit    ( psh_bit    ),
-    .hi_lon     ( hi_lon     ),
-    .pul_en     ( pul_en     ),
-    .dec_us     ( dec_us     ),
-    .psh_sel    ( psh_sel    ),
-    .idle       ( idle       ),
-    .us_sel     ( us_sel     ),
-    .postbyte   ( postbyte   )
-);
-
 jtkcpu_regs u_regs(
     .rst        ( rst        ),
     .clk        ( clk        ),
+    .cen        ( cen        ),
+
     .op_sel     ( alu_op     ), 
     .psh_sel    ( psh_sel    ),
     .psh_hilon  ( hi_lon     ),
@@ -83,7 +86,7 @@ jtkcpu_regs u_regs(
     .pul_en     ( pul_en     ),
     .psh_mux    ( psh_mux    ),
     .psh_bit    ( psh_bit    ),
-    .psh_addr   ( addr       ),
+    .psh_addr   ( addr       ), // to do: rename connection to psh_addr
     .dec_us     ( dec_us     ),
     .cc         ( cc         ),
     .pc         ( pc         ),
@@ -107,13 +110,15 @@ jtkcpu_regs u_regs(
 jtkcpu_idx u_idx(
     .rst        ( rst        ), 
     .clk        ( clk        ), 
+    .cen        ( cen        ),
+
     .postbyte   ( postbyte   ), 
     .idx_reg    ( idx_reg    ), 
     .a          ( reg_a      ), 
     .b          ( reg_b      ), 
     .data       ( data       ), 
     .idx_sel    ( idx_sel    ), 
-    .idx_addr   ( addr       ), 
+    .idx_addr   ( addr       ), // to do: rename output connection to idx_addr
     .indirect   ( indirect   )
 );
 
