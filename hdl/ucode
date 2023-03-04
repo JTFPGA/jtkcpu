@@ -1,0 +1,46 @@
+#   This file is part of JTKCPU.
+#   JTKCPU program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   JTKCPU program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with JTKCPU.  If not, see <http://www.gnu.org/licenses/>.
+
+#   Author: Jose Tejada Gomez. Twitter: @topapate
+#   Version: 1.0
+#   Date: 3-03-2023 
+
+
+# Solves an ALU operation in a single clock
+# Will wait for OPN1 to be ready
+NOP: NI
+SINGLE_ALU: OPN0=REGS, OPN1=MEM, UPREGS=ALU, NI
+
+MULTI_ALU: OPN0=REGS, OPN1=MEM, WAITALU
+           UPREGS=ALU, NI
+
+SBRANCH: PC=BRANCH, EXTSGN, NI 
+
+LBRANCH: WAIT16
+         PC=BRANCH, NI
+
+LOOPX: PC=BRANCH, DECX, NIZ
+LOOPB: PC=BRANCH, DECB, NIZ
+
+BMOVE:
+MOVE:
+BSETA:
+BSETD:
+
+RTI:
+PSH:
+PUL:
+
+SETLINES: ???
+STORE: OPN0=REGS, WE, NI

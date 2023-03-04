@@ -24,7 +24,11 @@ module jtkcpu_branch(
 
 `include "jtkcpu.inc"
 
+// to do: replace explicit codes with nemonic names
+// declared in jtkcpu.inc
+
 always @* begin
+    // to do: align the code so the cc word starts at the same column in all rows
     case( op )
         8'h60,8'h68,8'hAA,8'hAB: branch = 1;  // BRA , LBRA , BSR , LBSR
         8'h70,8'h78: branch = 0; // BRN , LBRN

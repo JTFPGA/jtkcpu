@@ -36,6 +36,8 @@ module jtkcpu_alu(
 
 `include "jtkcpu.inc"
 
+// to do: replace explicit codes with nemonic names
+// declared in jtkcpu.inc
 wire       alu16 = op==8'h40 || op==8'h41 || op==8'h42 || op==8'h43 || op==8'h44 || op==8'h45 || op==8'h46 || op==8'h47 || op==8'h48 || op==8'h49 ||
                    op==8'h4A || op==8'h4B || op==8'h4C || op==8'h4D || op==8'h4E || op==8'h4F || op==8'h50 || op==8'h51 || op==8'h52 || op==8'h53 || 
                    op==8'h54 || op==8'h55 || op==8'h56 || op==8'h57 || op==8'h58 || op==8'h59 || op==8'h5A || op==8'h5B || op==8'h5C || op==8'hA3 || 
@@ -73,6 +75,7 @@ always @* begin
     z_out = cc_in[CC_Z];
     n_out = cc_in[CC_N];
     h_out = cc_in[CC_H];
+    // to do: replace explicit codes with nemonic names
     case (op)
         8'h08,8'h09,8'h0A,8'h0B: begin // LEA  // RAVISAR
             rslt  =  opnd0;
