@@ -43,6 +43,7 @@ module jtkcpu_regs(
     input               dec_us,
 
     output   reg [15:0] mux,
+    output   reg [15:0] d_mux,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
     output   reg [15:0] nx_u,    
@@ -80,22 +81,20 @@ always @* begin
             default: mux = 0;
         endcase 
 
-    // if ( op == 8'h3F ) begin
-
-    //     case( op_sel[3:0] )
-    //         4'b0000: {a, b} = mux; 
-    //         4'b0001: x      = mux; 
-    //         4'b0010: y      = mux; 
-    //         4'b0011: u      = mux;
-    //         4'b0100: s      = mux;
-    //         4'b0101: pc     = mux;
-    //         4'b1000: a      = mux[7:0]; 
-    //         4'b1001: b      = mux[7:0]; 
-    //         4'b1010: cc     = mux[7:0]; 
-    //         4'b1011: dp     = mux[7:0]; 
-    //         default: begin end
-    //     endcase 
-    // end
+        case( op_sel[3:0] )
+            4'b0000: d_mux = {a, b};
+            4'b0001: d_mux = x;
+            4'b0010: d_mux = y;
+            4'b0011: d_mux = u;
+            4'b0100: d_mux = s;
+            4'b0101: d_mux = pc;
+            4'b1000: d_mux = {8'hFF,  a};
+            4'b1001: d_mux = {8'hFF,  b};
+            4'b1010: d_mux = {8'hFF, cc};
+            4'b1011: d_mux = {8'hFF, dp};
+            default: d_mux = 0; 
+        endcase 
+    
 end
 
 

@@ -25,6 +25,7 @@ module jtkcpu_ucode(
     // status inputs
     input           branch,
     input           alu_busy,
+
     // to do: add all status signals from
     // other blocks
 
@@ -49,8 +50,20 @@ localparam UCODE_AW = 10, // 1024 ucode lines
 
 // to do: define localparam with op categories
 localparam [5:0] SINGLE_ALU = 1,
-                 ALU_MULTI  = 2,
-                 BRANCH     = 3; // to do: add more as needed
+                 MULTI_ALU  = 2,
+                 SBRANCH    = 3,
+                 LBRANCH    = 4,
+                 LOOPX      = 5,
+                 LOOPB      = 6,
+                 BMOVE      = 7,
+                 MOVE       = 8,
+                 BSETA      = 9,
+                 BSETD      = 10,
+                 RIT        = 11,
+                 PSH        = 12,
+                 PUL        = 13
+                 SETLINES   = 14
+                 STORE      = 15; // to do: add more as needed
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
@@ -64,7 +77,7 @@ always @* begin
     // to do: fill the rest
     case( op )
         ADDA_IMM, ADDB_IMM, ADDA_IDX, ADDB_IDX: opcat = SINGLE_ALU; // to do: add other ALU operations that resolve in a single cycle
-        LSRW, RORW, DIV: opcat = ALU_MULTI; // to do: fill the rest
+        LSRW, RORW, DIV: opcat = MULTI_ALU; // to do: fill the rest
         default: opcat = BUSERROR; // stop condition
     endcase
 end

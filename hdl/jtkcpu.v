@@ -19,26 +19,22 @@
 module jtkcpu(
     input               rst,
     input               clk,
-    input               cen_e,
-    input               cen_q,
+    input               cen,
+    input               clk_e,
+    input               clk_q,
 
     input               halt,
     input               nmi,
     input               irq,
     input               firq,
+    input               dtack, 
 
     // memory bus
     input        [ 7:0] din,
     output       [ 7:0] dout,
     output       [15:0] addr,
     output              we,    // write enable
-
-    output              avma,
-    output              busy,
-    output              lic,
-    output              bs,
-    output              ba,
-
+    output              as     // 
 
     // to do: add the rest of pins, check AJAX schematics
     // pins must connect to modules below and all must be driven
@@ -58,12 +54,21 @@ wire        idx_en,psh_en;
 wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
 wire        indirect, branch; 
-wire        pul_go, psh_go, hi_lon, pul_en, dec_us, us_sel, idle;
+wire        hi_lon, pul_en, dec_us, us_sel;
 
 jtkcpu_ctrl u_ctrl(
     .rst        ( rst        ),
     .clk        ( clk        ),
     .cen        ( cen        ),
+
+    .op         ( alu_op     ), 
+    .psh_bit    ( psh_bit    ),
+    .hi_lon     ( hi_lon     ),
+    .pul_en     ( pul_en     ),
+    .dec_us     ( dec_us     ),
+    .psh_sel    ( psh_sel    ),
+    .us_sel     ( us_sel     ),
+    .postbyte   ( postbyte   )
 
     // to do: fill in the rest
 );

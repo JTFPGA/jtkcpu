@@ -21,6 +21,15 @@ module jtkcpu_ctrl(
     input             clk,
     input             cen,
 
+    input      [ 7:0] op,
+    input      [ 7:0] postbyte,
+
+    input      [ 7:0] psh_bit,
+
+    input             halt
+    input             vector,
+
+
     // to do: connect interrupt
     // from jtkcpu top level
 
@@ -33,11 +42,18 @@ module jtkcpu_ctrl(
 // to do: signals that are resolved within the
 // module should be here as wires. Watchout for buses
 wire branch;
+wire pul_go, psh_go, idle;
+
 
 jtkcpu_ucode u_ucode(
     .rst        ( rst        ),
     .clk        ( clk        ),
     .cen        ( cen        ),
+
+    .op         ( alu_op     ), 
+    .branch     ( branch     ),
+    .pul_go     ( pul_go     ),
+    .psh_go     ( psh_go     ),
 
     // To do: finish connections
 );

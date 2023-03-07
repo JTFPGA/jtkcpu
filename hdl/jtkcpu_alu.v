@@ -38,12 +38,12 @@ module jtkcpu_alu(
 
 // to do: replace explicit codes with nemonic names
 // declared in jtkcpu.inc
-wire       alu16 = op==8'h40 || op==8'h41 || op==8'h42 || op==8'h43 || op==8'h44 || op==8'h45 || op==8'h46 || op==8'h47 || op==8'h48 || op==8'h49 ||
-                   op==8'h4A || op==8'h4B || op==8'h4C || op==8'h4D || op==8'h4E || op==8'h4F || op==8'h50 || op==8'h51 || op==8'h52 || op==8'h53 || 
-                   op==8'h54 || op==8'h55 || op==8'h56 || op==8'h57 || op==8'h58 || op==8'h59 || op==8'h5A || op==8'h5B || op==8'h5C || op==8'hA3 || 
-                   op==8'hA4 || op==8'hA5 || op==8'hA6 || op==8'hA7 || op==8'hB0 || op==8'hB2 || op==8'hB8 || op==8'hB9 || op==8'hBA || op==8'hBB ||
-                   op==8'hBC || op==8'hBD || op==8'hBE || op==8'hBF || op==8'hC0 || op==8'hC1 || op==8'hC2 || op==8'hC3 || op==8'hC4 || op==8'hC5 ||
-                   op==8'hC6 || op==8'hC7 || op==8'hC8 || op==8'hC9 || op==8'hCA || op==8'hCB || op==8'hCE;
+wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==CMPX_IMM || op==CMPX_IDX || op==CMPY_IMM || op==CMPY_IDX || op==CMPU_IMM || op==CMPU_IDX || op==CLRD || op==RORW ||
+                   op==CMPS_IMM || op==CMPS_IDX || op==ADDD_IMM || op==ADDD_IDX || op==SUBD_IMM || op==SUBD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==CLRW || op==ASRW ||
+                   op==ASLD_IMM || op==ASLD_IDX || op==ROLD_IMM || op==ROLD_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORD_IMM || op==RORD_IDX || op==NEGD || op==ASLW ||
+                   op== LDD_IMM || op== LDD_IDX || op== LDX_IMM || op== LDX_IDX || op== LDY_IMM || op== LDY_IDX || op== LDU_IMM || op== LDU_IDX || op==NEGW || op==ROLW ||
+                   op== LDS_IMM || op== LDS_IDX || op==INCD || op==INCW || op==DECD || op==DECW || op==TSTD || op==TSTW || op==ABSD || op==STD  || op== STX || op== STY ||  
+                   op==LSRW || op== STS || op== ABX || op==SEX || op==STU;
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
 // Divider
@@ -80,8 +80,8 @@ always @* begin
         LEAX,LEAY,LEAU,LEAS: begin // LEA  // RAVISAR
             rslt  =  opnd0;
         end
-        8'h10,8'h11,8'h12,8'h13,8'h3A,8'h3B,8'h90,8'h91,8'h92,8'h40,8'h41,8'h42,8'h43,
-        8'h44,8'h45,8'h46,8'h47,8'h48,8'h49,8'h58,8'h59,8'h5A,8'h5B,8'h5C,8'hCA,8'hCB: begin  // LD, ST, TST, TSTD, TSTW
+        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
+        LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,STD,STX,STY,STU,STS,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
             rslt  =  opnd0;
             v_out = 1'b0;
         end
@@ -153,7 +153,7 @@ always @* begin
         RORA,RORB,ROR,RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD 
             {rslt, c_out} = {c_out, opnd0};
         end
-        ASRA,ASRB,ASR,ASRW,ASR_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD 
+        ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD 
             {rslt, c_out} = {opnd0[msb], opnd0};
         end
         ASLA,ASLB,ASL,ASLW,ASLD_IMM,ASLD_IDX: begin  // LSL, ASL, ASLW, ASLD
@@ -163,7 +163,7 @@ always @* begin
             // v_out = opnd0[msb] ^ opnd0[msb-1];
             v_out = opnd0[msb] ^ rslt[msb];
         end
-        ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROL_IDX: begin  // ROL, ROLW, ROLD
+        ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROLD_IDX: begin  // ROL, ROLW, ROLD
             {c_out, rslt} = {opnd0, c_out};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end

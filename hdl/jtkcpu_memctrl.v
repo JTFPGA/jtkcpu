@@ -50,9 +50,7 @@ localparam IRQ  = 16'hFFF8,
            // SWI  = 16'hFFFA, // was this in a table too? The M6809 has, but Konami don't have this instructions
            NMI  = 16'hFFFC,
            RST  = 16'hFFFE;
-           // SWI2 = 16'hFFF4
-           // SWI3 = 16'hFFF2
-           // RESERV = 16'hFFF0;
+
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
