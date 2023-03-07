@@ -45,11 +45,14 @@ module jtkcpu_memctrl(
 );
 
 // To do: fill in the vectors for each interrupt type
-// localparam IRQ  = 16'hFFFF,
-//            FIRQ = ,
-//            NMI  = ,
-//            SWI  = , // was this in a table too?
-//            RST  = ;
+localparam IRQ  = 16'hFFF8,
+           FIRQ = 16'hFFF6,
+           // SWI  = 16'hFFFA, // was this in a table too? The M6809 has, but Konami don't have this instructions
+           NMI  = 16'hFFFC,
+           RST  = 16'hFFFE;
+           // SWI2 = 16'hFFF4
+           // SWI3 = 16'hFFF2
+           // RESERV = 16'hFFF0;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
@@ -62,7 +65,7 @@ always @(posedge clk, posedge rst) begin
         end else begin
             data[ 7:0] <= din; // get the lower half/regular 1-byte access
             addr <= pc;
-            if( idx_en   ) addr <= idx_addr;
+            if( idx_en ) addr <= idx_addr;
             if( psh_en ) addr <= psh_addr;
             // interrupt vectors
             if( vector!=0 && !busy ) begin
@@ -70,6 +73,8 @@ always @(posedge clk, posedge rst) begin
                 case( vector )
                     1: addr <= IRQ;
                     2: addr <= FIRQ;
+                    3: addr <= NMI;
+                    4: addr <= RST;
                     // to do: fill in the rest
                     default:; // Leave code 0 free
                 endcase

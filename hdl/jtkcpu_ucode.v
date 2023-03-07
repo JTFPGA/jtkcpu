@@ -48,7 +48,7 @@ localparam UCODE_AW = 10, // 1024 ucode lines
            UCODE_DW = 24; // Number of control signals
 
 // to do: define localparam with op categories
-localparam [5:0] ALU_SINGLE = 1,
+localparam [5:0] SINGLE_ALU = 1,
                  ALU_MULTI  = 2,
                  BRANCH     = 3; // to do: add more as needed
 
@@ -63,7 +63,7 @@ wire ni, buserror; // next instruction
 always @* begin
     // to do: fill the rest
     case( op )
-        ADDA_IMM, ADDB_IMM, ADDA_IDX, ADDB_IDX: opcat = ALU_SINGLE; // to do: add other ALU operations that resolve in a single cycle
+        ADDA_IMM, ADDB_IMM, ADDA_IDX, ADDB_IDX: opcat = SINGLE_ALU; // to do: add other ALU operations that resolve in a single cycle
         LSRW, RORW, DIV: opcat = ALU_MULTI; // to do: fill the rest
         default: opcat = BUSERROR; // stop condition
     endcase

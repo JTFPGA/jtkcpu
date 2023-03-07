@@ -16,7 +16,6 @@
 #   Version: 1.0
 #   Date: 3-03-2023 
 
-
 # Solves an ALU operation in a single clock
 # Will wait for OPN1 to be ready
 NOP: NI
@@ -30,8 +29,8 @@ SBRANCH: PC=BRANCH, EXTSGN, NI
 LBRANCH: WAIT16
          PC=BRANCH, NI
 
-LOOPX: PC=BRANCH, DECX, NIZ
-LOOPB: PC=BRANCH, DECB, NIZ
+LOOPX: PC_XNZ=BRANCH, DECX, NI
+LOOPB: PC_BNZ=BRANCH, DECB, NI
 
 BMOVE:
 MOVE:

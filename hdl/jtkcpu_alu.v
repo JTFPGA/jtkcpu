@@ -77,7 +77,7 @@ always @* begin
     h_out = cc_in[CC_H];
     // to do: replace explicit codes with nemonic names
     case (op)
-        8'h08,8'h09,8'h0A,8'h0B: begin // LEA  // RAVISAR
+        LEAX,LEAY,LEAU,LEAS: begin // LEA  // RAVISAR
             rslt  =  opnd0;
         end
         8'h10,8'h11,8'h12,8'h13,8'h3A,8'h3B,8'h90,8'h91,8'h92,8'h40,8'h41,8'h42,8'h43,
@@ -85,90 +85,90 @@ always @* begin
             rslt  =  opnd0;
             v_out = 1'b0;
         end
-        8'h14,8'h15,8'h16,8'h17,8'h54,8'h55: begin  // ADD
+        ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX,ADDD_IMM,ADDD_IDX: begin  // ADD
             {c_out, rslt} = {1'b0, opnd0} + {1'b0, opnd1};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             if ( op!=8'h54 || op!=8'h55 )
                 h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
-        8'h18,8'h19,8'h1A,8'h1B: begin  // ADC
+        ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX: begin  // ADC
             {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {16'd0,c_out};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
-        8'h1C,8'h1D,8'h1E,8'h1F,8'h56,8'h57: begin  // SUB
+        SUBA_IMM,SUBB_IMM,SUBA_IDX,SUBB_IDX,SUBD_IMM,SUBD_IDX: begin  // SUB
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        8'h20,8'h21,8'h22,8'h23: begin   // SBC
+        SBCA_IMM,SBCB_IMM,SBCA_IDX,SBCB_IDX: begin   // SBC
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,c_out};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        8'h24,8'h25,8'h26,8'h27,8'h28,8'h29,8'h2A,8'h2B,8'h3C: begin  // AND, BIT, ANDCC
+        ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IMM,ANDCC: begin  // AND, BIT, ANDCC
             rslt = (opnd0 & opnd1);
-            if ( op!=8'h3C )
+            if ( op!=ANDCC )
                 v_out = 0;
         end
-        8'h2C,8'h2D,8'h2E,8'h2F: begin    // EOR
+        EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX: begin    // EOR
             rslt  = (opnd0 ^ opnd1);
             v_out = 0;
         end
-        8'h30,8'h31,8'h32,8'h33,8'h3D: begin  // OR, ORCC
+        ORA_IMM,ORB_IMM,ORA_IDX,ORB_IDX,ORCC: begin  // OR, ORCC
             rslt  = (opnd0 | opnd1);
-            if ( op!=8'h3D )
+            if ( op!=ORCC )
                 v_out = 0;
         end
-        8'h34,8'h35,8'h36,8'h37,8'h4A,8'h4B,8'h4C,8'h4D,8'h4E,8'h4F,8'h50,8'h51,8'h52,8'h53: begin  // CMP
+        CMPA_IMM,CMPB_IMM,CMPA_IDX,CMPB_IDX,CMPD_IMM,CMPD_IDX,CMPX_IMM,CMPX_IDX,CMPY_IMM,CMPY_IDX,CMPU_IMM,CMPU_IDX,CMPS_IMM,CMPS_IDX: begin  // CMP
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        8'h80,8'h81,8'h82,8'hC2,8'hC3: begin  // CLR, CLRD, CLRW 
+        CLRA,CLRB,CLR,CLRD,CLRW: begin  // CLR, CLRD, CLRW 
             rslt  = 0;
             c_out = 0;
             v_out = 0;
         end
-        8'h83,8'h84,8'h85: begin  // COM
+        COMA,COMB,COM: begin  // COM
             rslt  = ~opnd0;
             c_out = 1'b1;
             v_out = 1'b0;
         end
-        8'h86,8'h87,8'h88,8'hC4,8'hC5: begin  // NEG, NEGD , NEGW
+        NEGA,NEGB,NEG,NEGD,NEGW: begin  // NEG, NEGD , NEGW
             rslt  = ~opnd0 + 1'b1;
             c_out = alu16 ? rslt!=0 : rslt[7:0]!=0;
             v_out = opnd0[msb]==rslt[msb];
         end
-        8'h89,8'h8A,8'h8B,8'hC6,8'hC7: begin  // INC, INCD, INCW
+        INCA,INCB,INC,INCD,INCW: begin  // INC, INCD, INCW
             rslt  = opnd0 + 1'b1;
             v_out = (~opnd0[msb] & rslt[msb]);
         end
-        8'h8C,8'h8D,8'h8E,8'hC8,8'hC9: begin  // DEC, DECD, DECW
+        DECA,DECB,DEC,DECD,DECW: begin  // DEC, DECD, DECW
             rslt  = opnd0 - 1'b1;
             v_out = (opnd0[msb] & ~rslt[msb]);
         end
-        8'h93,8'h94,8'h95,8'hA3,8'hB8,8'hB9: begin  // LSR, LSRW, LSRD
+        LSRA,LSRB,LSR,LSRW,LSRD_IMM,LSRD_IDX: begin  // LSR, LSRW, LSRD
             // {rslt, c_out} = {1'b0, opnd0};
             rslt  = opnd0 >> 1;
             c_out = opnd0[msb];
         end
-        8'h96,8'h97,8'h98,8'hA4,8'hBA,8'hBB: begin  // ROR, RORW, RORD 
+        RORA,RORB,ROR,RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD 
             {rslt, c_out} = {c_out, opnd0};
         end
-        8'h99,8'h9A,8'h9B,8'hA5,8'hBC,8'hBD: begin  // ASR, ASRW, ASRD 
+        ASRA,ASRB,ASR,ASRW,ASR_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD 
             {rslt, c_out} = {opnd0[msb], opnd0};
         end
-        8'h9C,8'h9D,8'h9E,8'hA6,8'hBE,8'hBF: begin  // LSL, ASL, ASLW, ASLD
+        ASLA,ASLB,ASL,ASLW,ASLD_IMM,ASLD_IDX: begin  // LSL, ASL, ASLW, ASLD
             // {c_out, rslt} = {opnd0, 1'b0};
             rslt  = opnd0 << 1;
             c_out = opnd0[msb];
             // v_out = opnd0[msb] ^ opnd0[msb-1];
             v_out = opnd0[msb] ^ rslt[msb];
         end
-        8'hA0,8'hA1,8'hA2,8'hA7,8'hC0,8'hC1: begin  // ROL, ROLW, ROLD
+        ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROL_IDX: begin  // ROL, ROLW, ROLD
             {c_out, rslt} = {opnd0, c_out};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        8'hB0: rslt = opnd0 + opnd1;  // ABX  
-        8'hB1: begin  // DAA
+        ABX: rslt = opnd0 + opnd1;  // ABX  
+        DAA: begin  // DAA
             if ( ((c_out) || (opnd0[7:4] > 4'H9)) || ((opnd0[7:4] > 4'H8) && (opnd0[3:0] > 4'H9)) )
                 rslt[7:4] = 4'H6;
             else
@@ -180,16 +180,16 @@ always @* begin
             {rslt[8], rslt[7:0]} = {1'b0, opnd0[7:0]} + rslt[7:0];
             c_out = c_out | rslt[8];
         end
-        8'hB2: begin  // SEX
+        SEX: begin  // SEX
             rslt  = {{8{opnd0[7]}}, opnd0[7:0]};
             v_out = 1'b0;
         end                
-        8'hB3,8'hB4: begin  // MUL, LMUL 
+        MUL,LMUL: begin  // MUL, LMUL 
             rslt  = opnd0 * opnd1;
             c_out = rslt[7];
         end
         // 
-        8'hCC,8'hCD,8'hCE: begin  // ABS
+        ABSA,ABSB,ABSD: begin  // ABS
             if (opnd0[msb] )
                 rslt = alu16 ? -opnd0 : {opnd0[15:8],-opnd0[7:0]};
             else 
@@ -201,9 +201,9 @@ always @* begin
             rslt = opnd0;
     endcase
 
-    if ( op!=8'hB0 || op!=8'hB6 || op!=8'hB7 )
+    if ( op!=ABX || op!=ABSA || op!=ABSB || op!=ABSD )
         z_out = (rslt == 0);
-    if ( op!=8'h08 || op!=8'h09 || op!=8'h0A || op!=8'h0B || op!=8'hB0 || op!=8'hB3 || op!=8'hB4 || op!=8'hB6 || op!=8'hB7 )
+    if ( op!=LEAX || op!=LEAY || op!=LEAU || op!=LEAS || op!=ABX || op!=MUL || op!=LMUL )
         n_out = rslt[msb];
 end
 
