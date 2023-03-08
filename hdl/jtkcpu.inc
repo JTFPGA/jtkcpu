@@ -3,9 +3,7 @@ localparam [2:0] CC_C = 0,
 				 CC_Z = 2,
 				 CC_N = 3,
 				 CC_H = 5;
-// to do: review syntax of names below
-// align so all = signs fall in the same column
-// add _IMM and _IDX suffix as needed
+
 localparam [7:0]
     LEAX         = 8'h08,
     LEAY         = 8'h09,

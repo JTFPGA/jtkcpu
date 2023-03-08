@@ -60,10 +60,14 @@ localparam [5:0] SINGLE_ALU = 1,
                  BSETA      = 9,
                  BSETD      = 10,
                  RIT        = 11,
-                 PSH        = 12,
-                 PUL        = 13
-                 SETLINES   = 14
-                 STORE      = 15; // to do: add more as needed
+                 RTS        = 12,
+                 JMP        = 13,
+                 JSR        = 14
+                 PSH        = 15,
+                 PUL        = 16,
+                 NOP        = 17, 
+                 SETLINES   = 18, // missing
+                 STORE      = 19; // to do: add more as needed
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
@@ -76,15 +80,44 @@ wire ni, buserror; // next instruction
 always @* begin
     // to do: fill the rest
     case( op )
-        ADDA_IMM, ADDB_IMM, ADDA_IDX, ADDB_IDX: opcat = SINGLE_ALU; // to do: add other ALU operations that resolve in a single cycle
-        LSRW, RORW, DIV: opcat = MULTI_ALU; // to do: fill the rest
+        ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX,ADDD_IMM,ADDD_IDX,ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX,LDX_IMM,LDX_IDX,
+        SUBA_IMM,SUBB_IMM,SUBA_IDX,SUBB_IDX,SUBD_IMM,SUBD_IDX,SBCA_IMM,SBCB_IMM,SBCA_IDX,SBCB_IDX,LDY_IMM,LDY_IDX,
+        CMPA_IMM,CMPB_IMM,CMPA_IDX,CMPB_IDX,CMPD_IMM,CMPD_IDX,CMPX_IMM,CMPX_IDX,CMPY_IMM,CMPY_IDX,LDU_IMM,LDU_IDX,
+        CMPU_IMM,CMPU_IDX,CMPS_IMM,CMPS_IDX,ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,LDS_IMM,LDS_IDX,
+        BITA_IDX,BITB_IMM,EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX,ORA_IMM,ORB_IMM,ORA_IDX,ORB_IDX,ABX,LDD_IMM,LDD_IDX,
+        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,STD,STX,STY,STU,STS,TSTD,TSTW,ANDCC,ABSA,ABSB,ABSD,
+        CLR,CLRA,CLRB,CLRD,CLRW,COMA,COMB,COM,NEGA,NEGB,NEG,NEGD,NEGW,INCA,INCB,INC,INCD,INCW,ORCC,
+        LEAX,LEAY,LEAU,LEAS,DEC,DECA,DECB,DECD,DECW : opcat = SINGLE_ALU; 
+        LSRA,LSRB,LSR,LSRW,LSRD_IMM,LSRD_IDX,ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROLD_IDX,DIV_X_B,SEX,MUL,
+        ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX,ASLA,ASLB,ASL,ASLW,ASLD_IMM,ASLD_IDX,LMUL,DAA: opcat = MULTI_ALU;
+        BSR,BRA,BRN,BHI,BLS,BCC,BCS,BNE,BEQ,BVC,BVS,BPL,BMI,BGE,BLT,BGT,BLE: opcat = SBRANCH;
+        LBSR,LBRA,LBRN,LBHI,LBLS,LBCC,LBCS,LBNE,LBEQ,LBVC,LBVS,LBPL,LBMI,LBGE,LBLT,LBGT,LBLE: opcat = LBRANCH;
+        DECX_JNZ:     opcat = LOOPX;
+        DECB_JNZ:     opcat = LOOPB;
+        MOVE_Y_X_U:   opcat = MOVE;
+        BMOVE_Y_X_U:  opcat = BMOVE;
+        BSETA_X_U:    opcat = BSETA;
+        BSETD_X_U:    opcat = BSETD;
+        RTI:          opcat = RIT;
+        RTS:          opcat = RTS;
+        JMP:          opcat = JMP;
+        JSR:          opcat = JSR;
+        PUSHU, PUSHS: opcat = PSH;
+        PULLU, PULLS: opcat = PUL;
+        opcat = STORE;
         default: opcat = BUSERROR; // stop condition
     endcase
 end
 
 always @* begin
     case( op )
-        ADDA_IDX, ADDB_IDX: idx_src = 1; // to do: add the rest
+        ADDA_IDX,ADDB_IDX,ADDD_IDX,ADCA_IDX,ADCB_IDX,SUBA_IDX,SUBB_IDX,SUBD_IDX,LDD_IDX,
+        SBCA_IDX,SBCB_IDX,CMPA_IDX,CMPB_IDX,CMPD_IDX,CMPX_IDX,CMPY_IDX,CMPU_IDX,LDX_IDX, 
+        CMPS_IDX,ANDA_IDX,ANDB_IDX,BITA_IDX,BITB_IDX,EORA_IDX,EORB_IDX,LSRD_IDX,LDY_IDX, 
+        RORD_IDX,ASRD_IDX,ASLD_IDX,ROLD_IDX, ORA_IDX, ORB_IDX, LDA_IDX, LDB_IDX,LDU_IDX, 
+        LSRW,LSR,RORW,ROR,ASRW,ASR,ASLW,ASL,ROLW,ROL,LEAX,STX,LEAY,STY,LEAU,STU,LDS_IDX,
+        CLRW,CLR,NEGW,NEG,INCW,INC,DECW,DEC,TSTW,TST,LEAS,STS,STA,STB,STD,COM,JMP,JSR,
+        SETLINES_IDX: idx_src = 1;  
         default: idx_src = 0;
     endcase
 end

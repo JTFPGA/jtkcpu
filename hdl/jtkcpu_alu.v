@@ -26,6 +26,7 @@ module jtkcpu_alu(
     input      [15:0] opnd1, 
     input      [ 7:0] cc_in,
 
+    output reg        busy,
     output reg        c_out,
     output reg        v_out,
     output reg        z_out,
@@ -36,8 +37,6 @@ module jtkcpu_alu(
 
 `include "jtkcpu.inc"
 
-// to do: replace explicit codes with nemonic names
-// declared in jtkcpu.inc
 wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==CMPX_IMM || op==CMPX_IDX || op==CMPY_IMM || op==CMPY_IDX || op==CMPU_IMM || op==CMPU_IDX || op==CLRD || op==RORW ||
                    op==CMPS_IMM || op==CMPS_IDX || op==ADDD_IMM || op==ADDD_IDX || op==SUBD_IMM || op==SUBD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==CLRW || op==ASRW ||
                    op==ASLD_IMM || op==ASLD_IDX || op==ROLD_IMM || op==ROLD_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORD_IMM || op==RORD_IDX || op==NEGD || op==ASLW ||
@@ -48,7 +47,7 @@ wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
 // Divider
 reg         div_start = 0, div_len = 0, div_sign = 0;
-wire        div_v, div_busy;
+wire        div_v;
 wire [ 7:0] div_quot, div_rem;
 
 reg [ 7:0]  div_op1 = opnd1[7:0];
@@ -65,7 +64,7 @@ jtkcpu_div u_div(
     .start( div_start   ),
     .quot ( div_quot    ),
     .rem  ( div_rem     ),
-    .busy ( div_busy    ),
+    .busy ( busy        ),
     .v    ( div_v       )
 );
 
@@ -75,7 +74,7 @@ always @* begin
     z_out = cc_in[CC_Z];
     n_out = cc_in[CC_N];
     h_out = cc_in[CC_H];
-    // to do: replace explicit codes with nemonic names
+
     case (op)
         LEAX,LEAY,LEAU,LEAS: begin // LEA  // RAVISAR
             rslt  =  opnd0;
@@ -173,7 +172,7 @@ always @* begin
                 rslt[7:4] = 4'H6;
             else
                 rslt[7:4] = 4'H0;
-            if ((h_out) || (opnd0[3:0] > 4'H9))
+            if ( (h_out) || (opnd0[3:0] > 4'H9))
                 rslt[3:0] = 4'H6;
             else
                 rslt[3:0] = 4'H0;
