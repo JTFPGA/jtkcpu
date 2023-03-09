@@ -26,8 +26,9 @@ module jtkcpu_ctrl(
 
     input      [ 7:0] psh_bit,
 
-    input             halt
+    input             halt.
     input             vector,
+
 
 
     // to do: connect interrupt
@@ -52,6 +53,9 @@ jtkcpu_ucode u_ucode(
 
     .op         ( alu_op     ), 
     .branch     ( branch     ),
+    .alu_busy   ( busy       ),
+    .irq        ( irq        ),
+    .inter      ( inter      ),
     .pul_go     ( pul_go     ),
     .psh_go     ( psh_go     ),
 

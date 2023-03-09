@@ -20,8 +20,6 @@ module jtkcpu(
     input               rst,
     input               clk,
     input               cen,
-    input               clk_e,
-    input               clk_q,
 
     input               halt,
     input               nmi,
@@ -32,7 +30,7 @@ module jtkcpu(
     // memory bus
     input        [ 7:0] din,
     output       [ 7:0] dout,
-    output       [15:0] addr,
+    output       [23:0] addr,
     output              we,    // write enable
     output              as     // 
 
@@ -108,6 +106,7 @@ jtkcpu_alu u_alu(
     .z_out      ( z_out      ),
     .n_out      ( n_out      ),
     .h_out      ( h_out      ),
+    .busy       ( busy      ),
     .rslt       ( rslt       )
 );
 

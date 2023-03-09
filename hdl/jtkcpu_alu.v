@@ -91,7 +91,7 @@ always @* begin
                 h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
         ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX: begin  // ADC
-            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {16'd0,c_out};
+            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {16'd0,cc_in[CC_C]};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
@@ -100,7 +100,7 @@ always @* begin
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         SBCA_IMM,SBCB_IMM,SBCA_IDX,SBCB_IDX: begin   // SBC
-            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,c_out};
+            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,cc_in[CC_C]};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IMM,ANDCC: begin  // AND, BIT, ANDCC
@@ -163,16 +163,16 @@ always @* begin
             v_out = opnd0[msb] ^ rslt[msb];
         end
         ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROLD_IDX: begin  // ROL, ROLW, ROLD
-            {c_out, rslt} = {opnd0, c_out};
+            {c_out, rslt} = {opnd0, cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
         ABX: rslt = opnd0 + opnd1;  // ABX  
         DAA: begin  // DAA
-            if ( ((c_out) || (opnd0[7:4] > 4'H9)) || ((opnd0[7:4] > 4'H8) && (opnd0[3:0] > 4'H9)) )
+            if (( c_out || opnd0[7:4] > 4'H9 ) || ( opnd0[7:4] > 4'H8 && opnd0[3:0] > 4'H9 ))
                 rslt[7:4] = 4'H6;
             else
                 rslt[7:4] = 4'H0;
-            if ( (h_out) || (opnd0[3:0] > 4'H9))
+            if ( h_out || opnd0[3:0] > 4'H9 )
                 rslt[3:0] = 4'H6;
             else
                 rslt[3:0] = 4'H0;
@@ -185,7 +185,7 @@ always @* begin
         end                
         MUL,LMUL: begin  // MUL, LMUL 
             rslt  = opnd0 * opnd1;
-            c_out = rslt[7];
+            c_out = rslt[msb];
         end
         // 
         ABSA,ABSB,ABSD: begin  // ABS

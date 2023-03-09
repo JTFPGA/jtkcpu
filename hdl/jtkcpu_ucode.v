@@ -25,11 +25,13 @@ module jtkcpu_ucode(
     // status inputs
     input           branch,
     input           alu_busy,
+    input           irq,
 
     // to do: add all status signals from
     // other blocks
 
     // control outputs
+    output reg      inter,
     output          pul_go,
     output          psh_go,
     // to do: add all control signals to other
@@ -80,18 +82,36 @@ wire ni, buserror; // next instruction
 always @* begin
     // to do: fill the rest
     case( op )
-        ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX,ADDD_IMM,ADDD_IDX,ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX,LDX_IMM,LDX_IDX,
-        SUBA_IMM,SUBB_IMM,SUBA_IDX,SUBB_IDX,SUBD_IMM,SUBD_IDX,SBCA_IMM,SBCB_IMM,SBCA_IDX,SBCB_IDX,LDY_IMM,LDY_IDX,
-        CMPA_IMM,CMPB_IMM,CMPA_IDX,CMPB_IDX,CMPD_IMM,CMPD_IDX,CMPX_IMM,CMPX_IDX,CMPY_IMM,CMPY_IDX,LDU_IMM,LDU_IDX,
-        CMPU_IMM,CMPU_IDX,CMPS_IMM,CMPS_IDX,ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,LDS_IMM,LDS_IDX,
-        BITA_IDX,BITB_IMM,EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX,ORA_IMM,ORB_IMM,ORA_IDX,ORB_IDX,ABX,LDD_IMM,LDD_IDX,
-        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,STD,STX,STY,STU,STS,TSTD,TSTW,ANDCC,ABSA,ABSB,ABSD,
-        CLR,CLRA,CLRB,CLRD,CLRW,COMA,COMB,COM,NEGA,NEGB,NEG,NEGD,NEGW,INCA,INCB,INC,INCD,INCW,ORCC,
-        LEAX,LEAY,LEAU,LEAS,DEC,DECA,DECB,DECD,DECW : opcat = SINGLE_ALU; 
-        LSRA,LSRB,LSR,LSRW,LSRD_IMM,LSRD_IDX,ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROLD_IDX,DIV_X_B,SEX,MUL,
-        ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX,ASLA,ASLB,ASL,ASLW,ASLD_IMM,ASLD_IDX,LMUL,DAA: opcat = MULTI_ALU;
-        BSR,BRA,BRN,BHI,BLS,BCC,BCS,BNE,BEQ,BVC,BVS,BPL,BMI,BGE,BLT,BGT,BLE: opcat = SBRANCH;
-        LBSR,LBRA,LBRN,LBHI,LBLS,LBCC,LBCS,LBNE,LBEQ,LBVC,LBVS,LBPL,LBMI,LBGE,LBLT,LBGT,LBLE: opcat = LBRANCH;
+        CMPA_IMM, LDA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, CLRA, INCA, NEGA, ANDCC,
+        CMPB_IMM, LDB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, CLRB, INCB, NEGB,  ORCC,
+        CMPD_IMM, LDD_IMM, BITA_IMM, ADDD_IMM, SUBD_IMM, CLRD, INCD, NEGD,  COMB,
+        CMPX_IMM, LDX_IMM, BITB_IMM, ADCA_IMM, SBCA_IMM, CLRW, INCW, NEGW,  COMA,
+        CMPY_IMM, LDY_IMM, EORA_IMM, ADCB_IMM, SBCB_IMM,  CLR,  INC,  NEG,   COM,
+        CMPU_IMM, LDU_IMM, EORB_IMM,  ORA_IMM,  ORB_IMM,                   
+        CMPS_IMM, LDS_IMM,                                
+
+        CMPA_IDX, LDA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, TSTA, DECA, LEAX, ABSA,
+        CMPB_IDX, LDB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, TSTB, DECB, LEAY, ABSB,
+        CMPD_IDX, LDD_IDX, BITA_IDX, ADDD_IDX, SUBD_IDX, TSTD, DECD, LEAU, ABSD,
+        CMPX_IDX, LDX_IDX, BITB_IDX, ADCA_IDX, SBCA_IDX, TSTW, DECW, LEAS,  ABX,
+        CMPY_IDX, LDY_IDX, EORA_IDX, ADCB_IDX, SBCB_IDX,  TST,  DEC,
+        CMPU_IDX, LDU_IDX, EORB_IDX,  ORA_IDX,  ORB_IDX,                  
+        CMPS_IDX, LDS_IDX:                                    opcat = SINGLE_ALU; 
+
+
+        LSRD_IMM, LSRD_IDX, LSRA, LSRB, LSRW, LSR, DIV_X_B,
+        RORD_IMM, RORD_IDX, RORA, RORB, RORW, ROR,    LMUL,
+        ASRD_IMM, ASRD_IDX, ASRA, ASRB, ASRW, ASR,     MUL,
+        ASLD_IMM, ASLD_IDX, ASLA, ASLB, ASLW, ASL,     SEX,
+        ROLD_IMM, ROLD_IDX, ROLA, ROLB, ROLW, ROL,     DAA:   opcat = MULTI_ALU;
+
+
+        BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 
+        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:          opcat = SBRANCH;
+
+        LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, 
+        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE: opcat = LBRANCH;
+        
         DECX_JNZ:     opcat = LOOPX;
         DECB_JNZ:     opcat = LOOPB;
         MOVE_Y_X_U:   opcat = MOVE;
@@ -104,20 +124,24 @@ always @* begin
         JSR:          opcat = JSR;
         PUSHU, PUSHS: opcat = PSH;
         PULLU, PULLS: opcat = PUL;
-        opcat = STORE;
+        NOP:          opcat = NOP;
+        
+        STA, STB, STD, STX, STY, STU, STS: opcat = STORE;
         default: opcat = BUSERROR; // stop condition
     endcase
 end
 
 always @* begin
     case( op )
-        ADDA_IDX,ADDB_IDX,ADDD_IDX,ADCA_IDX,ADCB_IDX,SUBA_IDX,SUBB_IDX,SUBD_IDX,LDD_IDX,
-        SBCA_IDX,SBCB_IDX,CMPA_IDX,CMPB_IDX,CMPD_IDX,CMPX_IDX,CMPY_IDX,CMPU_IDX,LDX_IDX, 
-        CMPS_IDX,ANDA_IDX,ANDB_IDX,BITA_IDX,BITB_IDX,EORA_IDX,EORB_IDX,LSRD_IDX,LDY_IDX, 
-        RORD_IDX,ASRD_IDX,ASLD_IDX,ROLD_IDX, ORA_IDX, ORB_IDX, LDA_IDX, LDB_IDX,LDU_IDX, 
-        LSRW,LSR,RORW,ROR,ASRW,ASR,ASLW,ASL,ROLW,ROL,LEAX,STX,LEAY,STY,LEAU,STU,LDS_IDX,
-        CLRW,CLR,NEGW,NEG,INCW,INC,DECW,DEC,TSTW,TST,LEAS,STS,STA,STB,STD,COM,JMP,JSR,
-        SETLINES_IDX: idx_src = 1;  
+
+        CMPA_IDX, LDA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LSRD_IDX, LSRW, LSR, CLRW, CLR, LEAX, STX, STA,
+        CMPB_IDX, LDB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, RORD_IDX, RORW, ROR, NEGW, NEG, LEAY, STY, STB,
+        CMPD_IDX, LDD_IDX, BITA_IDX, ADDD_IDX, SUBD_IDX, ASRD_IDX, ASRW, ASR, INCW, INC, LEAU, STU, JMP,
+        CMPX_IDX, LDX_IDX, BITB_IDX, ADCA_IDX, SBCA_IDX, ASLD_IDX, ASLW, ASL, DECW, DEC, LEAS, STS, JSR,
+        CMPY_IDX, LDY_IDX, EORA_IDX, ADCB_IDX, SBCB_IDX, ROLD_IDX, ROLW, ROL, TSTW, TST,       STD, COM,
+        CMPU_IDX, LDU_IDX, EORB_IDX,  ORA_IDX,  ORB_IDX,
+        CMPS_IDX, LDS_IDX, SETLINES_IDX:                    idx_src = 1;       
+
         default: idx_src = 0;
     endcase
 end
@@ -136,6 +160,14 @@ always @(posedge clk) begin
         addr <= 0;  // Reset starts ucode at 0
     end else if(cen && !buserror) begin
         // To do: add the rest of control flow to addr progress
+        
+        if (irq) begin // interrupción activada
+                addr <= vector;
+                inter <= 1;
+        end else begin // interrupción no activada
+                inter <= 0;
+        end
+
         addr <= addr + 1; // when we keep processing an opcode routine
         if( ni ) addr <= {1'd0,opcat,4'd0}; // when a new opcode is read
     end

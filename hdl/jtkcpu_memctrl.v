@@ -51,7 +51,6 @@ localparam IRQ  = 16'hFFF8,
            NMI  = 16'hFFFC,
            RST  = 16'hFFFE;
 
-
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
         addr <= 0;
