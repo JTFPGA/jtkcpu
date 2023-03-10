@@ -106,7 +106,7 @@ jtkcpu_alu u_alu(
     .z_out      ( z_out      ),
     .n_out      ( n_out      ),
     .h_out      ( h_out      ),
-    .busy       ( busy      ),
+    .busy       ( busy       ),
     .rslt       ( rslt       )
 );
 

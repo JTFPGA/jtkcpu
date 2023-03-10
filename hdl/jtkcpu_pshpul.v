@@ -23,8 +23,8 @@ module jtkcpu_pshpul(
 
     input        [ 7:0] op,
     input        [ 7:0] postdata,
-    input        [ 7:0] postctrl,
-    input               post_sel,
+    input        [ 7:0] cc,
+    input               int_en,
 
     input               pul_go,
     input               psh_go,
@@ -38,19 +38,21 @@ module jtkcpu_pshpul(
     output   reg        us_sel
 );
 
+`include "jtkcpu.inc"
+
 wire [7:0] postbyte;
 
 assign idle = psh_sel==0;
-assign postbyte = post_sel ? postctrl : postdata;
+assign postbyte = int_en ? (cc[CC_E] ? 8'hFF : 8'h81) : postdata;
 
 always @(posedge clk or posedge rst) begin 
-    if(rst) begin
+    if( rst ) begin
         psh_sel <= 0;
         hi_lon  <= 0;
         us_sel  <= 0;
         pul_en  <= 0;
         dec_us  <= 0;
-    end else if(cen) begin
+    end else if( cen ) begin
         if( idle ) begin
             pul_en <= 0;
             dec_us <= 0;

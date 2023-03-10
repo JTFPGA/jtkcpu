@@ -25,10 +25,13 @@ module jtkcpu_ctrl(
     input      [ 7:0] postbyte,
 
     input      [ 7:0] psh_bit,
+    input      [ 7:0] cc,
 
     input             halt.
     input             vector,
 
+    output            int_en,
+    output            busy,
 
 
     // to do: connect interrupt
@@ -40,10 +43,12 @@ module jtkcpu_ctrl(
 
 );
 
+`include "jtkcpu.inc"
+
 // to do: signals that are resolved within the
 // module should be here as wires. Watchout for buses
 wire branch;
-wire pul_go, psh_go, idle;
+wire pul_go, psh_go, idle, int_en;
 
 
 jtkcpu_ucode u_ucode(
@@ -55,7 +60,9 @@ jtkcpu_ucode u_ucode(
     .branch     ( branch     ),
     .alu_busy   ( busy       ),
     .irq        ( irq        ),
-    .inter      ( inter      ),
+    .irq        ( firq       ),
+    .irq        ( nmi        ),
+    .inter      ( int_en     ),
     .pul_go     ( pul_go     ),
     .psh_go     ( psh_go     ),
 
@@ -66,6 +73,7 @@ jtkcpu_ucode u_ucode(
 // decoded in hardware, not in ucode:
 
 // to do: add logic to handle interrupts
+
 
 jtkcpu_branch u_branch(
     .op         ( alu_op     ), 
@@ -88,7 +96,9 @@ jtkcpu_pshpul u_pshpul(
     .psh_sel    ( psh_sel    ),
     .idle       ( idle       ),
     .us_sel     ( us_sel     ),
-    .postbyte   ( postbyte   )
+    .postdata   ( postbyte   ),
+    .int_en     ( int_en     ),
+    .cc_in      ( cc         )
 );
 
 endmodule

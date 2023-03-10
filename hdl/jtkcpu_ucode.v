@@ -26,12 +26,14 @@ module jtkcpu_ucode(
     input           branch,
     input           alu_busy,
     input           irq,
+    input           nmi,
+    input           firq,
 
     // to do: add all status signals from
     // other blocks
 
     // control outputs
-    output reg      inter,
+    output reg      int_en,
     output          pul_go,
     output          psh_go,
     // to do: add all control signals to other
@@ -51,25 +53,32 @@ localparam UCODE_AW = 10, // 1024 ucode lines
            UCODE_DW = 24; // Number of control signals
 
 // to do: define localparam with op categories
-localparam [5:0] SINGLE_ALU = 1,
-                 MULTI_ALU  = 2,
-                 SBRANCH    = 3,
-                 LBRANCH    = 4,
-                 LOOPX      = 5,
-                 LOOPB      = 6,
-                 BMOVE      = 7,
-                 MOVE       = 8,
-                 BSETA      = 9,
-                 BSETD      = 10,
-                 RIT        = 11,
-                 RTS        = 12,
-                 JMP        = 13,
-                 JSR        = 14
-                 PSH        = 15,
-                 PUL        = 16,
-                 NOP        = 17, 
-                 SETLINES   = 18, // missing
-                 STORE      = 19; // to do: add more as needed
+localparam [5:0] SINGLE_ALU       = 1,
+                 SINGLE_ALU16     = 2,
+                 SINGLE_ALU_IDX   = 3,
+                 SINGLE_ALU_IDX16 = 4,
+                 MULTI_ALU        = 5,
+                 SBRANCH          = 6,
+                 LBRANCH          = 7,
+                 LOOPX            = 8,
+                 LOOPB            = 9,
+                 BMOVE            = 10,
+                 MOVE             = 11,
+                 BSETA            = 12,
+                 BSETD            = 13,
+                 RTIT             = 14,
+                 RTSR             = 15,
+                 JUMP             = 16,
+                 JMSR             = 17,
+                 PSH              = 18,
+                 PUL              = 19,
+                 NOPE              = 20, 
+                 SETLINES         = 21, // missing
+                 STORE8           = 22,
+                 STORE16          = 23,
+                 FIRQ             = 24,
+                 IRQ              = 25,
+                 NMI              = 26;
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
@@ -80,31 +89,32 @@ wire ni, buserror; // next instruction
 
 // Conversion of opcodes to op category
 always @* begin
-    // to do: fill the rest
-    case( op )
-        CMPA_IMM, LDA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, CLRA, INCA, NEGA, ANDCC,
-        CMPB_IMM, LDB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, CLRB, INCB, NEGB,  ORCC,
-        CMPD_IMM, LDD_IMM, BITA_IMM, ADDD_IMM, SUBD_IMM, CLRD, INCD, NEGD,  COMB,
-        CMPX_IMM, LDX_IMM, BITB_IMM, ADCA_IMM, SBCA_IMM, CLRW, INCW, NEGW,  COMA,
-        CMPY_IMM, LDY_IMM, EORA_IMM, ADCB_IMM, SBCB_IMM,  CLR,  INC,  NEG,   COM,
-        CMPU_IMM, LDU_IMM, EORB_IMM,  ORA_IMM,  ORB_IMM,                   
-        CMPS_IMM, LDS_IMM,                                
 
-        CMPA_IDX, LDA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, TSTA, DECA, LEAX, ABSA,
-        CMPB_IDX, LDB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, TSTB, DECB, LEAY, ABSB,
-        CMPD_IDX, LDD_IDX, BITA_IDX, ADDD_IDX, SUBD_IDX, TSTD, DECD, LEAU, ABSD,
-        CMPX_IDX, LDX_IDX, BITB_IDX, ADCA_IDX, SBCA_IDX, TSTW, DECW, LEAS,  ABX,
-        CMPY_IDX, LDY_IDX, EORA_IDX, ADCB_IDX, SBCB_IDX,  TST,  DEC,
-        CMPU_IDX, LDU_IDX, EORB_IDX,  ORA_IDX,  ORB_IDX,                  
-        CMPS_IDX, LDS_IDX:                                    opcat = SINGLE_ALU; 
+    case( op ) 
 
+        CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, CLRA, INCA, NEGA, ANDCC, COMB,
+        CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM, CLRB, INCB, NEGB,  ORCC, COMA,
+        EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM,  CLR,  INC,  NEG,   COM,
+        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:             opcat = SINGLE_ALU;
+             
+        CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CLRD, INCD, NEGD,  
+        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM, CLRW, INCW, NEGW,                     
+                  CMPS_IMM, LDS_IMM:                                 opcat = SINGLE_ALU16; 
+
+        CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX, ABSA, ABSB,
+        CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX, TSTA, DECA,  
+        EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX, TSTB, DECB,       
+        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX,  TST,  DEC: opcat = SINGLE_ALU_IDX;              
+        
+        CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX, DECD, TSTD, ABSD,
+        CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX, DECW, TSTW, ABX,
+        CMPY_IDX,           LDY_IDX:                                 opcat = SINGLE_ALU_IDX16; 
 
         LSRD_IMM, LSRD_IDX, LSRA, LSRB, LSRW, LSR, DIV_X_B,
         RORD_IMM, RORD_IDX, RORA, RORB, RORW, ROR,    LMUL,
         ASRD_IMM, ASRD_IDX, ASRA, ASRB, ASRW, ASR,     MUL,
         ASLD_IMM, ASLD_IDX, ASLA, ASLB, ASLW, ASL,     SEX,
         ROLD_IMM, ROLD_IDX, ROLA, ROLB, ROLW, ROL,     DAA:   opcat = MULTI_ALU;
-
 
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 
         BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:          opcat = SBRANCH;
@@ -118,15 +128,16 @@ always @* begin
         BMOVE_Y_X_U:  opcat = BMOVE;
         BSETA_X_U:    opcat = BSETA;
         BSETD_X_U:    opcat = BSETD;
-        RTI:          opcat = RIT;
-        RTS:          opcat = RTS;
-        JMP:          opcat = JMP;
-        JSR:          opcat = JSR;
+        RTI:          opcat = RTIT;
+        RTS:          opcat = RTSR;
+        JMP:          opcat = JUMP;
+        JSR:          opcat = JMSR;
         PUSHU, PUSHS: opcat = PSH;
         PULLU, PULLS: opcat = PUL;
-        NOP:          opcat = NOP;
+        NOP:          opcat = NOPE;
         
-        STA, STB, STD, STX, STY, STU, STS: opcat = STORE;
+        STA, STB:                opcat = STORE8;
+        STD, STX, STY, STU, STS: opcat = STORE16;
         default: opcat = BUSERROR; // stop condition
     endcase
 end
@@ -153,23 +164,28 @@ end
 
 // to do: add all output signals to come
 // from the current memory row being read
-assign { /* add other control signals */ psh_go, pul_go, buserror, ni } = mem[addr];
+assign { int_en, psh_go, pul_go, buserror, ni } = mem[addr];
 
 always @(posedge clk) begin
     if( rst ) begin
         addr <= 0;  // Reset starts ucode at 0
-    end else if(cen && !buserror) begin
+        int_en <= 0;  
+    end else if( cen && !buserror ) begin
         // To do: add the rest of control flow to addr progress
         
-        if (irq) begin // interrupción activada
-                addr <= vector;
-                inter <= 1;
-        end else begin // interrupción no activada
-                inter <= 0;
-        end
+        if ( irq ) begin // interrupt enabled irq
+            addr <= { 1'd0, IRQ, 4'd0 };
+            int_en <= 1;
+        end else if( nmi ) begin  // interrupt enabled nmi
+                addr <= { 1'd0, NMI, 4'd0 };
+        end else if ( firq ) begin  // interrupt enabled firq
+             addr <= { 1'd0, FIRQ, 4'd0 };
+             int_en = 1;
+        end else    // interrupt disabled
+            int_en = 0
 
         addr <= addr + 1; // when we keep processing an opcode routine
-        if( ni ) addr <= {1'd0,opcat,4'd0}; // when a new opcode is read
+        if( ni ) addr <= { 1'd0, opcat, 4'd0 }; // when a new opcode is read
     end
 end
 

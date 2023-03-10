@@ -168,7 +168,7 @@ always @* begin
         end
         ABX: rslt = opnd0 + opnd1;  // ABX  
         DAA: begin  // DAA
-            if (( c_out || opnd0[7:4] > 4'H9 ) || ( opnd0[7:4] > 4'H8 && opnd0[3:0] > 4'H9 ))
+            if ( c_out || opnd0[7:4] > 4'H9 || (opnd0[7:4] > 4'H8 && opnd0[3:0] > 4'H9 ))
                 rslt[7:4] = 4'H6;
             else
                 rslt[7:4] = 4'H0;
