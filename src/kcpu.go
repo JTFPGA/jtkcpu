@@ -20,7 +20,7 @@ type Mame struct {
 	Machines []Machine `xml:"machine"`
 }
 
-func main() {
+func ShowGames() {
 	buf, e := ioutil.ReadFile("mame.xml")
 	if e!= nil {
 		log.Fatal(e)
