@@ -43,7 +43,7 @@ module jtkcpu_pshpul(
 wire [7:0] postbyte;
 
 assign idle = psh_sel==0;
-assign postbyte = int_en ? (cc[CC_E] ? 8'hFF : 8'h81) : postdata;
+assign postbyte = int_en ? ( cc[CC_E] ? 8'hFF : 8'h81 ) : postdata;
 
 always @(posedge clk or posedge rst) begin 
     if( rst ) begin

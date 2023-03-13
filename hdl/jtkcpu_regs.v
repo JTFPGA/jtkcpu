@@ -67,36 +67,37 @@ assign psh_other = psh_ussel ? s : u;
 // exg/tfr mux
 always @* begin
 
-        case(op_sel[7:4] )
-            4'b0000: mux = {a, b};
-            4'b0001: mux = x;
-            4'b0010: mux = y;
-            4'b0011: mux = u;
-            4'b0100: mux = s;
-            4'b0101: mux = pc;
-            4'b1000: mux = {8'hFF,  a};
-            4'b1001: mux = {8'hFF,  b};
-            4'b1010: mux = {8'hFF, cc};
-            4'b1011: mux = {8'hFF, dp};
-            default: mux = 0;
-        endcase 
+    case(op_sel[7:4] )
+        4'b0000: mux = {a, b};
+        4'b0001: mux = x;
+        4'b0010: mux = y;
+        4'b0011: mux = u;
+        4'b0100: mux = s;
+        4'b0101: mux = pc;
+        4'b1000: mux = {8'hFF,  a};
+        4'b1001: mux = {8'hFF,  b};
+        4'b1010: mux = {8'hFF, cc};
+        4'b1011: mux = {8'hFF, dp};
+        default: mux = 0;
+    endcase 
 
-        case( op_sel[3:0] )
-            4'b0000: d_mux = {a, b};
-            4'b0001: d_mux = x;
-            4'b0010: d_mux = y;
-            4'b0011: d_mux = u;
-            4'b0100: d_mux = s;
-            4'b0101: d_mux = pc;
-            4'b1000: d_mux = {8'hFF,  a};
-            4'b1001: d_mux = {8'hFF,  b};
-            4'b1010: d_mux = {8'hFF, cc};
-            4'b1011: d_mux = {8'hFF, dp};
-            default: d_mux = 0; 
-        endcase 
+    case( op_sel[3:0] )
+        4'b0000: d_mux = {a, b};
+        4'b0001: d_mux = x;
+        4'b0010: d_mux = y;
+        4'b0011: d_mux = u;
+        4'b0100: d_mux = s;
+        4'b0101: d_mux = pc;
+        4'b1000: d_mux = {8'hFF,  a};
+        4'b1001: d_mux = {8'hFF,  b};
+        4'b1010: d_mux = {8'hFF, cc};
+        4'b1011: d_mux = {8'hFF, dp};
+        default: d_mux = 0; 
+    endcase 
     
 end
 
+// Missing ALU-REG-MUX
 
 // U/S next value
 always @* begin

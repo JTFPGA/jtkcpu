@@ -31,7 +31,11 @@ module jtkcpu_ctrl(
     input             vector,
 
     output            int_en,
-    output            busy,
+    output            alu_busy,
+    output            men_busy,
+    output            irq,
+    output            nmi,
+    output            firq,
 
 
     // to do: connect interrupt
@@ -56,13 +60,14 @@ jtkcpu_ucode u_ucode(
     .clk        ( clk        ),
     .cen        ( cen        ),
 
-    .op         ( alu_op     ), 
+    .op         ( op         ), 
     .branch     ( branch     ),
-    .alu_busy   ( busy       ),
+    .alu_busy   ( alu_busy   ),
+    .men_busy   ( mem_busy   ),
     .irq        ( irq        ),
-    .irq        ( firq       ),
-    .irq        ( nmi        ),
-    .inter      ( int_en     ),
+    .nmi        ( nmi        ),
+    .firq       ( firq       ),
+    .int_en     ( int_en     ),
     .pul_go     ( pul_go     ),
     .psh_go     ( psh_go     ),
 
@@ -76,7 +81,7 @@ jtkcpu_ucode u_ucode(
 
 
 jtkcpu_branch u_branch(
-    .op         ( alu_op     ), 
+    .op         ( op         ), 
     .cc         ( cc         ), 
     .branch     ( branch     ) 
 );
@@ -86,7 +91,10 @@ jtkcpu_pshpul u_pshpul(
     .clk        ( clk        ),
     .cen        ( cen        ),
 
-    .op         ( alu_op     ), 
+    .op         ( op         ), 
+    .postdata   ( postbyte   ),
+    .cc         ( cc         ),
+    .int_en     ( int_en     ),
     .pul_go     ( pul_go     ),
     .psh_go     ( psh_go     ),
     .psh_bit    ( psh_bit    ),
@@ -95,10 +103,7 @@ jtkcpu_pshpul u_pshpul(
     .dec_us     ( dec_us     ),
     .psh_sel    ( psh_sel    ),
     .idle       ( idle       ),
-    .us_sel     ( us_sel     ),
-    .postdata   ( postbyte   ),
-    .int_en     ( int_en     ),
-    .cc_in      ( cc         )
+    .us_sel     ( us_sel     )
 );
 
 endmodule

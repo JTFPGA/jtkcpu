@@ -25,6 +25,7 @@ module jtkcpu_ucode(
     // status inputs
     input           branch,
     input           alu_busy,
+    input           mem_busy
     input           irq,
     input           nmi,
     input           firq,
@@ -36,6 +37,8 @@ module jtkcpu_ucode(
     output reg      int_en,
     output          pul_go,
     output          psh_go,
+    output          
+
     // to do: add all control signals to other
     // blocks that will be generated here
 );
@@ -58,27 +61,28 @@ localparam [5:0] SINGLE_ALU       = 1,
                  SINGLE_ALU_IDX   = 3,
                  SINGLE_ALU_IDX16 = 4,
                  MULTI_ALU        = 5,
-                 SBRANCH          = 6,
-                 LBRANCH          = 7,
-                 LOOPX            = 8,
-                 LOOPB            = 9,
-                 BMOVE            = 10,
-                 MOVE             = 11,
-                 BSETA            = 12,
-                 BSETD            = 13,
-                 RTIT             = 14,
-                 RTSR             = 15,
-                 JUMP             = 16,
-                 JMSR             = 17,
-                 PSH              = 18,
-                 PUL              = 19,
-                 NOPE              = 20, 
-                 SETLINES         = 21, // missing
-                 STORE8           = 22,
-                 STORE16          = 23,
-                 FIRQ             = 24,
-                 IRQ              = 25,
-                 NMI              = 26;
+                 WMEM_ALU         = 6,
+                 SBRANCH          = 7,
+                 LBRANCH          = 8,
+                 LOOPX            = 9,
+                 LOOPB            = 10,
+                 BMOVE            = 11,
+                 MOVE             = 12,
+                 BSETA            = 13,
+                 BSETD            = 14,
+                 RTIT             = 15,
+                 RTSR             = 16,
+                 JUMP             = 17,
+                 JMSR             = 18,
+                 PSH              = 19,
+                 PUL              = 20,
+                 NOPE             = 21, 
+                 SETLINES         = 22, // missing
+                 STORE8           = 23,
+                 STORE16          = 24,
+                 FIRQ             = 25,
+                 IRQ              = 26,
+                 NMI              = 27;
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
@@ -98,7 +102,7 @@ always @* begin
         EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:             opcat = SINGLE_ALU;
              
         CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CLRD, INCD, NEGD,  
-        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM, CLRW, INCW, NEGW,                     
+        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,                      
                   CMPS_IMM, LDS_IMM:                                 opcat = SINGLE_ALU16; 
 
         CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX, ABSA, ABSB,
@@ -107,14 +111,16 @@ always @* begin
         EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX,  TST,  DEC: opcat = SINGLE_ALU_IDX;              
         
         CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX, DECD, TSTD, ABSD,
-        CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX, DECW, TSTW, ABX,
+        CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,  ABX,
         CMPY_IDX,           LDY_IDX:                                 opcat = SINGLE_ALU_IDX16; 
 
-        LSRD_IMM, LSRD_IDX, LSRA, LSRB, LSRW, LSR, DIV_X_B,
-        RORD_IMM, RORD_IDX, RORA, RORB, RORW, ROR,    LMUL,
-        ASRD_IMM, ASRD_IDX, ASRA, ASRB, ASRW, ASR,     MUL,
-        ASLD_IMM, ASLD_IDX, ASLA, ASLB, ASLW, ASL,     SEX,
-        ROLD_IMM, ROLD_IDX, ROLA, ROLB, ROLW, ROL,     DAA:   opcat = MULTI_ALU;
+        LSRD_IMM, LSRD_IDX, LSRA, LSRB, LSR, DIV_X_B,
+        RORD_IMM, RORD_IDX, RORA, RORB, ROR,    LMUL,
+        ASRD_IMM, ASRD_IDX, ASRA, ASRB, ASR,     MUL,
+        ASLD_IMM, ASLD_IDX, ASLA, ASLB, ASL,     SEX,
+        ROLD_IMM, ROLD_IDX, ROLA, ROLB, ROL,     DAA:                opcat = MULTI_ALU;
+
+        LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
 
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 
         BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:          opcat = SBRANCH;
@@ -162,10 +168,6 @@ end
 //     $readmemh( mem, "jtkcpu_ucode.hex");
 // end
 
-// to do: add all output signals to come
-// from the current memory row being read
-assign { int_en, psh_go, pul_go, buserror, ni } = mem[addr];
-
 always @(posedge clk) begin
     if( rst ) begin
         addr <= 0;  // Reset starts ucode at 0
@@ -184,7 +186,7 @@ always @(posedge clk) begin
         end else    // interrupt disabled
             int_en = 0
 
-        addr <= addr + 1; // when we keep processing an opcode routine
+        if ( !mem_busy ) addr <= addr + 1; // when we keep processing an opcode routine
         if( ni ) addr <= { 1'd0, opcat, 4'd0 }; // when a new opcode is read
     end
 end

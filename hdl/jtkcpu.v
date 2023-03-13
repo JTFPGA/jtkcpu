@@ -47,12 +47,12 @@ wire [ 7:0] alu_op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
 wire [ 2:0] idx_sel;
 wire [ 2:0] vector;
-wire        busy;
+wire        alu_busy, men_busy;
 wire        idx_en,psh_en;
 wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
 wire        indirect, branch; 
-wire        hi_lon, pul_en, dec_us, us_sel;
+wire        pul_en, dec_us, us_sel;
 
 jtkcpu_ctrl u_ctrl(
     .rst        ( rst        ),
@@ -60,13 +60,15 @@ jtkcpu_ctrl u_ctrl(
     .cen        ( cen        ),
 
     .op         ( alu_op     ), 
+    .postbyte   ( postbyte   ),
     .psh_bit    ( psh_bit    ),
-    .hi_lon     ( hi_lon     ),
+    .cc         ( cc         ),
     .pul_en     ( pul_en     ),
     .dec_us     ( dec_us     ),
     .psh_sel    ( psh_sel    ),
     .us_sel     ( us_sel     ),
-    .postbyte   ( postbyte   )
+    .alu_busy   ( alu_busy   ),
+    .men_busy   ( men_busy   )
 
     // to do: fill in the rest
 );
@@ -76,14 +78,14 @@ jtkcpu_memctrl u_memctrl(
     .clk        ( clk        ),
     .cen        ( cen        ),
 
-    .addr       ( addr       ),
-    .din        ( din        ),
-    .idx_addr   ( idx_addr   ),
-    .psh_addr   ( psh_addr   ),
     .pc         ( pc         ),
     .dp         ( dp         ),
+    .idx_addr   ( idx_addr   ),
+    .psh_addr   ( psh_addr   ),
     .data       ( data       ),
-    .busy       ( busy       ),
+    .busy       ( mem_busy   ),
+    .addr       ( addr       ),
+    .din        ( din        ),
     .halt       ( halt       ),
     .idx_en     ( idx_en     ),
     .psh_en     ( psh_en     ),
@@ -106,7 +108,7 @@ jtkcpu_alu u_alu(
     .z_out      ( z_out      ),
     .n_out      ( n_out      ),
     .h_out      ( h_out      ),
-    .busy       ( busy       ),
+    .busy       ( alu_busy   ),
     .rslt       ( rslt       )
 );
 
