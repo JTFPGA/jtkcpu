@@ -29,6 +29,10 @@ module jtkcpu_memctrl(
     input      [15:0] idx_addr,
     input      [15:0] psh_addr,
 
+    // memory interface
+    input      [ 7:0] din,
+    output reg [15:0] addr
+    
     // Data fetched can be 8 or 16 bits
     output reg [15:0] data,
     output reg        busy, // data not ready
@@ -39,9 +43,6 @@ module jtkcpu_memctrl(
     input             psh_en,
     input      [ 2:0] vector, // interrupt vectors
 
-    // memory interface
-    input      [ 7:0] din,
-    output reg [15:0] addr
 );
 
 // To do: fill in the vectors for each interrupt type

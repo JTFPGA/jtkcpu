@@ -34,7 +34,7 @@ module jtkcpu_pshpul(
     output   reg        dec_us,
 
     output   reg [ 7:0] psh_sel,
-    output              idle,
+    output              busy,
     output   reg        us_sel
 );
 
@@ -42,7 +42,7 @@ module jtkcpu_pshpul(
 
 wire [7:0] postbyte;
 
-assign idle = psh_sel==0;
+assign busy = psh_sel!=0;
 assign postbyte = int_en ? ( cc[CC_E] ? 8'hFF : 8'h81 ) : postdata;
 
 always @(posedge clk or posedge rst) begin 
@@ -53,7 +53,7 @@ always @(posedge clk or posedge rst) begin
         pul_en  <= 0;
         dec_us  <= 0;
     end else if( cen ) begin
-        if( idle ) begin
+        if( !busy ) begin
             pul_en <= 0;
             dec_us <= 0;
             if( psh_go || pul_go ) begin

@@ -39,7 +39,7 @@ module jtkcpu(
 );
 
 wire [15:0] opnd0, opnd1, rslt; 
-wire [15:0] data, idx_reg, mux, acc;
+wire [15:0] data, idx_reg, mux, d_mux, acc;
 wire [15:0] idx_addr, psh_addr;
 wire [15:0] x, y, u, s, pc, nx_u, nx_s; 
 wire [ 7:0] a, b, cc, dp;
@@ -47,8 +47,8 @@ wire [ 7:0] alu_op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
 wire [ 2:0] idx_sel;
 wire [ 2:0] vector;
-wire        alu_busy, men_busy;
-wire        idx_en,psh_en;
+wire        alu_busy, mem_busy;
+wire        idx_en,psh_en, hi_lon;
 wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
 wire        indirect, branch; 
@@ -63,12 +63,16 @@ jtkcpu_ctrl u_ctrl(
     .postbyte   ( postbyte   ),
     .psh_bit    ( psh_bit    ),
     .cc         ( cc         ),
+    .halt       ( halt       ),
+    .irq        ( irq        ),
+    .firq       ( firq       ),
+    .nmi        ( nmi        ),
     .pul_en     ( pul_en     ),
     .dec_us     ( dec_us     ),
     .psh_sel    ( psh_sel    ),
     .us_sel     ( us_sel     ),
     .alu_busy   ( alu_busy   ),
-    .men_busy   ( men_busy   )
+    .mem_busy   ( mem_busy   )
 
     // to do: fill in the rest
 );
@@ -82,10 +86,10 @@ jtkcpu_memctrl u_memctrl(
     .dp         ( dp         ),
     .idx_addr   ( idx_addr   ),
     .psh_addr   ( psh_addr   ),
+    .din        ( din        ),
+    .addr       ( addr       ),
     .data       ( data       ),
     .busy       ( mem_busy   ),
-    .addr       ( addr       ),
-    .din        ( din        ),
     .halt       ( halt       ),
     .idx_en     ( idx_en     ),
     .psh_en     ( psh_en     ),
@@ -103,12 +107,12 @@ jtkcpu_alu u_alu(
     .opnd0      ( opnd0      ), 
     .opnd1      ( opnd1      ), 
     .cc_in      ( cc         ),
+    .busy       ( alu_busy   ),
     .c_out      ( c_out      ),
     .v_out      ( v_out      ),
     .z_out      ( z_out      ),
     .n_out      ( n_out      ),
     .h_out      ( h_out      ),
-    .busy       ( alu_busy   ),
     .rslt       ( rslt       )
 );
 
@@ -117,17 +121,14 @@ jtkcpu_regs u_regs(
     .clk        ( clk        ),
     .cen        ( cen        ),
 
-    .op_sel     ( alu_op     ), 
+    .pc         ( pc         ),
+    .cc         ( cc         ),
+    .op         ( alu_op     ), 
+    .op_sel     ( postbyte   ), 
     .psh_sel    ( psh_sel    ),
     .psh_hilon  ( hi_lon     ),
     .psh_ussel  ( us_sel     ),
     .pul_en     ( pul_en     ),
-    .psh_mux    ( psh_mux    ),
-    .psh_bit    ( psh_bit    ),
-    .psh_addr   ( psh_addr   ), // to do: rename connection to psh_addr
-    .dec_us     ( dec_us     ),
-    .cc         ( cc         ),
-    .pc         ( pc         ),
     .alu        ( rslt       ),
     .up_a       ( up_a       ),
     .up_b       ( up_b       ),
@@ -136,13 +137,18 @@ jtkcpu_regs u_regs(
     .up_y       ( up_y       ),
     .up_u       ( up_u       ),
     .up_s       ( up_s       ),
+    .dec_us     ( dec_us     ),
     .mux        ( mux        ),
-    .idx_reg    ( idx_reg    ),
-    .acc        ( acc        ),
-    .up_pul_cc  ( up_cc      ),
-    .up_pul_pc  ( up_pc      ),
+    .d_mux      ( d_mux      ),
     .nx_u       ( nx_u       ),
-    .nx_s       ( nx_s       )
+    .nx_s       ( nx_s       ),
+    .idx_reg    ( idx_reg    ),
+    .psh_addr   ( psh_addr   ), 
+    .acc        ( acc        ),
+    .psh_mux    ( psh_mux    ),
+    .psh_bit    ( psh_bit    ),
+    .up_pul_cc  ( up_cc      ),
+    .up_pul_pc  ( up_pc      )
 );
 
 jtkcpu_idx u_idx(
@@ -150,13 +156,13 @@ jtkcpu_idx u_idx(
     .clk        ( clk        ), 
     .cen        ( cen        ),
 
-    .postbyte   ( postbyte   ), 
     .idx_reg    ( idx_reg    ), 
+    .data       ( data       ), 
+    .postbyte   ( postbyte   ), 
     .a          ( a          ), 
     .b          ( b          ), 
-    .data       ( data       ), 
+    .idx_addr   ( idx_addr   ), 
     .idx_sel    ( idx_sel    ), 
-    .idx_addr   ( idx_addr   ), // to do: rename output connection to idx_addr
     .indirect   ( indirect   )
 );
 

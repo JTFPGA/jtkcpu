@@ -134,7 +134,7 @@ func make_assign( all []string ) (s string ) {
 		if !first {
 			s += fmt.Sprintf(", ")
 		}
-		if k>0 && ((k+1)%4==0) {
+		if k>0 && ((k+1)%1==0) {
 			s += fmt.Sprintf("\n        ")
 		}
 		s += fmt.Sprintf( "%s", tr(all[k]) )

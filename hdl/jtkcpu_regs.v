@@ -21,14 +21,14 @@ module jtkcpu_regs(
     input               clk,
     input               cen,
 
-    // input        [ 7:0] op,
-    input        [ 7:0] op_sel,     // op code used to select specific registers
+    input        [15:0] pc,
+    input        [ 7:0] cc,
+    input        [ 7:0] op,         // op code used to select specific registers
+    input        [ 7:0] op_sel,     // postbyte used to select specific registers
     input        [ 7:0] psh_sel,
     input               psh_hilon,
     input               psh_ussel,
     input               pul_en,
-    input        [ 7:0] cc,
-    input        [15:0] pc,
 
     // Register update
     input        [15:0] alu,
@@ -44,13 +44,13 @@ module jtkcpu_regs(
 
     output   reg [15:0] mux,
     output   reg [15:0] d_mux,
-    output   reg [ 7:0] psh_mux,
-    output   reg [ 7:0] psh_bit,
     output   reg [15:0] nx_u,    
     output   reg [15:0] nx_s,    
     output   reg [15:0] idx_reg,
     output       [15:0] psh_addr,
     output       [15:0] acc,
+    output   reg [ 7:0] psh_mux,
+    output   reg [ 7:0] psh_bit,
     output   reg        up_pul_cc,
     output   reg        up_pul_pc
 );
@@ -66,7 +66,6 @@ assign psh_other = psh_ussel ? s : u;
 
 // exg/tfr mux
 always @* begin
-
     case(op_sel[7:4] )
         4'b0000: mux = {a, b};
         4'b0001: mux = x;
@@ -93,11 +92,38 @@ always @* begin
         4'b1010: d_mux = {8'hFF, cc};
         4'b1011: d_mux = {8'hFF, dp};
         default: d_mux = 0; 
-    endcase 
-    
+    endcase   
 end
 
 // Missing ALU-REG-MUX
+always @* begin 
+    case ( op )
+        // ADDA_IMM, SUBA_IMM, ANDA_IMM, EORA_IMM, ORA_IMM, CLRA, NEGA, ASRA,
+        // ADDA_IDX, SUBA_IDX, ANDA_IDX, EORA_IDX, ORA_IDX, COMA, TSTA, ASLA,
+        // ADCA_IMM, SBCA_IMM, BITA_IMM, CMPA_IMM, LDA_IMM, DECA, LSRA, ROLA, SEX,
+        // ADCA_IDX, SBCA_IDX, BITA_IDX, CMPA_IDX, LDA_IDX, INCA, RORA,  DAA, STA: 
+
+        ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
+        ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB,
+        ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, LDB_IDX, DECB, LSRB, ROLB,
+        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, LDB_IMM, INCB, RORB, ABSB, STB: mux_reg = b;
+
+        ANDCC, ORCC: mux_reg = cc;
+
+        LDD_IMM, CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,     
+        LDD_IDX, CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX, STD: mux_reg = {a, b};      
+        
+        LDX_IMM, LDX_IDX, CMPX_IMM, CMPX_IDX, ABX, STX: mux_reg = x;
+
+        LDY_IMM, LDY_IDX, CMPY_IMM, CMPY_IDX, STY:      mux_reg = y;
+
+        LDU_IMM, LDU_IDX, CMPU_IMM, CMPU_IDX, STU:      mux_reg = u;
+
+        LDS_IMM, LDS_IDX, CMPS_IMM, CMPS_IDX, STS:      mux_reg = s;
+
+        default : mux_reg = a;
+    endcase
+end
 
 // U/S next value
 always @* begin
@@ -127,7 +153,6 @@ always @* begin
         else 
             nx_u[ 7:0] = alu[7:0]; 
     end
-
 end
 
 // PUSH

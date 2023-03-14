@@ -25,7 +25,7 @@ module jtkcpu_ucode(
     // status inputs
     input           branch,
     input           alu_busy,
-    input           mem_busy
+    input           mem_busy,
     input           irq,
     input           nmi,
     input           firq,
@@ -35,13 +35,42 @@ module jtkcpu_ucode(
 
     // control outputs
     output reg      int_en,
-    output          pul_go,
-    output          psh_go,
-    output          
-
+    output          we, 
+    output          pul_go, 
+    output          psh_go, 
+    output          pshpc, 
+    output          pshcc, 
+    output          pshall, 
+    output          set_pc_xnz_branch, 
+    output          set_pc_bnz_branch, 
+    output          set_pc_vector, 
+    output          set_pc_puls, 
+    output          set_pc_branch, 
+    output          set_opn0_regs, 
+    output          set_opn0_d, 
+    output          set_opn0_a, 
+    output          mem16, 
+    output          incx, 
+    output          ifirq_pulall, 
+    output          iffirq_pulpc, 
+    output          iffirq_pulcc, 
+    output          set_i, 
+    output          set_f, 
+    output          extsgn, 
+    output          set_e, 
+    output          clr_e, 
+    output          decx, 
+    output          decu, 
+    output          decb, 
+    output          adry, 
+    output          adrx, 
+    output          adridx
+    
     // to do: add all control signals to other
     // blocks that will be generated here
 );
+
+`include "jtkcpu.inc"
 
 // Op codes = 8 bits, many op-codes will be parsed in the
 // same way. Let's assume we only need 64 ucode routines
@@ -90,6 +119,8 @@ reg [OPCAT_AW-1:0] opcat;
 reg                idx_src; // instruction requires idx decoding first to grab the source operand
 
 wire ni, buserror; // next instruction
+wire waituz, wait16;  
+
 
 // Conversion of opcodes to op category
 always @* begin
@@ -175,7 +206,7 @@ always @(posedge clk) begin
     end else if( cen && !buserror ) begin
         // To do: add the rest of control flow to addr progress
         
-        if ( irq ) begin // interrupt enabled irq
+        if( irq ) begin // interrupt enabled irq
             addr <= { 1'd0, IRQ, 4'd0 };
             int_en <= 1;
         end else if( nmi ) begin  // interrupt enabled nmi
@@ -184,9 +215,9 @@ always @(posedge clk) begin
              addr <= { 1'd0, FIRQ, 4'd0 };
              int_en = 1;
         end else    // interrupt disabled
-            int_en = 0
+            int_en = 0;
 
-        if ( !mem_busy ) addr <= addr + 1; // when we keep processing an opcode routine
+        if( !mem_busy ) addr <= addr + 1; // when we keep processing an opcode routine
         if( ni ) addr <= { 1'd0, opcat, 4'd0 }; // when a new opcode is read
     end
 end

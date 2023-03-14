@@ -301,3 +301,22 @@ always @* begin
         endcase    
     end    
 end
+
+
+casez ( op )
+    8'b0001???0: mux_reg = a;
+    8'b0001???1: mux_reg = b;
+    8'b0010???0: mux_reg = a;
+    8'b0010???1: mux_reg = b;
+    8'b00110??0: mux_reg = a;
+    8'b00110??1: mux_reg = b;
+    
+    8'b0011110?: mux_reg = cc;
+
+    mux_reg = x;
+    mux_reg = y;
+    mux_reg = u;
+    mux_reg = s;
+
+    default : mux_reg = 0;
+endcase
