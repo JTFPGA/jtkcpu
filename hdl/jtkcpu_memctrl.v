@@ -21,8 +21,8 @@
 module jtkcpu_memctrl(
     input             rst,
     input             clk,
-    input             cen,      // This should 2x faster than the rest of the CPU
-    input             ctl_cen,  // cen of the control unit
+    input             cen2,      // This should 2x faster than the rest of the CPU
+    input             cen,  // cen2 of the control unit
 
     // inputs to address mux
     input      [15:0] pc,
@@ -47,7 +47,7 @@ module jtkcpu_memctrl(
     input             halt,   // hold the current address
     input             idx_en,
     input             psh_en,
-    input      [ 2:0] intvec, // interrupt number. Set after the register pushing step
+    input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
 
     // Write requests
     input      [15:0] alu_dout,
@@ -57,7 +57,6 @@ module jtkcpu_memctrl(
 // To do: fill in the vectors for each interrupt type
 localparam FIRQ = 16'hFFF6,
            IRQ  = 16'hFFF8,
-           // SWI  = 16'hFFFA, // was this in a table too? The M6809 has, but Konami don't have this instructions
            NMI  = 16'hFFFC,
            RST  = 16'hFFFE;
 
@@ -71,7 +70,7 @@ always @(posedge clk, posedge rst) begin
         up_pc <= 0;
         is_op <= 0;
         we    <= 0;
-    end else if( cen && !halt ) begin
+    end else if( cen2 && !halt ) begin
         // signals active for a single clock cycle:
         up_pc <= 0;
         we    <= 0;
@@ -96,19 +95,18 @@ always @(posedge clk, posedge rst) begin
                     busy <= 1;
                     dout <= alu_dout[15:8];
                 end
-                if( wrq && ctl_cen ) we <= 1;
+                if( wrq && cen ) we <= 1;
             end
             // interrupt vectors
-            if( intvec!=0 && !busy ) begin
+            if( intvec!=0 ) begin
                 busy   <= 1;
                 is_op  <= 0;
                 is_int <= 1;
                 case( intvec )
-                    1: addr <= IRQ;
-                    2: addr <= FIRQ;
-                    3: addr <= NMI;
-                    4: addr <= RST;
-                    // to do: fill in the rest
+                    4'b0001: addr <= IRQ;
+                    4'b0010: addr <= FIRQ;
+                    4'b0100: addr <= NMI;
+                    4'b1000: addr <= RST;
                     default:; // Leave code 0 free
                 endcase
             end

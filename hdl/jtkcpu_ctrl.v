@@ -40,10 +40,7 @@ module jtkcpu_ctrl(
     output            pul_en,
     output            dec_us,
     output            psh_sel,
-
-
-    // to do: connect interrupt
-    // from jtkcpu top level
+    output            intvec
 
     // to do: add status signals from other modules as inputs
 

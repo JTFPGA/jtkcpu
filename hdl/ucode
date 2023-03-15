@@ -19,6 +19,10 @@
 # Solves an ALU operation in a single clock
 # Will wait for OPN1 to be ready
 
+
+RESET: PC=RST
+       NI 
+
 NOPE: NI
 
 SINGLE_ALU:       OPN0=REGS, OPN1=MEM, UPREGS=ALU 
@@ -55,14 +59,18 @@ MOVE:  ADRY
        OPN0=MEM, WE, ADRX, DECU, INCY, INCX
        NI
 
-BMOVE: ADRY  
-       OPN0=MEM, WE, ADRX, DECU, INCY, INCX, WAITUZ
+BMOVE: ADRY, OPN0=MEM 
+       WE, ADRX, DECU 
+       INCY, INCX, BACK
+       WAITUZ
        NI
 
 BSETA: OPN0=A, WE, ADRX, INCX, DECU, WAITUZ
        NI
 
-BSETD: OPN0=D, MEM16, WE, ADRX, DECU, INCX, WAITUZ 
+BSETD: OPN0=D, MEM16 
+       WE, ADRX, DECU, INCX
+       WAITUZ 
        NI 
 
 JUMP: PC=BRANCH, MEM16 
@@ -70,8 +78,7 @@ JUMP: PC=BRANCH, MEM16
 
 JMSR: PC=BRANCH, MEM16, NI
 
-RTIT: IFIRQ_PULALL, IFFIRQ_PULPC, IFFIRQ_PULCC
-      NI
+RTIT: NI
 
 RTSR: PC=PULS, NI
 
@@ -83,13 +90,16 @@ PUL:  PUL_GO
       OPN0=REGS, WE, WAITPUL
       NI
 
-FIRQ: E=0, PSHPC, PSHCC, F=1, I=1, PC=VECTOR
+FIRQ: E=0, PSHPC, PSHCC, F=1, I=1 
+      PC=FIRQ
       NI
 
-IRQ:  E=1, PSHALL, I=1, PC=VECTOR 
+IRQ:  E=1, PSHALL, I=1 
+      PC=IRQ 
       NI
 
-NMI:  E=1, PSHALL, I=1, F=1, PC=VECTOR 
+NMI:  E=1, PSHALL, I=1, F=1 
+      PC=NMI 
       NI
 
 SETLINES: ???

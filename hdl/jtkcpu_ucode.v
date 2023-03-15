@@ -35,7 +35,7 @@ module jtkcpu_ucode(
 
     // control outputs
     output reg      int_en,
-    output          we, 
+    output          we,  
     output          pul_go, 
     output          psh_go, 
     output          pshpc, 
@@ -43,7 +43,7 @@ module jtkcpu_ucode(
     output          pshall, 
     output          set_pc_xnz_branch, 
     output          set_pc_bnz_branch, 
-    output          set_pc_vector, 
+    output          set_pc_rst, 
     output          set_pc_puls, 
     output          set_pc_branch, 
     output          set_opn0_regs, 
@@ -51,9 +51,6 @@ module jtkcpu_ucode(
     output          set_opn0_a, 
     output          mem16, 
     output          incx, 
-    output          ifirq_pulall, 
-    output          iffirq_pulpc, 
-    output          iffirq_pulcc, 
     output          set_i, 
     output          set_f, 
     output          extsgn, 
@@ -66,8 +63,6 @@ module jtkcpu_ucode(
     output          adrx, 
     output          adridx
     
-    // to do: add all control signals to other
-    // blocks that will be generated here
 );
 
 `include "jtkcpu.inc"
@@ -112,6 +107,7 @@ localparam [5:0] SINGLE_ALU       = 1,
                  FIRQ             = 25,
                  IRQ              = 26,
                  NMI              = 27;
+                 RESET            = 28;
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read

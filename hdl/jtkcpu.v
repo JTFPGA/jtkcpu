@@ -20,6 +20,7 @@ module jtkcpu(
     input               rst,
     input               clk,
     input               cen,
+    input               cen2,
 
     input               halt,
     input               nmi,
@@ -32,10 +33,7 @@ module jtkcpu(
     output       [ 7:0] dout,
     output       [23:0] addr,
     output              we,    // write enable
-    output              as     // 
-
-    // to do: add the rest of pins, check AJAX schematics
-    // pins must connect to modules below and all must be driven
+    output              as      
 );
 
 wire [15:0] opnd0, opnd1, rslt; 
@@ -45,8 +43,8 @@ wire [15:0] x, y, u, s, pc, nx_u, nx_s;
 wire [ 7:0] a, b, cc, dp;
 wire [ 7:0] alu_op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
+wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
-wire [ 2:0] vector;
 wire        alu_busy, mem_busy;
 wire        idx_en,psh_en, hi_lon;
 wire        c_out, n_out, z_out, v_out, h_out;
@@ -81,21 +79,27 @@ jtkcpu_memctrl u_memctrl(
     .rst        ( rst        ),
     .clk        ( clk        ),
     .cen        ( cen        ),
+    .cen        ( cen2       ),
 
     .pc         ( pc         ),
     .dp         ( dp         ),
     .idx_addr   ( idx_addr   ),
     .psh_addr   ( psh_addr   ),
     .din        ( din        ),
+    .dout       ( dout       ),
     .addr       ( addr       ),
+    .we         ( we         ),
     .data       ( data       ),
     .busy       ( mem_busy   ),
+    .up_pc      ( up_pc      ),
+    .is_op      ( is_op      ),
+    .mem16      ( mem16      ),
     .halt       ( halt       ),
     .idx_en     ( idx_en     ),
     .psh_en     ( psh_en     ),
-    .vector     ( vector     )
-
-    // to do: fill in the rest
+    .intvec     ( intvec     ),
+    .alu_dout   ( alu_dout   ),
+    .wrq        ( wrq        )
 );
 
 jtkcpu_alu u_alu(
@@ -140,6 +144,8 @@ jtkcpu_regs u_regs(
     .dec_us     ( dec_us     ),
     .mux        ( mux        ),
     .d_mux      ( d_mux      ),
+    .mux_reg0   ( opnd0      ),
+    .mux_reg1   ( opnd1      ),
     .nx_u       ( nx_u       ),
     .nx_s       ( nx_s       ),
     .idx_reg    ( idx_reg    ),
