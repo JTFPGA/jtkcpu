@@ -124,7 +124,6 @@ wire waituz, wait16;
 
 // Conversion of opcodes to op category
 always @* begin
-
     case( op ) 
 
         CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, CLRA, INCA, NEGA, ANDCC, COMB,
