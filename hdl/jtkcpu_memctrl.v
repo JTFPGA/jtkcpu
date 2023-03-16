@@ -29,6 +29,8 @@ module jtkcpu_memctrl(
     input      [ 7:0] dp,
     input      [15:0] idx_addr,
     input      [15:0] psh_addr,
+    input      [15:0] regs_x,
+    input      [15:0] regs_y,
 
     // memory interface
     input      [ 7:0] din,
@@ -37,6 +39,7 @@ module jtkcpu_memctrl(
     output reg        we,
     
     // Data fetched can be 8 or 16 bits
+    output reg [ 7:0] op,
     output reg [15:0] data,
     output reg        busy,  // data not ready
     output reg        up_pc, // PC updated after processing an interrupt
@@ -47,6 +50,9 @@ module jtkcpu_memctrl(
     input             halt,   // hold the current address
     input             idx_en,
     input             psh_en,
+    input             adrx,
+    input             adry,
+    input             opd,    // the next byte (word) is an operand
     input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
 
     // Write requests
@@ -89,8 +95,11 @@ always @(posedge clk, posedge rst) begin
             end else begin
                 addr <= pc;
                 is_op <= 1;
+                if( opd    ) begin is_op <= 0; end
                 if( idx_en ) begin is_op <= 0; addr <= idx_addr; end
                 if( psh_en ) begin is_op <= 0; addr <= psh_addr; end
+                if( addrx  ) begin is_op <= 0; addr <= regs_x;   end
+                if( addry  ) begin is_op <= 0; addr <= regs_y;   end
                 if( mem16 && !busy ) begin
                     busy <= 1;
                     dout <= alu_dout[15:8];
@@ -111,6 +120,7 @@ always @(posedge clk, posedge rst) begin
                 endcase
             end
             // Capture data
+            if( is_op ) op <= din;
             data[ 7:0] <= din; // get the lower half/regular 1-byte access
         end
     end
