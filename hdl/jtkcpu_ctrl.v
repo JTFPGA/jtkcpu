@@ -40,7 +40,10 @@ module jtkcpu_ctrl(
     output            pul_en,
     output            dec_us,
     output            psh_sel,
-    output            intvec
+    output            intvec,
+
+    output reg [15:0] pc,
+    output     [15:0] nx_pc
 
     // to do: add status signals from other modules as inputs
 
@@ -79,6 +82,15 @@ jtkcpu_ucode u_ucode(
 // decoded in hardware, not in ucode:
 
 // to do: add logic to handle interrupts
+
+always @(posedge clk) begin
+    if( rst ) begin
+        pc <= 0;
+    end else begin
+        pc <= nx_pc;
+    end
+end
+
 
 
 jtkcpu_branch u_branch(

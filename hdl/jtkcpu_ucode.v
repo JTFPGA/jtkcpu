@@ -82,32 +82,35 @@ localparam UCODE_AW = 10, // 1024 ucode lines
 // to do: define localparam with op categories
 localparam [5:0] SINGLE_ALU       = 1,
                  SINGLE_ALU16     = 2,
-                 SINGLE_ALU_IDX   = 3,
-                 SINGLE_ALU_IDX16 = 4,
-                 MULTI_ALU        = 5,
-                 WMEM_ALU         = 6,
-                 SBRANCH          = 7,
-                 LBRANCH          = 8,
-                 LOOPX            = 9,
-                 LOOPB            = 10,
-                 BMOVE            = 11,
-                 MOVE             = 12,
-                 BSETA            = 13,
-                 BSETD            = 14,
-                 RTIT             = 15,
-                 RTSR             = 16,
-                 JUMP             = 17,
-                 JMSR             = 18,
-                 PSH              = 19,
-                 PUL              = 20,
-                 NOPE             = 21, 
-                 SETLINES         = 22, // missing
-                 STORE8           = 23,
-                 STORE16          = 24,
-                 FIRQ             = 25,
-                 IRQ              = 26,
-                 NMI              = 27;
-                 RESET            = 28;
+                 SINGLE_ALU_INH   = 3,
+                 SINGLE_ALU_INH16 = 4,
+                 SINGLE_ALU_IDX   = 5,
+                 SINGLE_ALU_IDX16 = 6,
+                 MEM_ALU_IDX      = 7,
+                 MULTI_ALU        = 8,
+                 WMEM_ALU         = 9,
+                 SBRANCH          = 10,
+                 LBRANCH          = 11,
+                 LOOPX            = 12,
+                 LOOPB            = 13,
+                 BMOVE            = 14,
+                 MOVE             = 15,
+                 BSETA            = 16,
+                 BSETD            = 17,
+                 RTIT             = 18,
+                 RTSR             = 19,
+                 JUMP             = 20,
+                 JMSR             = 21,
+                 PSH              = 22,
+                 PUL              = 23,
+                 NOPE             = 24, 
+                 SETLINES         = 25, // missing
+                 STORE8           = 26,
+                 STORE16          = 27,
+                 FIRQ             = 28,
+                 IRQ              = 29,
+                 NMI              = 30;
+                 RESET            = 31;
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
@@ -121,38 +124,40 @@ wire waituz, wait16;
 // Conversion of opcodes to op category
 always @* begin
     case( op ) 
-
-        CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, CLRA, INCA, NEGA, ANDCC, COMB,
-        CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM, CLRB, INCB, NEGB,  ORCC, COMA,
-        EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM,  CLR,  INC,  NEG,   COM,
-        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:             opcat = SINGLE_ALU;
-             
-        CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CLRD, INCD, NEGD,  
-        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,                      
-                  CMPS_IMM, LDS_IMM:                                 opcat = SINGLE_ALU16; 
-
-        CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX, ABSA, ABSB,
-        CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX, TSTA, DECA,  
-        EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX, TSTB, DECB,       
-        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX,  TST,  DEC: opcat = SINGLE_ALU_IDX;              
+        CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, 
+        CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM, 
+        EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
+        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC:      opcat = SINGLE_ALU;
+       
+        CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CMPS_IMM,  
+        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:    opcat = SINGLE_ALU16; 
         
-        CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX, DECD, TSTD, ABSD,
-        CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,  ABX,
+        CLRA, INCA, NEGA, COMB, TSTB, DECB, ABSA, 
+        CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB:                    opcat = SINGLE_ALU_INH
+        CLRD, INCD, NEGD, DECD, TSTD:                                opcat = SINGLE_ALU_INH16    
+        CLR, INC, NEG, TST, DEC, COM:                                opcat = MEM_ALU_IDX
+
+        LSRA, RORA, ASRA, ASLA, ROLA,  MUL, SEX, ABSD, 
+        LSRB, RORB, ASRB, ASLB, ROLB, LMUL, DAA,  ABX, DIV_X_B:      opcat = MULTI_ALU_INH
+
+        CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,  
+        EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,        
+        CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,   
+        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:             opcat = SINGLE_ALU_IDX;              
+        
+        CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
+        CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
         CMPY_IDX,           LDY_IDX:                                 opcat = SINGLE_ALU_IDX16; 
 
-        LSRD_IMM, LSRD_IDX, LSRA, LSRB, LSR, DIV_X_B,
-        RORD_IMM, RORD_IDX, RORA, RORB, ROR,    LMUL,
-        ASRD_IMM, ASRD_IDX, ASRA, ASRB, ASR,     MUL,
-        ASLD_IMM, ASLD_IDX, ASLA, ASLB, ASL,     SEX,
-        ROLD_IMM, ROLD_IDX, ROLA, ROLB, ROL,     DAA:                opcat = MULTI_ALU;
+        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,  
+        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
+        LSR,      ROR,      ASR,      ASL,      ROL:                 opcat = MULTI_ALU;
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
-
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 
-        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:          opcat = SBRANCH;
-
+        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:                 opcat = SBRANCH;
         LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, 
-        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE: opcat = LBRANCH;
+        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE:        opcat = LBRANCH;
         
         DECX_JNZ:     opcat = LOOPX;
         DECB_JNZ:     opcat = LOOPB;

@@ -110,20 +110,15 @@ always @* begin
         ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, LDB_IDX, DECB, LSRB, ROLB,
         ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, LDB_IMM, INCB, RORB, ABSB, STB: mux_reg0 = {8'hFF,  b};
 
-        ANDCC, ORCC: mux_reg0 = {8'hFF,  cc};
-
         LDD_IMM, CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,     
         LDD_IDX, CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,  
-           
         CLRD, NEGD, ABSD, LSRD, RORD, ASRD, ASLD, ROLD, STD:   mux_reg0 = {a, b};      
         
         LDX_IMM, LDX_IDX, CMPX_IMM, CMPX_IDX, LEAX,  ABX, STX: mux_reg0 = x;
-
         LDY_IMM, LDY_IDX, CMPY_IMM, CMPY_IDX, LEAY, LMUL, STY: mux_reg0 = y;
-
         LDU_IMM, LDU_IDX, CMPU_IMM, CMPU_IDX, LEAU, STU:       mux_reg0 = u;
-
         LDS_IMM, LDS_IDX, CMPS_IMM, CMPS_IDX, LEAS, STS:       mux_reg0 = s;
+        ANDCC, ORCC: mux_reg0 = {8'hFF,  cc};
 
         default : mux_reg0 = {8'hFF,  a};
     endcase
@@ -131,22 +126,10 @@ end
 
 always @* begin 
     case ( op )
-
-        MUL, ABX: mux_reg1 = {8'hFF,  b};
-
-        ANDCC, ORCC: mux_reg1 = {8'hFF,  cc};
-
-        CMPD_IDX, CMPD_IMM: mux_reg1 = {a, b};      
-        
-        CMPX_IMM, CMPX_IDX, LMUL: mux_reg1 = x;
-
-        CMPY_IMM, CMPY_IDX:       mux_reg1 = y;
-
-        CMPU_IMM, CMPU_IDX:       mux_reg1 = u;
-
-        CMPS_IMM, CMPS_IDX:       mux_reg1 = s;
-
-        default : mux_reg1 = {8'hFF,  a};
+        MUL, ABX:    mux_reg1 = {8'hFF,  b};
+        ANDCC, ORCC: mux_reg1 = {8'hFF,  cc};    
+        LMUL:        mux_reg1 = x;
+        default:     mux_reg1 = {8'hFF,  a};
     endcase
 end
 
