@@ -41,9 +41,12 @@ module jtkcpu_ctrl(
     output            dec_us,
     output            psh_sel,
     output            intvec,
+    output            addr_x,
+    output            addr_y,
+    output            mem16,
+    output            wrq,
 
-    output reg [15:0] pc,
-    output     [15:0] nx_pc
+    output reg [15:0] pc
 
     // to do: add status signals from other modules as inputs
 
@@ -56,24 +59,33 @@ module jtkcpu_ctrl(
 // to do: signals that are resolved within the
 // module should be here as wires. Watchout for buses
 wire branch;
-wire pul_go, psh_go, int_en;
+wire pul_go, psh_go, int_en, ni;
 
 
 jtkcpu_ucode u_ucode(
-    .rst        ( rst        ),
-    .clk        ( clk        ),
-    .cen        ( cen        ),
+    .rst            ( rst           ),
+    .clk            ( clk           ),
+    .cen            ( cen           ),
 
-    .op         ( op         ), 
-    .branch     ( branch     ),
-    .alu_busy   ( alu_busy   ),
-    .mem_busy   ( mem_busy   ),
-    .irq        ( irq        ),
-    .nmi        ( nmi        ),
-    .firq       ( firq       ),
-    .int_en     ( int_en     ),
-    .pul_go     ( pul_go     ),
-    .psh_go     ( psh_go     ),
+    .op             ( op            ), 
+    .branch         ( branch        ),
+    .alu_busy       ( alu_busy      ),
+    .mem_busy       ( mem_busy      ),
+    .irq            ( irq           ),
+    .nmi            ( nmi           ),
+    .firq           ( firq          ),
+    .int_en         ( int_en        ),
+    .pul_go         ( pul_go        ),
+    .psh_go         ( psh_go        ),
+    .mem16          ( mem16         ),
+    .ni             ( ni            ),
+    .we             ( wrq           ),
+    .rti_cc         ( rti_cc        ),
+    .rti_other      ( rti_other     ),
+    .adrx           ( addr_x        ),
+    .adry           ( addr_y        ),
+    .set_pc_branch  ( pc_branch     )
+
 
     // To do: finish connections
 );
@@ -81,16 +93,13 @@ jtkcpu_ucode u_ucode(
 // some of the instruction logic is
 // decoded in hardware, not in ucode:
 
-// to do: add logic to handle interrupts
-
 always @(posedge clk) begin
     if( rst ) begin
         pc <= 0;
     end else begin
-        pc <= nx_pc;
+        pc <= ( ni | opd ) ? pc+16'd1 : branch ? pc_branch : irq ? up_pc : pc;
     end
 end
-
 
 
 jtkcpu_branch u_branch(
@@ -108,6 +117,8 @@ jtkcpu_pshpul u_pshpul(
     .postdata   ( postbyte   ),
     .cc         ( cc         ),
     .int_en     ( int_en     ),
+    .rti_cc     ( rti_cc     ),
+    .rti_other  ( rti_other  ),
     .pul_go     ( pul_go     ),
     .psh_go     ( psh_go     ),
     .psh_bit    ( psh_bit    ),

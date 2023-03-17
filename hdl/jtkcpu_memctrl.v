@@ -50,8 +50,8 @@ module jtkcpu_memctrl(
     input             halt,   // hold the current address
     input             idx_en,
     input             psh_en,
-    input             adrx,
-    input             adry,
+    input             addrx,
+    input             addry,
     input             opd,    // the next byte (word) is an operand
     input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
 

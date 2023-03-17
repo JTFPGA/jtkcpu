@@ -36,6 +36,7 @@ module jtkcpu_ucode(
     // control outputs
     output reg      int_en,
     output          we,  
+    output          rti_cc, 
     output          pul_go, 
     output          psh_go, 
     output          pshpc, 
@@ -47,8 +48,10 @@ module jtkcpu_ucode(
     output          set_pc_puls, 
     output          set_pc_branch, 
     output          set_opn0_regs, 
+    output          set_opn0_mem, 
     output          set_opn0_d, 
     output          set_opn0_a, 
+    output          ni, 
     output          mem16, 
     output          incx, 
     output          set_i, 
@@ -76,7 +79,7 @@ module jtkcpu_ucode(
 // another 32 categories reserved for common routines
 
 localparam UCODE_AW = 10, // 1024 ucode lines
-           OPCAT_AW = 5,  // op code categories
+           OPCAT_AW = 6,  // op code categories
            UCODE_DW = 24; // Number of control signals
 
 // to do: define localparam with op categories
@@ -88,36 +91,38 @@ localparam [5:0] SINGLE_ALU       = 1,
                  SINGLE_ALU_IDX16 = 6,
                  MEM_ALU_IDX      = 7,
                  MULTI_ALU        = 8,
-                 WMEM_ALU         = 9,
-                 SBRANCH          = 10,
-                 LBRANCH          = 11,
-                 LOOPX            = 12,
-                 LOOPB            = 13,
-                 BMOVE            = 14,
-                 MOVE             = 15,
-                 BSETA            = 16,
-                 BSETD            = 17,
-                 RTIT             = 18,
-                 RTSR             = 19,
-                 JUMP             = 20,
-                 JMSR             = 21,
-                 PSH              = 22,
-                 PUL              = 23,
-                 NOPE             = 24, 
-                 SETLINES         = 25, // missing
-                 STORE8           = 26,
-                 STORE16          = 27,
-                 FIRQ             = 28,
-                 IRQ              = 29,
-                 NMI              = 30;
-                 RESET            = 31;
+                 MULTI_ALU_INH    = 9,
+                 MULTI_ALU_IDX    = 10,
+                 WMEM_ALU         = 11,
+                 SBRANCH          = 12,
+                 LBRANCH          = 13,
+                 LOOPX            = 14,
+                 LOOPB            = 15,
+                 BMOVE            = 16,
+                 MOVE             = 17,
+                 BSETA            = 18,
+                 BSETD            = 19,
+                 RTIT             = 20,
+                 RTSR             = 21,
+                 JUMP             = 22,
+                 JMSR             = 23,
+                 PSH              = 24,
+                 PUL              = 25,
+                 NOPE             = 26, 
+                 SETLINES         = 27, // missing
+                 STORE8           = 28,
+                 STORE16          = 29,
+                 FIRQ             = 30,
+                 IRQ              = 31,
+                 NMI              = 32,
+                 RESET            = 33;
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat;
 reg                idx_src; // instruction requires idx decoding first to grab the source operand
 
-wire ni, buserror; // next instruction
+wire buserror; // next instruction
 wire waituz, wait16;  
 
 
@@ -137,9 +142,6 @@ always @* begin
         CLRD, INCD, NEGD, DECD, TSTD:                                opcat = SINGLE_ALU_INH16    
         CLR, INC, NEG, TST, DEC, COM:                                opcat = MEM_ALU_IDX
 
-        LSRA, RORA, ASRA, ASLA, ROLA,  MUL, SEX, ABSD, 
-        LSRB, RORB, ASRB, ASLB, ROLB, LMUL, DAA,  ABX, DIV_X_B:      opcat = MULTI_ALU_INH
-
         CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,  
         EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,        
         CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,   
@@ -149,9 +151,11 @@ always @* begin
         CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
         CMPY_IDX,           LDY_IDX:                                 opcat = SINGLE_ALU_IDX16; 
 
-        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,  
-        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
-        LSR,      ROR,      ASR,      ASL,      ROL:                 opcat = MULTI_ALU;
+        LSRA, RORA, ASRA, ASLA, ROLA,  MUL, SEX, ABSD, 
+        LSRB, RORB, ASRB, ASLB, ROLB, LMUL, DAA,  ABX, DIV_X_B:      opcat = MULTI_ALU_INH
+        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:            opcat = MULTI_ALU;  
+        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:            opcat = MULTI_ALU_IDX;
+        LSR, ROR, ASR, ASL, ROL:                                     opcat = MULTI_MEMALU_IDX;
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 
@@ -207,18 +211,18 @@ always @(posedge clk) begin
         // To do: add the rest of control flow to addr progress
         
         if( irq ) begin // interrupt enabled irq
-            addr <= { 1'd0, IRQ, 4'd0 };
+            addr <= { IRQ, 4'd0 };
             int_en <= 1;
         end else if( nmi ) begin  // interrupt enabled nmi
-                addr <= { 1'd0, NMI, 4'd0 };
+                addr <= { NMI, 4'd0 };
         end else if ( firq ) begin  // interrupt enabled firq
-             addr <= { 1'd0, FIRQ, 4'd0 };
+             addr <= { FIRQ, 4'd0 };
              int_en = 1;
         end else    // interrupt disabled
             int_en = 0;
 
         if( !mem_busy ) addr <= addr + 1; // when we keep processing an opcode routine
-        if( ni ) addr <= { 1'd0, opcat, 4'd0 }; // when a new opcode is read
+        if( ni ) addr <= { opcat, 4'd0 }; // when a new opcode is read
     end
 end
 

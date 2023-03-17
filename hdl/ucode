@@ -32,24 +32,48 @@ SINGLE_ALU_16:    MEM16
                   OPN0=REGS, OPN1=MEM, UPREGS=ALU 
                   NI
 
+SINGLE_ALU_INH:   OPN0=REGS, UPREGS=ALU 
+                  NI
+
+SINGLE_ALU_INH16: OPN0=REGS, UPREGS=ALU
+                  NI  
+
 SINGLE_ALU_IDX:   ADRIDX
                   OPN0=REGS, OPN1=MEM, UPREGS=ALU 
                   NI
 
-SINGLE_ALU_IDX16: ADRIDX, READ16
+SINGLE_ALU_IDX16: ADRIDX, MEM16
                   OPN0=REGS, OPN1=MEM, UPREGS=ALU
                   NI
 
-MULTI_ALU: OPN0=REGS, OPN1=MEM, WAITALU
-           UPREGS=ALU, NI
+MULTI_ALU:        OPN0=REGS, OPN1=MEM, WAITALU
+                  UPREGS=ALU, NI
 
-MEM_ALU:   OPN0=REGS, OPN1=MEM, WAITALU
-           WE, NI
+MEM_ALU_IDX:      ADRIDX 
+                  OPN0=MEM 
+                  WE, NI
 
-SBRANCH: PC=BRANCH, EXTSGN, NI 
+MULTI_ALU_INH:    OPN0=REGS, UPREGS=ALU
+                  NI
 
-LBRANCH: WAIT16
-         PC=BRANCH, NI
+MULTI_ALU_IDX:    ADRIDX
+                  OPN0=REGS, OPN1=MEM, WAITALU
+                  UPREG=ALU, NI 
+
+MULTI_MEMALU_IDX: ADRIDX
+                  OPN0=MEM, WAITALU
+                  WE, NI
+
+WMEM_ALU:         OPN0=REGS, OPN1=MEM, WAITALU
+                  WE, NI
+
+SBRANCH: OPD
+         PC=BRANCH, BRANCH8 
+         NI 
+
+LBRANCH: OPD, MEM16
+         PC=BRANCH
+         NI
 
 LOOPX: PC_XNZ=BRANCH, DECX, NI
 
@@ -69,8 +93,8 @@ BSETA: OPN0=A, WE, ADRX, INCX, DECU, WAITUZ
        NI
 
 BSETD: OPN0=D, MEM16 
-       WE, ADRX, DECU, 
-       INCX, BACK2,
+       WE, ADRX, DECU 
+       INCX, BACK2
        WAITUZ 
        NI 
 
@@ -80,7 +104,7 @@ JUMP: PC=BRANCH, MEM16
 JMSR: PC=BRANCH, MEM16, NI
 
 RTIT: RTI_CC, PUL_GO 
-      WAITPUL, 
+      WAITPUL 
       RTI_OTHER, PUL_GO
       WAITPUL
       NI

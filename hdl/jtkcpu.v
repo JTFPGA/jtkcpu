@@ -51,6 +51,7 @@ wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
 wire        indirect, branch; 
 wire        pul_en, dec_us, us_sel;
+wire        wrq, addr_x, addr_y;
 
 jtkcpu_ctrl u_ctrl(
     .rst        ( rst        ),
@@ -70,7 +71,11 @@ jtkcpu_ctrl u_ctrl(
     .psh_sel    ( psh_sel    ),
     .us_sel     ( us_sel     ),
     .alu_busy   ( alu_busy   ),
-    .mem_busy   ( mem_busy   )
+    .mem_busy   ( mem_busy   ),
+    .mem16      ( mem16      ),
+    .addr_x     ( addr_x     ),
+    .addr_y     ( addr_y     ),
+    .wrq        ( wrq        )
 
     // to do: fill in the rest
 );
@@ -85,10 +90,13 @@ jtkcpu_memctrl u_memctrl(
     .dp         ( dp         ),
     .idx_addr   ( idx_addr   ),
     .psh_addr   ( psh_addr   ),
+    .regs_x     ( x          ),
+    .regs_y     ( y          ),
     .din        ( din        ),
     .dout       ( dout       ),
     .addr       ( addr       ),
     .we         ( we         ),
+    .op         ( alu_op     ),
     .data       ( data       ),
     .busy       ( mem_busy   ),
     .up_pc      ( up_pc      ),
@@ -97,6 +105,9 @@ jtkcpu_memctrl u_memctrl(
     .halt       ( halt       ),
     .idx_en     ( idx_en     ),
     .psh_en     ( psh_en     ),
+    .addrx      ( addrx      ),
+    .addry      ( addry      ),
+    .opd        ( opd        ),
     .intvec     ( intvec     ),
     .alu_dout   ( alu_dout   ),
     .wrq        ( wrq        )
