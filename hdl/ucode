@@ -128,16 +128,20 @@ PUL:  PUL_GO
       WAIT_STACK
       NI
 
-FIRQ: E=0, PSHPC, PSHCC, F=1, I=1 
-      PC=FIRQ
+FIRQ: PSHCC
+      E=0, F=1, I=1
+      PSHPC
+      PC=INT
       NI
 
-IRQ:  E=1, PSHALL, I=1 
-      PC=IRQ 
+IRQ:  PSHALL
+      E=1, I=1
+      PC=INT
       NI
 
-NMI:  E=1, PSHALL, I=1, F=1 
-      PC=NMI 
+NMI:  PSHALL
+      E=1, I=1, F=1
+      PC=INT
       NI
 
 SETLINES: OPD

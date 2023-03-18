@@ -90,8 +90,8 @@ jtkcpu_ucode u_ucode(
     // To do: finish connections
 );
 
-// some of the instruction logic is
-// decoded in hardware, not in ucode:
+wire short_branch = set_pc_branch8  & pc_branch;
+wire long_branch  = set_pc_branch16 & pc_branch | set_pc_jmp;
 
 always @(posedge clk) begin
     if( rst ) begin
@@ -99,9 +99,9 @@ always @(posedge clk) begin
     end else if(cen) begin
         mem16l <= mem16;
         pc <= ( ni | opd ) ? pc+16'd1 :
-              ( set_pc_branch8  & pc_branch ) ? { {8{data[7]}}, data[7:0]}+pc :
-              ( set_pc_branch16 & pc_branch | set_pc_jmp ) ? data :
-              irq ? up_pc : pc;
+              short_branch ? { {8{data[7]}}, data[7:0]}+pc :
+              long_branch  ? data :
+              set_pc_int   ? up_pc : pc;
     end
 end
 
