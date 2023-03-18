@@ -51,7 +51,7 @@ wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
 wire        indirect, branch; 
 wire        pul_en, dec_us, us_sel;
-wire        wrq, addr_x, addr_y;
+wire        wrq, addr_x, addr_y, uplines;
 
 jtkcpu_ctrl u_ctrl(
     .rst        ( rst        ),
@@ -94,7 +94,11 @@ jtkcpu_memctrl u_memctrl(
     .regs_y     ( y          ),
     .din        ( din        ),
     .dout       ( dout       ),
-    .addr       ( addr       ),
+    // Effective address
+    .addr       ( addr[15:0] ),
+    .lines      ( addr[23:16]),
+    .uplines    ( uplines    ),
+
     .we         ( we         ),
     .op         ( alu_op     ),
     .data       ( data       ),

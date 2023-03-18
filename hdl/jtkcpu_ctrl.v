@@ -60,7 +60,7 @@ module jtkcpu_ctrl(
 // module should be here as wires. Watchout for buses
 wire branch;
 wire pul_go, psh_go, int_en, ni;
-
+reg  mem16l;
 
 jtkcpu_ucode u_ucode(
     .rst            ( rst           ),
@@ -96,11 +96,14 @@ jtkcpu_ucode u_ucode(
 always @(posedge clk) begin
     if( rst ) begin
         pc <= 0;
-    end else begin
-        pc <= ( ni | opd ) ? pc+16'd1 : branch ? pc_branch : irq ? up_pc : pc;
+    end else if(cen) begin
+        mem16l <= mem16;
+        pc <= ( ni | opd ) ? pc+16'd1 :
+              ( set_pc_branch8  & pc_branch ) ? { {8{data[7]}}, data[7:0]}+pc :
+              ( set_pc_branch16 & pc_branch | set_pc_jmp ) ? data :
+              irq ? up_pc : pc;
     end
 end
-
 
 jtkcpu_branch u_branch(
     .op         ( op         ), 
