@@ -131,7 +131,8 @@ NMI:  E=1, PSHALL, I=1, F=1
       PC=NMI 
       NI
 
-SETLINES: ???
+SETLINES: OPD
+          UPLINES, NI
 
 STORE8:  OPN0=REGS, ADRIDX, WE, NI
 

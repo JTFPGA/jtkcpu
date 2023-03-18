@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+const(
+	MAX_ROUTINE = 8 // Must be power of 2
+)
+
 type elements struct{
 	labels, nemonics map[string]int
 	lbl_rev map[int]string
@@ -24,7 +28,7 @@ func exists( k string, m map[string]int ) bool {
 func get_nemonics( f io.Reader ) ( all elements, assign string ) {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
-	re_label:= regexp.MustCompile("^[A-Z0-9]*:")
+	re_label:= regexp.MustCompile("^[A-Z0-9_]*:")
 	found := make(map[string]bool)
 	lbl_cnt := 0
 	all.labels = make(map[string]int)
@@ -44,13 +48,14 @@ func get_nemonics( f io.Reader ) ( all elements, assign string ) {
 			all.labels[lbl_name] = lbl_cnt
 			all.lbl_rev[lbl_cnt] = lbl_name
 			lbl_cnt++
-			for _,each := range strings.Split(halves[1],",") {
-				each = strings.TrimSpace(each)
-				if each=="" {
-					continue
-				}
-				found[each]=true
+			line = halves[1]
+		}
+		for _,each := range strings.Split(line,",") {
+			each = strings.TrimSpace(each)
+			if each=="" {
+				continue
 			}
+			found[each]=true
 		}
 	}
 	all_nem := make([]string,0)
@@ -71,9 +76,10 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 	linecnt := 0
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
-	re_label:= regexp.MustCompile("^[A-Z0-9]*:")
+	re_label:= regexp.MustCompile("^[A-Z_0-9]*:")
 	rom = make([]int64,64*16)
 	cur_cat := 0
+	cur_catname := ""
 	subidx := 0
 
 	for scanner.Scan() {
@@ -82,15 +88,18 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 		if line=="" || line[0] == '#' {
 			continue
 		}
+		line = strings.ToUpper(line)
 		if re_label.MatchString(line) {
 			halves := strings.Split(line,":")
-			cur_cat = all.labels[halves[0]]
+			cur_catname = halves[0]
+			cur_cat = all.labels[cur_catname]
 			subidx  = 0
 			line = halves[1]
 		} else {
 			subidx++
-			if subidx>15 {
-				log.Fatal("Subroutine overflow at line ",linecnt)
+			if subidx>=MAX_ROUTINE {
+				fmt.Printf("Subroutine overflow at line %d while parsing %s\n",linecnt, cur_catname)
+				os.Exit(1)
 			}
 		}
 		val := int64(0)
@@ -101,7 +110,7 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 			}
 			val |= int64(1) << all.nemonics[each]
 		}
-		addr := (cur_cat<<4)|subidx
+		addr := (cur_cat*MAX_ROUTINE)|subidx
 		if val != 0 {
 			fmt.Printf("%2X - %X\n",addr,val)
 		}
@@ -130,18 +139,17 @@ func make_assign( all []string ) (s string ) {
 	s += fmt.Sprintf("assign { ")
 	first := true
 	k2 := 0
+	// fmt.Println(all)
 	for k:=len(all)-1;k>=0;k--{
 		if !first {
 			s += fmt.Sprintf(", ")
 		}
-		if k>0 && ((k+1)%1==0) {
-			s += fmt.Sprintf("\n        ")
-		}
+		s += fmt.Sprintf("\n        ")
 		s += fmt.Sprintf( "%s", tr(all[k]) )
 		first=false
 		k2++
 	}
-	s += fmt.Sprintf( "\n        } = ucode;\n")
+	s += fmt.Sprintf( "\n    } = ucode;\n")
 	return s
 }
 
@@ -160,12 +168,12 @@ func dump_inc( a ...string) {
 func make_case( rom []int64, all elements ) (s string) {
 	nem_len := len(all.nemonics)
 	i := "    "
-	s += fmt.Sprintf("always @* begin\n%scase( addr )\n",i)
+	s += fmt.Sprintf("always @(posedge clk) if(cen) begin\n%scase( addr )\n",i)
 	for k, each := range rom {
 		if each!=0 {
-			s += fmt.Sprintf("%s%s%03X: ucode = %d'h%03X;", i,i, k, nem_len, each )
-			opcat := k>>4
-			if all.lbl_rev[opcat] != "" && (k&0xf)==0 {
+			s += fmt.Sprintf("%s%s10'o%03o: ucode <= %d'h%03X;", i,i, k, nem_len, each )
+			opcat := k/MAX_ROUTINE
+			if all.lbl_rev[opcat] != "" && (k%MAX_ROUTINE==0) {
 				s += fmt.Sprintf("    // %s", all.lbl_rev[opcat])
 			}
 			s += fmt.Sprintf("\n")
@@ -173,6 +181,26 @@ func make_case( rom []int64, all elements ) (s string) {
 	}
 	s += fmt.Sprintf("%s%sdefault: ucode = 0;\n%sendcase\nend\n",i,i,i)
 	return s
+}
+
+func make_params( all elements ) (s string) {
+	s = fmt.Sprintf("localparam [%d:0] = ", len(all.labels)-1 )
+	first := true
+	sorted := make([]string,len(all.labels))
+	maxlen := 0
+	for k,v := range all.labels {
+		sorted[v] = k
+		if len(k)>maxlen { maxlen = len(k) }
+	}
+	fmtstr := fmt.Sprintf("\n        %%-%ds = %%d",maxlen)
+	for v,k := range sorted {
+		if !first {
+			s += fmt.Sprintf(",")
+		}
+		s += fmt.Sprintf(fmtstr, k, v )
+	}
+	s += fmt.Sprintf(";\n")
+	return
 }
 
 func main() {
@@ -188,5 +216,6 @@ func main() {
 	defer f.Close()
 	rom := asm( f, all )
 	rom_case := make_case(rom, all )
-	dump_inc( assign, rom_case )
+	localparams := make_params(all)
+	dump_inc( localparams, assign, rom_case )
 }

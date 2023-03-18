@@ -36,6 +36,7 @@ module jtkcpu_memctrl(
     input      [ 7:0] din,
     output reg [ 7:0] dout,
     output reg [15:0] addr,
+    output reg [ 7:0] lines,
     output reg        we,
     
     // Data fetched can be 8 or 16 bits
@@ -48,6 +49,7 @@ module jtkcpu_memctrl(
     // select addressing mode
     input             mem16,
     input             halt,   // hold the current address
+    input             uplines,
     input             idx_en,
     input             psh_en,
     input             addrx,
@@ -75,11 +77,12 @@ always @(posedge clk, posedge rst) begin
         busy  <= 0;
         up_pc <= 0;
         is_op <= 0;
-        we    <= 0;
+        lines <= 0;
     end else if( cen2 && !halt ) begin
         // signals active for a single clock cycle:
         up_pc <= 0;
         we    <= 0;
+        if( uplines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
             addr <= addr + 1;  // pick up the next byte
