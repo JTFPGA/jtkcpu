@@ -80,13 +80,10 @@ always @* begin
     f_out = cc_in[CC_F];
 
     case (op)
-        LEAX,LEAY,LEAU,LEAS: begin // LEA  // RAVISAR
-            rslt  =  opnd0;
-        end
         LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
         LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,STD,STX,STY,STU,STS,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
-            rslt  =  opnd0;
-            v_out = 1'b0;
+            rslt  = opnd0;
+            v_out = 0;
         end
         ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX,ADDD_IMM,ADDD_IDX: begin  // ADD
             {c_out, rslt} = {1'b0, opnd0} + {1'b0, opnd1};
@@ -108,7 +105,7 @@ always @* begin
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IMM: begin  // AND, BIT
-            rslt = (opnd0 & opnd1);
+            rslt  = opnd0 & opnd1;
             v_out = 0;
         end
         EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX: begin    // EOR
@@ -174,16 +171,16 @@ always @* begin
             {c_out, rslt} = {opnd0, cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        ABX: rslt = opnd0 + {8'h0, opnd1[7:0]};  // ABX  
+        ABX: rslt = {8'h0, opnd0} + {8'h0, opnd1[7:0]};  // ABX
         DAA: begin  // DAA
-            if ( c_out || opnd0[7:4] > 4'H9 || (opnd0[7:4] > 4'H8 && opnd0[3:0] > 4'H9 ))
-                rslt[7:4] = 4'H6;
+            if ( c_out || opnd0[7:4] > 4'h9 || (opnd0[7:4] > 4'h8 && opnd0[3:0] > 4'h9 ))
+                rslt[7:4] = 4'h6;
             else
-                rslt[7:4] = 4'H0;
-            if ( h_out || opnd0[3:0] > 4'H9 )
-                rslt[3:0] = 4'H6;
+                rslt[7:4] = 4'h0;
+            if ( h_out || opnd0[3:0] > 4'h9 )
+                rslt[3:0] = 4'h6;
             else
-                rslt[3:0] = 4'H0;
+                rslt[3:0] = 4'h0;
             {rslt[8], rslt[7:0]} = {1'b0, opnd0[7:0]} + rslt[7:0];
             c_out = c_out | rslt[8];
         end
