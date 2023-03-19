@@ -16,6 +16,43 @@
 #   Version: 1.0
 #   Date: 3-03-2023 
 
+########## INDEX ADDR ##################
+            # R+    IDX_INC, IDX_RET
+            # R++ / [R++]
+                    ADR_IDX, MEM16, SKIP_NOIND
+                    ADR_DATA, MEM16
+                    IDX_INC
+                    IDX_INC, IDX_RET
+            # R-
+                    IDX_DEC, IDX_RET
+            # R-- / [R--]
+                    ADR_IDX, MEM16, SKIP_NOIND
+                    ADR_DATA, MEM16
+                    IDX_DEC,
+                    IDX_DEC, IDX_RET
+            # R+ACC
+                    IDX_RET
+            # Fixed offset 0/5
+                    IDX_RET
+            # Fixed offset 8
+                    OPD, SKIP_NOIND
+                    IDX_RET
+                    ADR_DATA, MEM16
+                    IDX_LD, IDX_RET
+            # Fixed offset 16
+                    OPD, MEMHI
+                    OPD, SKIP_NOIND
+                    IDX_RET
+                    ADR_DATA, MEM16
+                    IDX_LD, IDX_RET
+            # Extended indirect
+                    OPD, MEMHI
+                    OPD
+                    ADR_DATA, MEM16
+                    IDX_LD, IDX_RET
+
+
+
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
                     OPN0=REGS, UPREGS=ALU
@@ -31,12 +68,12 @@ SINGLE_ALU_INH:     OPN0=REGS, UPREGS=ALU
 SINGLE_ALU_INH16:   OPN0=REGS, UPREGS=ALU
                     NI
 
-SINGLE_ALU_IDX:     OPD, IDXEN
+SINGLE_ALU_IDX:     OPD, IDX_EN
                     ADRIDX
                     OPN0=REGS, UPREGS=ALU
                     NI
 
-SINGLE_ALU_IDX16:   OPD, IDXEN
+SINGLE_ALU_IDX16:   OPD, IDX_EN
                     ADRIDX, MEM16
                     OPN0=REGS, UPREGS=ALU
                     NI
@@ -45,7 +82,7 @@ MULTI_ALU:          OPD
                     OPN0=REGS, WAITALU, UPREGS=ALU
                     NI
 
-MEM_ALU_IDX:        OPD, IDXEN
+MEM_ALU_IDX:        OPD, IDX_EN
                     ADRIDX
                     OPN0=MEM, WE
                     NI
@@ -54,12 +91,12 @@ MULTI_ALU_INH:      OPD
                     OPN0=REGS, UPREGS=ALU, WAITALU
                     NI
 
-MULTI_ALU_IDX:      OPD, IDXEN
+MULTI_ALU_IDX:      OPD, IDX_EN
                     ADRIDX
                     OPN0=REGS, UPREG=ALU, WAITALU
                     NI
 
-WMEM_ALU:           OPD, IDXEN
+WMEM_ALU:           OPD, IDX_EN
                     ADRIDX
                     OPN0=MEM, UPDATA, WAITALU
                     ADRIDX, WE
@@ -112,11 +149,11 @@ BSETD:              OPN0=A, WE, ADRX, INCX,
                     NI
 
 ############### LOAD/STORE OPERATIONS ############
-STORE8:             OPD, IDXEN
+STORE8:             OPD, IDX_EN
                     OPN0=REGS, ADRIDX, WE,
                     NI
 
-STORE16:            OPD, IDXEN
+STORE16:            OPD, IDX_EN
                     OPN0=REGS, ADRIDX, WE, MEM16,
                     NI
 
@@ -124,7 +161,7 @@ LD8_IMM:            OPD
                     UPLD8
                     NI
 
-LD8_IDX:            OPD, IDXEN
+LD8_IDX:            OPD, IDX_EN
                     ADRIDX
                     UPLD8
                     NI
@@ -134,12 +171,12 @@ LD16_IMM:           OPD, MEMHI
                     UPLD16
                     NI
 
-LD16_IDX:           OPD, IDXEN
+LD16_IDX:           OPD, IDX_EN
                     ADRIDX, MEM16
                     UPLD16
                     NI
 
-LEA:                OPD, IDXEN
+LEA:                OPD, IDX_EN
                     UPLEA
                     NI
 

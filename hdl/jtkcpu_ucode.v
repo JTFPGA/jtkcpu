@@ -33,39 +33,40 @@ module jtkcpu_ucode(
     // to do: add all status signals from
     // other blocks
 
-    // control outputs
+    // control outputs from ucode
+    output          adridx,
+    output          adrx,
+    output          adry,
+    output          clr_e,
+    output          decb,
+    output          decu,
+    output          decx,
+    output          extsgn,
+    output          idx_en,
+    output          incx,
+    output          mem16,
+    output          ni,
+    output          psh_go,
+    output          pshall,
+    output          pshcc,
+    output          pshpc,
+    output          pul_go,
+    output          rti_cc,
+    output          set_e,
+    output          set_f,
+    output          set_i,
+    output          set_opn0_a,
+    output          set_opn0_d,
+    output          set_opn0_mem,
+    output          set_opn0_regs,
+    output          set_pc_bnz_branch,
+    output          set_pc_branch,
+    output          set_pc_puls,
+    output          set_pc_rst,
+    output          set_pc_xnz_branch,
+    output          we,
+    // other outputs
     output reg      int_en,
-    output          we,  
-    output          rti_cc, 
-    output          pul_go, 
-    output          psh_go, 
-    output          pshpc, 
-    output          pshcc, 
-    output          pshall, 
-    output          set_pc_xnz_branch, 
-    output          set_pc_bnz_branch, 
-    output          set_pc_rst, 
-    output          set_pc_puls, 
-    output          set_pc_branch, 
-    output          set_opn0_regs, 
-    output          set_opn0_mem, 
-    output          set_opn0_d, 
-    output          set_opn0_a, 
-    output          ni, 
-    output          mem16, 
-    output          incx, 
-    output          set_i, 
-    output          set_f, 
-    output          extsgn, 
-    output          set_e, 
-    output          clr_e, 
-    output          decx, 
-    output          decu, 
-    output          decb, 
-    output          adry, 
-    output          adrx, 
-    output          adridx
-    
 );
 
 `include "jtkcpu.inc"
@@ -225,7 +226,7 @@ always @(posedge clk) begin
         end else    // interrupt disabled
             int_en = 0;
 
-        if( !mem_busy ) addr <= addr + 1; // when we keep processing an opcode routine
+        if( !mem_busy && !(idx_en && idx_busy)) addr <= addr + 1; // when we keep processing an opcode routine
         if( ni ) addr <= { opcat, 4'd0 }; // when a new opcode is read
     end
 end

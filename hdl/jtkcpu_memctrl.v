@@ -100,10 +100,14 @@ always @(posedge clk, posedge rst) begin
                 addr <= pc;
                 is_op <= 1;
                 if( opd    ) begin is_op <= 0; end
-                if( idx_en ) begin is_op <= 0; addr <= idx_addr; end
                 if( psh_en ) begin is_op <= 0; addr <= psh_addr; end
                 if( addrx  ) begin is_op <= 0; addr <= regs_x;   end
                 if( addry  ) begin is_op <= 0; addr <= regs_y;   end
+                if( idx_en ) begin
+                    is_op <= 0;
+                    addr  <= idx_addr;
+
+                end
                 if( mem16 && !busy ) begin
                     busy <= 1;
                     dout <= alu_dout[15:8];

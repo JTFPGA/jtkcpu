@@ -46,7 +46,7 @@ wire [ 7:0] alu_op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
-wire        alu_busy, mem_busy;
+wire        alu_busy, mem_busy, idx_busy;
 wire        idx_en,psh_en, hi_lon;
 wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
@@ -58,6 +58,11 @@ jtkcpu_ctrl u_ctrl(
     .rst        ( rst        ),
     .clk        ( clk        ),
     .cen        ( cen        ),
+
+    // System status
+    .alu_busy   ( alu_busy   ),
+    .mem_busy   ( mem_busy   ),
+    .idx_busy   ( idx_busy   ),
 
     .op         ( alu_op     ), 
     .postbyte   ( postbyte   ),
@@ -71,8 +76,6 @@ jtkcpu_ctrl u_ctrl(
     .pshdec     ( pshdec     ),
     .psh_sel    ( psh_sel    ),
     .us_sel     ( us_sel     ),
-    .alu_busy   ( alu_busy   ),
-    .mem_busy   ( mem_busy   ),
     .mem16      ( mem16      ),
     .addr_x     ( addr_x     ),
     .addr_y     ( addr_y     ),
@@ -184,9 +187,10 @@ jtkcpu_idx u_idx(
     .postbyte   ( postbyte   ), 
     .a          ( a          ), 
     .b          ( b          ), 
-    .idx_addr   ( idx_addr   ), 
+    .addr       ( idx_addr   ),
     .idx_sel    ( idx_sel    ), 
-    .indirect   ( indirect   )
+    .indirect   ( indirect   ),
+    .busy       ( idx_busy   )
 );
 
 endmodule

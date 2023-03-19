@@ -23,7 +23,7 @@ module jtkcpu_alu(
 
     input      [ 7:0] op, 
     input      [15:0] opnd0, 
-    input      [15:0] opnd1, 
+    input      [15:0] opnd1, // data from memory
     input      [ 7:0] cc_in,
     output     [ 7:0] cc_out,
 

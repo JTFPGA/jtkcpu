@@ -23,16 +23,18 @@ module jtkcpu_idx(
     
     input      [15:0] idx_reg, 
     input      [15:0] data,  // offset encoded in the data after the op
-    input      [ 7:0] postbyte, 
     input      [ 7:0] a, 
     input      [ 7:0] b, 
 
-    output reg [15:0] idx_addr, 
-    output reg [ 2:0] idx_sel,
+    output reg [15:0] addr,
+    output reg [ 2:0] idx_s,
+    output reg        busy,
     output reg        indirect
 );
 
 reg [15:0] offset;
+reg        idx_enl;
+reg [ 7:0] postbyte;
 
 assign idx_sel = { postbyte[1], postbyte[6:5] };
 
@@ -63,9 +65,22 @@ end
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        idx_addr <= 0;
+        addr <= 0;
+        busy <= 0;
     end else if (cen) begin
-        idx_addr <= idx_reg + offset;
+        idx_enl <= idx_en;
+        if( idx_en && !idx_enl ) begin
+            postbyte <= data[7:0]; // Keep a copy
+            case( data[7:0] )
+                8,12: begin
+                    busy<=1;
+                end
+                9,13: begin
+                    busy<=1;
+
+            endcase
+        end
+        addr <= idx_reg + offset;
     end
 end
 

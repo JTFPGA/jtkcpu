@@ -118,7 +118,7 @@ always @(posedge clk) begin
         mem16l <= mem16;
         pc <= ( ni | opd ) ? pc+16'd1 :
               short_branch ? { {8{data[7]}}, data[7:0]}+pc :
-              long_branch  ? data :
+              long_branch  ? data+pc :
               set_pc_int   ? up_pc : pc;
     end
 end
