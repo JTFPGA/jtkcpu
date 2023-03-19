@@ -80,8 +80,8 @@ module jtkcpu_ucode(
 // another 32 categories reserved for common routines
 
 localparam UCODE_AW = 10, // 1024 ucode lines
-           OPCAT_AW = 6,  // op code categories
-           UCODE_DW = 24; // Number of control signals
+           OPCAT_AW = 7,  // op code categories
+           UCODE_DW = 40; // Number of control signals
 
 // to do: define localparam with op categories
 localparam [5:0] SINGLE_ALU       = 1,
@@ -120,15 +120,17 @@ localparam [5:0] SINGLE_ALU       = 1,
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read
-reg [OPCAT_AW-1:0] opcat;
+reg [OPCAT_AW-1:0] opcat, after_idx, nx_after_idx;
 reg                idx_src; // instruction requires idx decoding first to grab the source operand
 
 wire buserror; // next instruction
 wire waituz, wait16;  
 
+localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 
 // Conversion of opcodes to op category
 always @* begin
+    nx_after_idx = after_idx;
     case( op ) 
         CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, 
         CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM, 
@@ -145,14 +147,21 @@ always @* begin
         CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                   opcat = SINGLE_ALU_INH16
         CLR, INC, NEG, TST, DEC, COM:                               opcat = MEM_ALU_IDX
 
+        // Operand in indexed memory
         CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,  
         EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,        
         CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,   
-        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:            opcat = SINGLE_ALU_IDX;
+        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:            begin
+            opcat        = PARSE_IDX
+            nx_after_idx = SINGLE_ALU_IDX;
+        end
         
         CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
         CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
-        CMPY_IDX,           LDY_IDX:                                opcat = SINGLE_ALU_IDX16;
+        CMPY_IDX,           LDY_IDX:                                begin
+            nx_after_idx = SINGLE_ALU_IDX;
+            opcat        = SINGLE_ALU_IDX16;
+        end
 
 // FIX MULTI_ALU_INH
         MUL, LMUL:                                                  opcat = MULTIPLY;
@@ -168,23 +177,24 @@ always @* begin
         LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, 
         LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE:        opcat = LBRANCH;
         
-        DECX_JNZ:     opcat = LOOPX;
-        DECB_JNZ:     opcat = LOOPB;
-        MOVE_Y_X_U:   opcat = MOVE;
-        BMOVE_Y_X_U:  opcat = BMOVE;
-        BSETA_X_U:    opcat = BSETA;
-        BSETD_X_U:    opcat = BSETD;
-        RTI:          opcat = RTIT;
-        RTS:          opcat = RTSR;
-        JMP:          opcat = JUMP;
-        JSR:          opcat = JMSR;
-        PUSHU, PUSHS: opcat = PSH;
-        PULLU, PULLS: opcat = PUL;
-        NOP:          opcat = NOPE;
+        DECX_JNZ:       opcat = LOOPX;
+        DECB_JNZ:       opcat = LOOPB;
+        MOVE_Y_X_U:     opcat = MOVE;
+        BMOVE_Y_X_U:    opcat = BMOVE;
+        BSETA_X_U:      opcat = BSETA;
+        BSETD_X_U:      opcat = BSETD;
+        RTI:            opcat = RTIT;
+        RTS:            opcat = RTSR;
+        JMP:            opcat = JUMP;
+        JSR:            opcat = JMSR;
+        PUSHU, PUSHS:   opcat = PSH;
+        PULLU, PULLS:   opcat = PUL;
+        NOP:            opcat = NOPE;
         
-        STA, STB:                opcat = STORE8;
-        STD, STX, STY, STU, STS: opcat = STORE16;
-        default: opcat = BUSERROR; // stop condition
+        STA, STB:       opcat = STORE8;
+        STD, STX, STY,
+        STU, STS:       opcat = STORE16;
+        default:        opcat = BUSERROR; // stop condition
     endcase
 end
 
@@ -213,21 +223,46 @@ always @(posedge clk) begin
         addr <= 0;  // Reset starts ucode at 0
         int_en <= 0;  
     end else if( cen && !buserror ) begin
-        // To do: add the rest of control flow to addr progress
-        
+        after_idx <= nx_after_idx;
+
         if( irq ) begin // interrupt enabled irq
-            addr <= { IRQ, 4'd0 };
+            addr <= { IRQ, OPLEN };
             int_en <= 1;
         end else if( nmi ) begin  // interrupt enabled nmi
-                addr <= { NMI, 4'd0 };
+                addr <= { NMI, OPLEN };
         end else if ( firq ) begin  // interrupt enabled firq
-             addr <= { FIRQ, 4'd0 };
+             addr <= { FIRQ, OPLEN };
              int_en = 1;
         end else    // interrupt disabled
             int_en = 0;
 
-        if( !mem_busy && !(idx_en && idx_busy)) addr <= addr + 1; // when we keep processing an opcode routine
-        if( ni ) addr <= { opcat, 4'd0 }; // when a new opcode is read
+        if( !mem_busy && !(idx_en && idx_busy)) begin
+            addr <= addr + 1; // keep processing an opcode routine
+            if( skip_noind && !op[4] ) begin
+                addr <= addr + 2;
+            end
+        end
+        if( ni      ) addr <= { opcat, OPLEN }; // when a new opcode is read
+        // Indexed addressing parsing
+        if( jmp_idx ) begin
+            if( !op[7] ) begin
+                addr <= IDX_SUM
+            end else begin
+                case( op[3:0] )
+                    0:        addr <= IDX_RINC;
+                    1:        addr <= IDX_RINC2;
+                    2:        addr <= IDX_RDEC;
+                    3:        addr <= IDX_RDEC2;
+                    4,5,6,11: addr <= IDX_SUM
+                    8,12:     addr <= IDX_OFFSET8;
+                    9,13:     addr <= IDX_OFFSET16;
+                    15:       addr <= IDX_EXTIND;
+                endcase
+            end
+        end
+        if( idx_ret ) begin
+            addr <= after_idx;
+        end
     end
 end
 

@@ -24,7 +24,7 @@ module jtkcpu_regs(
     input        [15:0] pc,
     output reg   [ 7:0] cc,
     input        [ 7:0] op,         // op code used to select specific registers
-    input        [ 7:0] op_sel,     // postbyte used to select specific registers
+    input        [ 7:0] mdata,     // postbyte used to select specific registers
     input        [ 7:0] psh_sel,
     input               psh_hilon,
     input               psh_ussel,
@@ -34,6 +34,7 @@ module jtkcpu_regs(
     input        [31:0] alu,
     input        [15:0] mdata,
     input        [15:0] idx_addr,
+    input               idx_inc,
     input               up_a,
     input               up_b,
     input               up_dp,
@@ -81,14 +82,21 @@ reg         pshdec_u, pshdec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_p
 reg  [ 7:0] a, b, dp;
 reg  [15:0] x, y, u, s; 
 wire [15:0] psh_other;
+wire        idx_incx, idx_incy, idx_incu, idx_incs;
+wire [ 1:0] idx_step;
 
 assign acc = { b, a };
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
+assign idx_incx  = idx_inc && mdata[6:5]==0;
+assign idx_incy  = idx_inc && mdata[6:5]==1;
+assign idx_incu  = idx_inc && mdata[6:5]==2;
+assign idx_incs  = idx_inc && mdata[6:5]==3;
+assign idx_step  = mdata[1:0];
 
 // exg/tfr mux
 always @* begin
-    case(op_sel[7:4] )
+    case(mdata[7:4] )
         4'b0000: mux = {a, b};
         4'b0001: mux = x;
         4'b0010: mux = y;
@@ -102,7 +110,7 @@ always @* begin
         default: mux = 0;
     endcase 
 
-    case( op_sel[3:0] )
+    case( mdata[3:0] )
         4'b0000: d_mux = {a, b};
         4'b0001: d_mux = x;
         4'b0010: d_mux = y;
@@ -219,15 +227,22 @@ always @* begin
         up_pul_y, up_pul_other, up_pul_pc };
 end 
 
+function [15:0] apply_step( input [15:0] rbase );
+    apply_step = !idx_step    ? rbase :
+                  idx_step[1] ? rbase - { idx_step[0], 1'b0 } : rbase;
+endfunction
+
 // indexed idx_reg
 always @* begin
-    case ( op_sel[6:5] ) 
-        2'b00  : idx_reg =  x;      
-        2'b01  : idx_reg =  y; 
-        2'b10  : idx_reg =  u;
-        2'b11  : idx_reg =  s;
-        default: idx_reg = pc; 
-    endcase  
+    case ( mdata[6:5] )
+        2'b00: idx_reg =  apply_step(x);
+        2'b01: idx_reg =  apply_step(y);
+        2'b10: idx_reg =  apply_step(u);
+        2'b11: idx_reg =  apply_step(s);
+    endcase
+    if( mdata[3:2]==2'b11 ) begin
+        idx_reg = pc;
+    end
 end
 
 always @(posedge clk, posedge rst) begin

@@ -22,12 +22,15 @@ module jtkcpu_idx(
     input             cen,
     
     input      [15:0] idx_reg, 
-    input      [15:0] data,  // offset encoded in the data after the op
+    input      [15:0] mdata,
     input      [ 7:0] a, 
     input      [ 7:0] b, 
 
+    // Control
+    input             idx_ret,
+    input             idx_ld,
+
     output reg [15:0] addr,
-    output reg [ 2:0] idx_s,
     output reg        busy,
     output reg        indirect
 );
@@ -50,11 +53,11 @@ always @* begin
             4'b0100: offset =  0;
             4'b0101: offset =  { {8{b[7]}}, b };
             4'b0110: offset =  { {8{a[7]}}, a };
-            4'b1000: offset =  { {8{data[7]}}, data[7:0] };
-            4'b1001: offset =  data;
+            4'b1000: offset =  { {8{mdata[7]}}, mdata[7:0] };
+            4'b1001: offset =  mdata;
             4'b1011: offset =  {a, b};
-            4'b1100: offset =  { {8{data[7]}}, data[7:0] };
-            4'b1101: offset =  data;
+            4'b1100: offset =  { {8{mdata[7]}}, mdata[7:0] };
+            4'b1101: offset =  mdata;
             4'b1111: offset =  0;
             default: offset =  0;
         endcase
@@ -68,19 +71,9 @@ always @(posedge clk, posedge rst) begin
         addr <= 0;
         busy <= 0;
     end else if (cen) begin
-        idx_enl <= idx_en;
-        if( idx_en && !idx_enl ) begin
-            postbyte <= data[7:0]; // Keep a copy
-            case( data[7:0] )
-                8,12: begin
-                    busy<=1;
-                end
-                9,13: begin
-                    busy<=1;
-
-            endcase
+        if( idx_ret ) begin
+            addr <= idx_ld ? mdata : idx_reg + offset;
         end
-        addr <= idx_reg + offset;
     end
 end
 

@@ -17,41 +17,33 @@
 #   Date: 3-03-2023 
 
 ########## INDEX ADDR ##################
-            # R+    IDX_INC, IDX_RET
-            # R++ / [R++]
-                    ADR_IDX, MEM16, SKIP_NOIND
+PARSE_IDX:          OPD
+                    JMP_IDX
+
+IDX_RINC:           IDX_STEP, IDX_RET           # R+
+IDX_RINC2:          ADR_IDX, MEM16, SKIP_NOIND  # R++ / [R++]
                     ADR_DATA, MEM16
-                    IDX_INC
-                    IDX_INC, IDX_RET
-            # R-
-                    IDX_DEC, IDX_RET
-            # R-- / [R--]
-                    ADR_IDX, MEM16, SKIP_NOIND
+                    IDX_STEP
+                    IDX_STEP, IDX_RET
+IDX_RDEC:           IDX_STEP, IDX_RET           #  -R
+IDX_RDEC2:          ADR_IDX, MEM16, SKIP_NOIND  # --R / [--R]
                     ADR_DATA, MEM16
-                    IDX_DEC,
-                    IDX_DEC, IDX_RET
-            # R+ACC
+                    IDX_STEP,
+                    IDX_STEP, IDX_RET
+IDX_SUM:            IDX_RET                     # R+ACC/offset 0/5
+IDX_OFFSET8:        OPD, SKIP_NOIND             # Fixed offset 8
                     IDX_RET
-            # Fixed offset 0/5
-                    IDX_RET
-            # Fixed offset 8
+                    ADR_DATA, MEM16
+                    IDX_LD, IDX_RET
+IDX_OFFSET16:       OPD, MEMHI                  # Fixed offset 16
                     OPD, SKIP_NOIND
                     IDX_RET
                     ADR_DATA, MEM16
                     IDX_LD, IDX_RET
-            # Fixed offset 16
-                    OPD, MEMHI
-                    OPD, SKIP_NOIND
-                    IDX_RET
-                    ADR_DATA, MEM16
-                    IDX_LD, IDX_RET
-            # Extended indirect
-                    OPD, MEMHI
+IDX_EXTIND:         OPD, MEMHI                  # Extended indirect
                     OPD
                     ADR_DATA, MEM16
                     IDX_LD, IDX_RET
-
-
 
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
@@ -246,3 +238,4 @@ NMI:                PSHALL
                     E=1, I=1, F=1
                     PC=INT
                     NI
+BUSERROR:           HALT
