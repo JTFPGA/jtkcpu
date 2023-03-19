@@ -16,138 +16,155 @@
 #   Version: 1.0
 #   Date: 3-03-2023 
 
-# Solves an ALU operation in a single clock
-# Will wait for OPN1 to be ready
+########## ALU OPERATIONS ##################
+SINGLE_ALU:         OPD
+                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    NI
 
+SINGLE_ALU_16:      OPD, MEM16
+                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    NI
 
-RESET: PC=RST
-       NI 
+SINGLE_ALU_INH:     OPN0=REGS, UPREGS=ALU
+                    NI
 
-NOPE: NI
+SINGLE_ALU_INH16:   OPN0=REGS, UPREGS=ALU
+                    NI
 
-SINGLE_ALU:       OPN0=REGS, OPN1=MEM, UPREGS=ALU 
-                  NI
+SINGLE_ALU_IDX:     OPD, IDXEN
+                    ADRIDX
+                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    NI
 
-SINGLE_ALU_16:    MEM16
-                  OPN0=REGS, OPN1=MEM, UPREGS=ALU 
-                  NI
+SINGLE_ALU_IDX16:   OPD, IDXEN
+                    ADRIDX, MEM16
+                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    NI
 
-SINGLE_ALU_INH:   OPN0=REGS, UPREGS=ALU 
-                  NI
+MULTI_ALU:          OPD
+                    OPN0=REGS, OPN1=MEM, WAITALU, UPREGS=ALU
+                    NI
 
-SINGLE_ALU_INH16: OPN0=REGS, UPREGS=ALU
-                  NI  
+MEM_ALU_IDX:        OPD, IDXEN
+                    ADRIDX
+                    OPN0=MEM, WE
+                    NI
 
-SINGLE_ALU_IDX:   ADRIDX
-                  OPN0=REGS, OPN1=MEM, UPREGS=ALU 
-                  NI
+MULTI_ALU_INH:      OPD
+                    OPN0=REGS, OPN1=MEM, UPREGS=ALU, WAITALU
+                    NI
 
-SINGLE_ALU_IDX16: ADRIDX, MEM16
-                  OPN0=REGS, OPN1=MEM, UPREGS=ALU
-                  NI
+MULTI_ALU_IDX:      OPD, IDXEN
+                    ADRIDX
+                    OPN0=REGS, OPN1=MEM, UPREG=ALU, WAITALU
+                    NI
 
-MULTI_ALU:        OPN0=REGS, OPN1=MEM, WAITALU
-                  UPREGS=ALU, NI
+WMEM_ALU:           OPD, IDXEN
+                    ADRIDX
+                    OPN0=MEM, UPDATA, WAITALU
+                    ADRIDX, WE
+                    NI
 
-MEM_ALU_IDX:      ADRIDX 
-                  OPN0=MEM 
-                  WE, NI
+######### DECREMENT AND LOOP ##############
+LOOPX:              OPD, DECX       # CHECK THAT DECX GOES FIRST
+                    PC_XNZ=BRANCH
+                    NI
 
-MULTI_ALU_INH:    OPN0=REGS, UPREGS=ALU
-                  NI
+LOOPB:              OPD, DECB
+                    PC_BNZ=BRANCH,
+                    NI
 
-MULTI_ALU_IDX:    ADRIDX
-                  OPN0=REGS, OPN1=MEM, WAITALU
-                  UPREG=ALU, NI 
+######### STRING OPERATIONS ##############
+MOVE:               OPD, ADRY
+                    OPN0=MEM, WE, ADRX, DECU, INCY,
+                    INCX, NI
 
-MULTI_MEMALU_IDX: ADRIDX
-                  OPN0=MEM, WAITALU
-                  WE, NI
+BMOVE:              OPD, ADRY,
+                    OPN0=MEM, WE, ADRX, DECU, INCY,
+                    INCX, BACK2_UNZ
+                    NI
 
-WMEM_ALU:         OPN0=REGS, OPN1=MEM, WAITALU
-                  WE, NI
+BSETA:              OPN0=A, WE, ADRX, DECU,
+                    INCX, BACK1_UNZ
+                    NI
 
-LOOPX: PC_XNZ=BRANCH, DECX, NI
+BSETD:              OPN0=A, WE, ADRX, INCX,
+                    OPN0=B, WE, ADRX, INCX, DECU
+                    BACK2_UNZ
+                    NI
 
-LOOPB: PC_BNZ=BRANCH, DECB, NI
+############### STORE OPERATIONS ##################
+STORE8:             OPD, IDXEN
+                    OPN0=REGS, ADRIDX, WE,
+                    NI
 
-MOVE:  ADRY, OPN0=MEM 
-       WE, ADRX, DECU, INCY, INCX
-       NI
+STORE16:            OPD, IDXEN
+                    OPN0=REGS, ADRIDX, WE, MEM16,
+                    NI
 
-BMOVE: ADRY, OPN0=MEM 
-       WE, ADRX, DECU 
-       INCY, INCX, BACK2
-       WAITUZ
-       NI
+############### MISC OPERATIONS ##################
+SETLINES:           OPD
+                    UPLINES, NI
 
-BSETA: OPN0=A, WE, ADRX, INCX, DECU, WAITUZ
-       NI
+NOPE:               NI
 
-BSETD: OPN0=D, MEM16 
-       WE, ADRX, DECU 
-       INCX, BACK2
-       WAITUZ 
-       NI 
-
-# JUMP, BRANCHING AND SUBROUTINES
-SBRANCH: OPD
-         PC=BRANCH8
-         NI
+############### FLOW CONTROL ##################
+SBRANCH:            OPD
+                    PC=BRANCH8
+                    NI
 
 # LONG BRANCH IS NOT RELATIVE, RIGHT ???
-LBRANCH: OPD, MEM16
-         PC=BRANCH16
-         NI
+LBRANCH:            OPD, MEM16
+                    PC=BRANCH16
+                    NI
 
-JUMP: OPD, MEM16
-      PC=JMP
-      NI
+JUMP:               OPD, MEM16
+                    PC=JMP
+                    NI
 
-JMSR: OPD, MEM16
-      PSH_PC, PSH_GO
-      WE, WAIT_STACK
-      PC=JMP, MEM16
-      NI
+JMSR:               OPD, MEM16
+                    PSH_PC, PSH_GO
+                    WE, WAIT_STACK
+                    PC=JMP, MEM16
+                    NI
 
-RTIT: RTI_CC, PUL_GO 
-      WAIT_STACK
-      RTI_OTHER, PUL_GO
-      WAIT_STACK
-      NI
+RTIT:               RTI_CC, PUL_GO
+                    WAIT_STACK
+                    RTI_OTHER, PUL_GO
+                    WAIT_STACK
+                    NI
 
-RTSR: PUL_PC
-      WAIT_STACK
-      NI
+RTSR:               PUL_PC
+                    WAIT_STACK
+                    NI
 
-PSH:  PSH_GO
-      OPN0=REGS, WE, WAIT_STACK
-      NI
+############### STACK ##################
+PSH:                OPD,
+                    PSH_GO
+                    WE, WAIT_STACK
+                    NI
 
-PUL:  PUL_GO
-      WAIT_STACK
-      NI
+PUL:                OPD
+                    PUL_GO
+                    WAIT_STACK
+                    NI
 
-FIRQ: PSHCC
-      E=0, F=1, I=1
-      PSHPC
-      PC=INT
-      NI
+########### INTERRUPTS ####################
+RESET:              PC=INT
+                    NI
 
-IRQ:  PSHALL
-      E=1, I=1
-      PC=INT
-      NI
+FIRQ:               PSHCC
+                    E=0, F=1, I=1
+                    PSHPC
+                    PC=INT
+                    NI
 
-NMI:  PSHALL
-      E=1, I=1, F=1
-      PC=INT
-      NI
+IRQ:                PSHALL
+                    E=1, I=1
+                    PC=INT
+                    NI
 
-SETLINES: OPD
-          UPLINES, NI
-
-STORE8:  OPN0=REGS, ADRIDX, WE, NI
-
-STORE16: ADRIDX, MEM16, OPN0=REGS, WE
-         NI
+NMI:                PSHALL
+                    E=1, I=1, F=1
+                    PC=INT
+                    NI

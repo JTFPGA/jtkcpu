@@ -25,15 +25,16 @@ module jtkcpu_alu(
     input      [15:0] opnd0, 
     input      [15:0] opnd1, 
     input      [ 7:0] cc_in,
+    output     [ 7:0] cc_out,
 
     output reg        busy,
-    output reg        c_out,
-    output reg        v_out,
-    output reg        z_out,
-    output reg        n_out,
-    output reg        h_out,
+
     output reg [15:0] rslt
 );
+
+reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
+
+assign cc_out = { ... } // To do
 
 `include "jtkcpu.inc"
 
@@ -74,6 +75,9 @@ always @* begin
     z_out = cc_in[CC_Z];
     n_out = cc_in[CC_N];
     h_out = cc_in[CC_H];
+    e_out = cc_in[CC_E];
+    i_out = cc_in[CC_I];
+    f_out = cc_in[CC_F];
 
     case (op)
         LEAX,LEAY,LEAU,LEAS: begin // LEA  // RAVISAR
@@ -103,19 +107,23 @@ always @* begin
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,cc_in[CC_C]};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IMM,ANDCC: begin  // AND, BIT, ANDCC
+        ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IMM: begin  // AND, BIT
             rslt = (opnd0 & opnd1);
-            if ( op!=ANDCC )
-                v_out = 0;
-        end
-        EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX: begin    // EOR
-            rslt  = (opnd0 ^ opnd1);
             v_out = 0;
         end
-        ORA_IMM,ORB_IMM,ORA_IDX,ORB_IDX,ORCC: begin  // OR, ORCC
-            rslt  = (opnd0 | opnd1);
-            if ( op!=ORCC )
-                v_out = 0;
+        EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX: begin    // EOR
+            rslt  = opnd0 ^ opnd1;
+            v_out = 0;
+        end
+        ORA_IMM,ORB_IMM,ORA_IDX,ORB_IDX: begin  // OR
+            rslt  = opnd0 | opnd1;
+            v_out = 0;
+        end
+        ANDCC: begin
+            { ..., c_out} = cc_in & opnd1;
+        end
+        ORCC: begin
+            { ..., c_out} = cc_in | opnd1;
         end
         CMPA_IMM,CMPB_IMM,CMPA_IDX,CMPB_IDX,CMPD_IMM,CMPD_IDX,CMPX_IMM,CMPX_IDX,CMPY_IMM,CMPY_IDX,CMPU_IMM,CMPU_IDX,CMPS_IMM,CMPS_IDX: begin  // CMP
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
@@ -181,14 +189,14 @@ always @* begin
         end
         SEX: begin  // SEX
             rslt  = {{8{opnd0[7]}}, opnd0[7:0]};
-            v_out = 1'b0;
+            v_out = 0;
         end                
-        MUL,LMUL: begin  // MUL, LMUL 
+        MUL, LMUL: begin  // MUL, LMUL
             rslt  = opnd0 * opnd1;
             c_out = rslt[msb];
         end
         // 
-        ABSA,ABSB,ABSD: begin  // ABS
+        ABSA, ABSB, ABSD: begin  // ABS
             if (opnd0[msb] )
                 rslt = alu16 ? -opnd0 : {opnd0[15:8],-opnd0[7:0]};
             else 
@@ -200,6 +208,8 @@ always @* begin
             rslt = opnd0;
     endcase
 
+    // To do: the condition is wrong, it should be && instead of ||
+    // It should also exclude ANDCC and ORCC
     if ( op!=ABX || op!=ABSA || op!=ABSB || op!=ABSD )
         z_out = (rslt == 0);
     if ( op!=LEAX || op!=LEAY || op!=LEAU || op!=LEAS || op!=ABX || op!=MUL || op!=LMUL )

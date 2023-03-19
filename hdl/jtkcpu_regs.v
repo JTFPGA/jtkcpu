@@ -22,7 +22,7 @@ module jtkcpu_regs(
     input               cen,
 
     input        [15:0] pc,
-    input        [ 7:0] cc,
+    output reg   [ 7:0] cc,
     input        [ 7:0] op,         // op code used to select specific registers
     input        [ 7:0] op_sel,     // postbyte used to select specific registers
     input        [ 7:0] psh_sel,
@@ -39,6 +39,16 @@ module jtkcpu_regs(
     input               up_y,
     input               up_u,
     input               up_s,
+    // Flags from ALU
+    input               set_regs_alu,
+    input        [ 7:0] alu_cc,
+    // Flags from control
+    input               set_e,
+    input               set_i,
+    input               set_f,
+    input               clr_e,
+    input               clr_i,
+    input               clr_f,
 
     input               dec_us,
 
@@ -97,30 +107,24 @@ always @* begin
     endcase   
 end
 
-// Missing ALU-REG-MUX
 always @* begin 
     case ( op )
-        // ADDA_IMM, SUBA_IMM, ANDA_IMM, EORA_IMM, ORA_IMM, CLRA, NEGA, ASRA,
-        // ADDA_IDX, SUBA_IDX, ANDA_IDX, EORA_IDX, ORA_IDX, COMA, TSTA, ASLA,
-        // ADCA_IMM, SBCA_IMM, BITA_IMM, CMPA_IMM, LDA_IMM, DECA, LSRA, ROLA, SEX,
-        // ADCA_IDX, SBCA_IDX, BITA_IDX, CMPA_IDX, LDA_IDX, INCA, RORA,  DAA, STA: 
-
         ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
         ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB,
-        ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, LDB_IDX, DECB, LSRB, ROLB,
-        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, LDB_IMM, INCB, RORB, ABSB, STB: mux_reg0 = {8'hFF,  b};
+        ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB, LDB_IMM,
+        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,    RORB, ABSB, LDB_IDX, STB: mux_reg0 = {a, b}; // "a" will be ignored
 
-        LDD_IMM, CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,     
-        LDD_IDX, CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,  
-        CLRD, NEGD, ABSD, LSRD, RORD, ASRD, ASLD, ROLD, STD:   mux_reg0 = {a, b};      
+        CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
+        CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX, LDD_IMM,
+        CLRD,     NEGD,     ABSD,     LSRD,     RORD,     ASRD,     ASLD,     ROLD,     LDD_IDX, STD:   mux_reg0 = {a, b};
         
-        LDX_IMM, LDX_IDX, CMPX_IMM, CMPX_IDX, LEAX,  ABX, STX: mux_reg0 = x;
-        LDY_IMM, LDY_IDX, CMPY_IMM, CMPY_IDX, LEAY, LMUL, STY: mux_reg0 = y;
-        LDU_IMM, LDU_IDX, CMPU_IMM, CMPU_IDX, LEAU, STU:       mux_reg0 = u;
-        LDS_IMM, LDS_IDX, CMPS_IMM, CMPS_IDX, LEAS, STS:       mux_reg0 = s;
-        ANDCC, ORCC: mux_reg0 = {8'hFF,  cc};
+        CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 = x;
+        CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 = y;
+        CMPU_IMM, CMPU_IDX, STU:       mux_reg0 = u;
+        CMPS_IMM, CMPS_IDX, STS:       mux_reg0 = s;
+        ANDCC, ORCC: mux_reg0 = {a, cc};
 
-        default : mux_reg0 = {8'hFF,  a};
+        default : mux_reg0 = {a, a};
     endcase
 end
 
@@ -214,7 +218,7 @@ always @* begin
 end
 
 always @(posedge clk, posedge rst) begin
-    if( rst ) begin
+    if( rst ) begin // CHECK reset values, especially CC
         a  <= 0;
         b  <= 0;
         dp <= 0;
@@ -222,6 +226,7 @@ always @(posedge clk, posedge rst) begin
         y  <= 0;
         u  <= 0;
         s  <= 0;
+        cc <= 0;
     end else if(cen) begin
         u <= nx_u;
         s <= nx_s;
@@ -242,6 +247,16 @@ always @(posedge clk, posedge rst) begin
             u <= u + 16'd1; 
         if( inc_pul && !psh_ussel )
             s <= s + 16'd1;
+
+        if( set_regs_alu ) begin
+            cc <= alu_cc;
+        end
+        if( set_e ) cc[CC_E] <= 1;
+        if( set_i ) cc[CC_I] <= 1;
+        if( set_f ) cc[CC_F] <= 1;
+        if( clr_e ) cc[CC_E] <= 0;
+        if( clr_i ) cc[CC_I] <= 0;
+        if( clr_f ) cc[CC_F] <= 0;
     end
 end
 

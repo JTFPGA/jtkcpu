@@ -151,10 +151,12 @@ always @* begin
         CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
         CMPY_IDX,           LDY_IDX:                                 opcat = SINGLE_ALU_IDX16; 
 
+// FIX MULTI_ALU_INH (DAA, ABX...)
         LSRA, RORA, ASRA, ASLA, ROLA,  MUL, SEX, ABSD, 
         LSRB, RORB, ASRB, ASLB, ROLB, LMUL, DAA,  ABX, DIV_X_B:      opcat = MULTI_ALU_INH
         LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:            opcat = MULTI_ALU;  
         LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:            opcat = MULTI_ALU_IDX;
+// WHAT KIND OF ADDRESSING ARE THESE?
         LSR, ROR, ASR, ASL, ROL:                                     opcat = MULTI_MEMALU_IDX;
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
