@@ -48,6 +48,7 @@ module jtkcpu_memctrl(
 
     // select addressing mode
     input             mem16,
+    input             memhi,
     input             halt,   // hold the current address
     input             uplines,
     input             idx_en,
@@ -124,7 +125,11 @@ always @(posedge clk, posedge rst) begin
             end
             // Capture data
             if( is_op ) op <= din;
-            data[ 7:0] <= din; // get the lower half/regular 1-byte access
+            if(memhi) begin
+                data[15:8] <= din;
+            end else begin
+                data[ 7:0] <= din; // get the lower half/regular 1-byte access
+            end
         end
     end
 end

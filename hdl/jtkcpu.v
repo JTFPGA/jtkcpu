@@ -50,7 +50,7 @@ wire        idx_en,psh_en, hi_lon;
 wire        c_out, n_out, z_out, v_out, h_out;
 wire        up_a, up_b, up_cc, up_dp, up_x, up_y, up_u, up_s, up_pc; 
 wire        indirect, branch; 
-wire        pul_en, dec_us, us_sel;
+wire        pul_en, pshdec, us_sel;
 wire        wrq, addr_x, addr_y, uplines;
 
 jtkcpu_ctrl u_ctrl(
@@ -67,7 +67,7 @@ jtkcpu_ctrl u_ctrl(
     .firq       ( firq       ),
     .nmi        ( nmi        ),
     .pul_en     ( pul_en     ),
-    .dec_us     ( dec_us     ),
+    .pshdec     ( pshdec     ),
     .psh_sel    ( psh_sel    ),
     .us_sel     ( us_sel     ),
     .alu_busy   ( alu_busy   ),
@@ -156,7 +156,7 @@ jtkcpu_regs u_regs(
     .up_y       ( up_y       ),
     .up_u       ( up_u       ),
     .up_s       ( up_s       ),
-    .dec_us     ( dec_us     ),
+    .pshdec     ( pshdec     ),
     .mux        ( mux        ),
     .d_mux      ( d_mux      ),
     .mux_reg0   ( opnd0      ),

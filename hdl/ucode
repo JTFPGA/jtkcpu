@@ -93,7 +93,7 @@ BSETD:              OPN0=A, WE, ADRX, INCX,
                     BACK2_UNZ
                     NI
 
-############### STORE OPERATIONS ##################
+############### LOAD/STORE OPERATIONS ############
 STORE8:             OPD, IDXEN
                     OPN0=REGS, ADRIDX, WE,
                     NI
@@ -102,13 +102,36 @@ STORE16:            OPD, IDXEN
                     OPN0=REGS, ADRIDX, WE, MEM16,
                     NI
 
+LD8_IMM :           OPD
+                    UPLD8
+                    NI
+
+LD8_IDX:            OPD, IDXEN
+                    ADRIDX
+                    UPLD8
+                    NI
+
+LD16_IMM:           OPD, MEMHI
+                    OPD
+                    UPLD16
+                    NI
+
+LD16_IDX:           OPD, IDXEN
+                    ADRIDX, MEM16
+                    UPLD16
+                    NI
+
+LEA:                OPD, IDXEN
+                    UPLEA
+                    NI
+
 ############### MISC OPERATIONS ##################
 SETLINES:           OPD
                     UPLINES, NI
 
 NOPE:               NI
 
-############### FLOW CONTROL ##################
+############### FLOW CONTROL #####################
 SBRANCH:            OPD
                     PC=BRANCH8
                     NI

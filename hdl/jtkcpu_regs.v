@@ -32,6 +32,8 @@ module jtkcpu_regs(
 
     // Register update
     input        [15:0] alu,
+    input        [15:0] mdata,
+    input        [15:0] idx_addr,
     input               up_a,
     input               up_b,
     input               up_dp,
@@ -39,6 +41,7 @@ module jtkcpu_regs(
     input               up_y,
     input               up_u,
     input               up_s,
+
     // Flags from ALU
     input               set_regs_alu,
     input        [ 7:0] alu_cc,
@@ -50,7 +53,13 @@ module jtkcpu_regs(
     input               clr_i,
     input               clr_f,
 
-    input               dec_us,
+    // Direct increment/decrement
+    input               inc_x,
+    input               inc_y,
+    input               dec_x,
+    input               dec_b,
+    input               dec_u,
+    input               pshdec,
 
     output   reg [15:0] mux,
     output   reg [15:0] d_mux,
@@ -67,7 +76,7 @@ module jtkcpu_regs(
     output   reg        up_pul_pc
 );
 
-reg         dec_u, dec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_pul_b, up_pul_dp, inc_pul;
+reg         pshdec_u, pshdec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_pul_b, up_pul_dp, inc_pul;
 reg  [ 7:0] a, b, dp;
 reg  [15:0] x, y, u, s; 
 wire [15:0] psh_other;
@@ -111,12 +120,12 @@ always @* begin
     case ( op )
         ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
         ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB,
-        ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB, LDB_IMM,
-        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,    RORB, ABSB, LDB_IDX, STB: mux_reg0 = {a, b}; // "a" will be ignored
+        ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
+        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,    RORB, ABSB, STB: mux_reg0 = {a, b}; // "a" will be ignored
 
         CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
-        CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX, LDD_IMM,
-        CLRD,     NEGD,     ABSD,     LSRD,     RORD,     ASRD,     ASLD,     ROLD,     LDD_IDX, STD:   mux_reg0 = {a, b};
+        CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
+        CLRD,     NEGD,     ABSD,     LSRD,     RORD,     ASRD,     ASLD,     ROLD,     STD:   mux_reg0 = {a, b};
         
         CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 = x;
         CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 = y;
@@ -131,29 +140,27 @@ end
 always @* begin 
     case ( op )
         MUL, ABX:    mux_reg1 = {8'hFF,  b};
-        ANDCC, ORCC: mux_reg1 = {8'hFF,  cc};    
         LMUL:        mux_reg1 = x;
         default:     mux_reg1 = {8'hFF,  a};
     endcase
 end
 
-
 // U/S next value
 always @* begin
-    dec_u = 0;
-    dec_s = 0;
-    if ( dec_us && !psh_mux) begin
+    pshdec_u = 0;
+    pshdec_s = 0;
+    if ( pshdec && !psh_mux) begin
         if (psh_ussel) 
-            dec_u = 1;
+            pshdec_u = 1;
         else 
-            dec_s = 1;
+            pshdec_s = 1;
     end 
     nx_u = u;
     nx_s = s;
-    if( up_u  ) nx_u = alu;
-    if( up_s  ) nx_s = alu;
-    if( dec_u ) nx_u = u - 16'd1;    
-    if( dec_s ) nx_s = s - 16'd1;    
+    if( up_s  ) nx_s = uplea ? idx_addr : mdata;
+    if( up_u  ) nx_u = uplea ? idx_addr : mdata;
+    if( pshdec_u | dec_u ) nx_u = u - 16'd1;
+    if( pshdec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hilon ) begin
         if( psh_ussel ) 
             nx_s[15:8] = alu[7:0]; 
@@ -166,6 +173,11 @@ always @* begin
         else 
             nx_u[ 7:0] = alu[7:0]; 
     end
+
+    if( inc_pul &&  psh_ussel )
+        nx_u = u + 16'd1;
+    if( inc_pul && !psh_ussel )
+        nx_s = s + 16'd1;
 end
 
 // PUSH
@@ -221,7 +233,7 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin // CHECK reset values, especially CC
         a  <= 0;
         b  <= 0;
-        dp <= 0;
+        dp <= 0; // To do: delete DP ?
         x  <= 0;
         y  <= 0;
         u  <= 0;
@@ -231,22 +243,25 @@ always @(posedge clk, posedge rst) begin
         u <= nx_u;
         s <= nx_s;
 
-        if( up_a  || up_pul_a  ) a  <= alu[7:0]; // pul must let fetched data through ALU
-        if( up_b  || up_pul_b  ) b  <= alu[7:0];
-        if( up_dp || up_pul_dp ) dp <= alu[7:0];
-        if( up_x  ) x  <= alu;
-        if( up_y  ) y  <= alu;
-        // if( up_s  ) s  <= alu;
+        if( up_alu_a ) a <= alu[7:0]; // pul must let fetched data through ALU
+        if( up_alu_b ) b <= alu[7:0];
+
+        // if( up_dp || up_pul_dp ) dp <= alu[7:0];
+        // Update from memory
+        if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
+        if( up_b  || up_pul_b  ) b <= mdata[7:0];
+        if( dec_b ) b <= b - 8'd1;
+        if( up_x  ) x  <= uplea ? idx_addr : mdata;
+        if( up_y  ) y  <= uplea ? idx_addr : mdata;
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[15:8];
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
         if( up_pul_y &&  psh_hilon ) y[15:8] <= alu[15:8];
         if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
-
-        if( inc_pul && psh_ussel )
-            u <= u + 16'd1; 
-        if( inc_pul && !psh_ussel )
-            s <= s + 16'd1;
+        // inc/dec
+        if( inc_x ) x <= x + 16'd1;
+        if( dec_x ) x <= x - 16'd1;
+        if( inc_y ) y <= y + 16'd1; // no dec_y ?
 
         if( set_regs_alu ) begin
             cc <= alu_cc;

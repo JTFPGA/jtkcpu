@@ -34,7 +34,7 @@ module jtkcpu_pshpul(
     input        [ 7:0] psh_bit,
     output   reg        hi_lon,
     output   reg        pul_en,
-    output   reg        dec_us,
+    output   reg        pshdec,
 
     output   reg [ 7:0] psh_sel,
     output              busy,
@@ -57,17 +57,17 @@ always @(posedge clk or posedge rst) begin
         hi_lon  <= 0;
         us_sel  <= 0;
         pul_en  <= 0;
-        dec_us  <= 0;
+        pshdec  <= 0;
     end else if( cen ) begin
         if( !busy ) begin
             pul_en <= 0;
-            dec_us <= 0;
+            pshdec <= 0;
             if( psh_go || pul_go ) begin
                 psh_sel <= postbyte;
                 us_sel  <= op[0];
                 hi_lon  <= 1;
                 pul_en  <= 1;
-                dec_us  <= psh_go;
+                pshdec  <= psh_go;
             end
         end else begin
             if( psh_bit[7:4]!=0 && hi_lon ) begin

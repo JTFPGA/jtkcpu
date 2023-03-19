@@ -28,6 +28,7 @@ module jtkcpu_ctrl(
 
     input             halt,
 
+    // System status
     output            alu_busy,
     output            mem_busy,
     output            psh_busy,
@@ -35,16 +36,22 @@ module jtkcpu_ctrl(
     output            nmi,
     output            firq,
 
-    output            hi_lon,
-    output            us_sel,
-    output            pul_en,
-    output            dec_us,
-    output            psh_sel,
-    output            intvec,
+    // Direct microcode outputs
     output            addr_x,
     output            addr_y,
+    output            dec_us,
+    output            hi_lon,
+    output            intvec,
     output            mem16,
+    output            psh_sel,
+    output            pul_en,
+    output            uplea,
+    output            us_sel,
     output            wrq,
+
+    // Derived logic
+    output            up_x,
+    output            up_y,
 
     output reg [15:0] pc
 
@@ -59,8 +66,18 @@ module jtkcpu_ctrl(
 // to do: signals that are resolved within the
 // module should be here as wires. Watchout for buses
 wire branch;
-wire pul_go, psh_go, int_en, ni;
+wire pul_go, psh_go, int_en, ni,
+     upld16;
 reg  mem16l;
+
+assign up_a = upld8 && ~op[0];
+assign up_b = upld8 &&  op[0];
+
+assign up_d = (upld16 && op[3:1]==0);
+assign up_x = (upld16 && op[3:1]==1) || (uplea && op[1:0]==LEAX[1:0]);
+assign up_y = (upld16 && op[3:1]==2) || (uplea && op[1:0]==LEAY[1:0]);
+assign up_u = (upld16 && op[3:1]==3) || (uplea && op[1:0]==LEAU[1:0]);
+assign up_s = (upld16 && op[3:1]==4) || (uplea && op[1:0]==LEAS[1:0]);
 
 jtkcpu_ucode u_ucode(
     .rst            ( rst           ),
