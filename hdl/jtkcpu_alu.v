@@ -29,7 +29,8 @@ module jtkcpu_alu(
 
     output reg        busy,
 
-    output reg [15:0] rslt
+    output reg [15:0] rslt,
+    output reg [15:0] rslt_hi // used only in lmul
 );
 
 reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
@@ -70,14 +71,15 @@ jtkcpu_div u_div(
 );
 
 always @* begin
-    c_out = cc_in[CC_C];
-    v_out = cc_in[CC_V];
-    z_out = cc_in[CC_Z];
-    n_out = cc_in[CC_N];
-    h_out = cc_in[CC_H];
-    e_out = cc_in[CC_E];
-    i_out = cc_in[CC_I];
-    f_out = cc_in[CC_F];
+    c_out   = cc_in[CC_C];
+    v_out   = cc_in[CC_V];
+    z_out   = cc_in[CC_Z];
+    n_out   = cc_in[CC_N];
+    h_out   = cc_in[CC_H];
+    e_out   = cc_in[CC_E];
+    i_out   = cc_in[CC_I];
+    f_out   = cc_in[CC_F];
+    rslt_hi = 0;
 
     case (op)
         LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
@@ -133,8 +135,8 @@ always @* begin
         end
         COMA,COMB,COM: begin  // COM
             rslt  = ~opnd0;
-            c_out = 1'b1;
-            v_out = 1'b0;
+            c_out = 1;
+            v_out = 0;
         end
         NEGA,NEGB,NEG,NEGD,NEGW: begin  // NEG, NEGD , NEGW
             rslt  = ~opnd0 + 1'b1;
@@ -188,9 +190,13 @@ always @* begin
             rslt  = {{8{opnd0[7]}}, opnd0[7:0]};
             v_out = 0;
         end                
-        MUL, LMUL: begin  // MUL, LMUL
-            rslt  = opnd0 * opnd1;
-            c_out = rslt[msb];
+        MUL: begin
+            rslt  = opnd0[15:8]*opnd0[7:0];
+            c_out = rslt[15];
+        end
+        LMUL: begin
+            { rslt_hi, rslt }  = opnd0*opnd1
+            c_out = rslt_hi[51];
         end
         // 
         ABSA, ABSB, ABSD: begin  // ABS

@@ -31,7 +31,7 @@ module jtkcpu_regs(
     input               pul_en,
 
     // Register update
-    input        [15:0] alu,
+    input        [31:0] alu,
     input        [15:0] mdata,
     input        [15:0] idx_addr,
     input               up_a,
@@ -41,6 +41,7 @@ module jtkcpu_regs(
     input               up_y,
     input               up_u,
     input               up_s,
+    input               up_lmul,
 
     // Flags from ALU
     input               set_regs_alu,
@@ -119,9 +120,9 @@ end
 always @* begin 
     case ( op )
         ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
-        ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB,
+        ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
         ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
-        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,    RORB, ABSB, STB: mux_reg0 = {a, b}; // "a" will be ignored
+        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: mux_reg0 = {a, b}; // "a" will be ignored
 
         CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
         CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
@@ -139,9 +140,9 @@ end
 
 always @* begin 
     case ( op )
-        MUL, ABX:    mux_reg1 = {8'hFF,  b};
-        LMUL:        mux_reg1 = x;
-        default:     mux_reg1 = {8'hFF,  a};
+        ABX:     mux_reg1 = {8'hFF,  b};
+        LMUL:    mux_reg1 = x;
+        default: mux_reg1 = {8'hFF,  a};
     endcase
 end
 
@@ -251,8 +252,8 @@ always @(posedge clk, posedge rst) begin
         if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
         if( up_b  || up_pul_b  ) b <= mdata[7:0];
         if( dec_b ) b <= b - 8'd1;
-        if( up_x  ) x  <= uplea ? idx_addr : mdata;
-        if( up_y  ) y  <= uplea ? idx_addr : mdata;
+        if( up_x  ) x  <= up_lmul ? alu[15:0]  : uplea ? idx_addr : mdata;
+        if( up_y  ) y  <= up_lmul ? alu[31:16] : uplea ? idx_addr : mdata;
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[15:8];
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];

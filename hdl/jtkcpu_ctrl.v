@@ -46,6 +46,7 @@ module jtkcpu_ctrl(
     output            psh_sel,
     output            pul_en,
     output            uplea,
+    output            up_lmul,
     output            us_sel,
     output            wrq,
 
@@ -74,8 +75,8 @@ assign up_a = upld8 && ~op[0];
 assign up_b = upld8 &&  op[0];
 
 assign up_d = (upld16 && op[3:1]==0);
-assign up_x = (upld16 && op[3:1]==1) || (uplea && op[1:0]==LEAX[1:0]);
-assign up_y = (upld16 && op[3:1]==2) || (uplea && op[1:0]==LEAY[1:0]);
+assign up_x = (upld16 && op[3:1]==1) || (uplea && op[1:0]==LEAX[1:0]) || up_lmul;
+assign up_y = (upld16 && op[3:1]==2) || (uplea && op[1:0]==LEAY[1:0]) || up_lmul;
 assign up_u = (upld16 && op[3:1]==3) || (uplea && op[1:0]==LEAU[1:0]);
 assign up_s = (upld16 && op[3:1]==4) || (uplea && op[1:0]==LEAS[1:0]);
 

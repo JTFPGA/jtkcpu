@@ -36,7 +36,8 @@ module jtkcpu(
     output              as      
 );
 
-wire [15:0] opnd0, opnd1, rslt; 
+wire [15:0] opnd0;
+wire [31:0] rslt;
 wire [15:0] data, idx_reg, mux, d_mux, acc;
 wire [15:0] idx_addr, psh_addr;
 wire [15:0] x, y, u, s, pc, nx_u, nx_s; 
@@ -124,7 +125,7 @@ jtkcpu_alu u_alu(
 
     .op         ( alu_op     ), 
     .opnd0      ( opnd0      ), 
-    .opnd1      ( opnd1      ), 
+    .opnd1      ( data       ),
     .cc_in      ( cc         ),
     .busy       ( alu_busy   ),
     .c_out      ( c_out      ),
@@ -132,7 +133,8 @@ jtkcpu_alu u_alu(
     .z_out      ( z_out      ),
     .n_out      ( n_out      ),
     .h_out      ( h_out      ),
-    .rslt       ( rslt       )
+    .rslt       ( rslt[15:0] ),
+    .rslt_hi    ( rslt[31:16])
 );
 
 jtkcpu_regs u_regs(

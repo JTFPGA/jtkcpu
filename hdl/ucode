@@ -18,11 +18,11 @@
 
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
-                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    OPN0=REGS, UPREGS=ALU
                     NI
 
 SINGLE_ALU_16:      OPD, MEM16
-                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    OPN0=REGS, UPREGS=ALU
                     NI
 
 SINGLE_ALU_INH:     OPN0=REGS, UPREGS=ALU
@@ -33,16 +33,16 @@ SINGLE_ALU_INH16:   OPN0=REGS, UPREGS=ALU
 
 SINGLE_ALU_IDX:     OPD, IDXEN
                     ADRIDX
-                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    OPN0=REGS, UPREGS=ALU
                     NI
 
 SINGLE_ALU_IDX16:   OPD, IDXEN
                     ADRIDX, MEM16
-                    OPN0=REGS, OPN1=MEM, UPREGS=ALU
+                    OPN0=REGS, UPREGS=ALU
                     NI
 
 MULTI_ALU:          OPD
-                    OPN0=REGS, OPN1=MEM, WAITALU, UPREGS=ALU
+                    OPN0=REGS, WAITALU, UPREGS=ALU
                     NI
 
 MEM_ALU_IDX:        OPD, IDXEN
@@ -51,18 +51,36 @@ MEM_ALU_IDX:        OPD, IDXEN
                     NI
 
 MULTI_ALU_INH:      OPD
-                    OPN0=REGS, OPN1=MEM, UPREGS=ALU, WAITALU
+                    OPN0=REGS, UPREGS=ALU, WAITALU
                     NI
 
 MULTI_ALU_IDX:      OPD, IDXEN
                     ADRIDX
-                    OPN0=REGS, OPN1=MEM, UPREG=ALU, WAITALU
+                    OPN0=REGS, UPREG=ALU, WAITALU
                     NI
 
 WMEM_ALU:           OPD, IDXEN
                     ADRIDX
                     OPN0=MEM, UPDATA, WAITALU
                     ADRIDX, WE
+                    NI
+
+MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
+                    NOP
+                    NOP
+                    NOP
+                    NOP
+                    NOP     # 6th clock tick
+                    UPREG=ALU
+                    NI
+
+LMULTIPLY:          NOP     # 20+ cycles in original
+                    NOP
+                    NOP
+                    NOP
+                    NOP
+                    NOP     # 6th clock tick
+                    UP_LMUL # Result goes to {Y,X}
                     NI
 
 ######### DECREMENT AND LOOP ##############
@@ -102,7 +120,7 @@ STORE16:            OPD, IDXEN
                     OPN0=REGS, ADRIDX, WE, MEM16,
                     NI
 
-LD8_IMM :           OPD
+LD8_IMM:            OPD
                     UPLD8
                     NI
 

@@ -132,32 +132,34 @@ always @* begin
         CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, 
         CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM, 
         EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
-        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC:      opcat = SINGLE_ALU;
+        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC
+        LSRA,     RORA,     ASRA,     ASLA,     ROLA,
+        LSRB,     RORB,     ASRB,     ASLB,     ROLB:               opcat = SINGLE_ALU;
        
         CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CMPS_IMM,  
-        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:    opcat = SINGLE_ALU16; 
+        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:   opcat = SINGLE_ALU16;
         
         CLRA, INCA, NEGA, COMB, TSTB, DECB, ABSA, SEX, ABX,
-        CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:               opcat = SINGLE_ALU_INH
-        CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                    opcat = SINGLE_ALU_INH16
-        CLR, INC, NEG, TST, DEC, COM:                                opcat = MEM_ALU_IDX
+        CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:              opcat = SINGLE_ALU_INH
+        CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                   opcat = SINGLE_ALU_INH16
+        CLR, INC, NEG, TST, DEC, COM:                               opcat = MEM_ALU_IDX
 
         CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,  
         EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,        
         CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,   
-        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:             opcat = SINGLE_ALU_IDX;              
+        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:            opcat = SINGLE_ALU_IDX;
         
         CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
         CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
-        CMPY_IDX,           LDY_IDX:                                 opcat = SINGLE_ALU_IDX16; 
+        CMPY_IDX,           LDY_IDX:                                opcat = SINGLE_ALU_IDX16;
 
-// FIX MULTI_ALU_INH (DAA, ABX...)
-        LSRA,     RORA,     ASRA,     ASLA,     ROLA,      MUL, DIV_X_B,
-        LSRB,     RORB,     ASRB,     ASLB,     ROLB,     LMUL:      opcat = MULTI_ALU_INH
-        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:            opcat = MULTI_ALU;  
-        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:            opcat = MULTI_ALU_IDX;
+// FIX MULTI_ALU_INH
+        MUL, LMUL:                                                  opcat = MULTIPLY;
+        DIV_X_B:                                                    opcat = MULTI_ALU_INH
+        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:           opcat = MULTI_ALU;
+        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:           opcat = MULTI_ALU_IDX;
 // WHAT KIND OF ADDRESSING ARE THESE?
-        LSR, ROR, ASR, ASL, ROL:                                     opcat = MULTI_MEMALU_IDX;
+        LSR, ROR, ASR, ASL, ROL:                                    opcat = MULTI_MEMALU_IDX;
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 

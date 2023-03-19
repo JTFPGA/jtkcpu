@@ -36,11 +36,16 @@ func get_nemonics( f io.Reader ) ( all elements, assign string ) {
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if line=="" || line[0] == '#' {
+		if line=="" || line[0]=='#' {
+			continue
+		}
+		halves := strings.Split(line, "#")
+		line=halves[0]
+		if line=="" {
 			continue
 		}
 		if re_label.MatchString(line) {
-			halves := strings.Split(line,":")
+			halves = strings.Split(line,":")
 			lbl_name := halves[0]
 			if exists(lbl_name,all.labels) {
 				log.Fatal("Duplicated label ", lbl_name)
@@ -52,7 +57,7 @@ func get_nemonics( f io.Reader ) ( all elements, assign string ) {
 		}
 		for _,each := range strings.Split(line,",") {
 			each = strings.TrimSpace(each)
-			if each=="" {
+			if each=="" || each=="NOP" {
 				continue
 			}
 			found[each]=true
@@ -105,7 +110,7 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 		val := int64(0)
 		for _,each := range strings.Split(line,",") {
 			each = strings.TrimSpace(each)
-			if each == "" {
+			if each == "" || each=="NOP" {
 				continue
 			}
 			val |= int64(1) << all.nemonics[each]
