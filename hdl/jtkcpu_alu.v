@@ -35,12 +35,12 @@ module jtkcpu_alu(
 
 reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
-assign cc_out = { ... } // To do
+assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out }; 
 
-`include "jtkcpu.inc"
+`include "jtkcpu.inc";
 
-wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==CMPX_IMM || op==CMPX_IDX || op==CMPY_IMM || op==CMPY_IDX || op==CMPU_IMM || op==CMPU_IDX || op==CLRD || op==RORW ||
-                   op==CMPS_IMM || op==CMPS_IDX || op==ADDD_IMM || op==ADDD_IDX || op==SUBD_IMM || op==SUBD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==CLRW || op==ASRW ||
+wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==CMPX_IMM || op==CMPX_IDX || op==CMPY_IMM || op==CMPY_IDX || op==CMPU_IMM || op==CMPU_IDX || op==RORW ||
+                   op==CMPS_IMM || op==CMPS_IDX || op==ADDD_IMM || op==ADDD_IDX || op==SUBD_IMM || op==SUBD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW ||
                    op==ASLD_IMM || op==ASLD_IDX || op==ROLD_IMM || op==ROLD_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORD_IMM || op==RORD_IDX || op==NEGD || op==ASLW ||
                    op== LDD_IMM || op== LDD_IDX || op== LDX_IMM || op== LDX_IDX || op== LDY_IMM || op== LDY_IDX || op== LDU_IMM || op== LDU_IDX || op==NEGW || op==ROLW ||
                    op== LDS_IMM || op== LDS_IDX || op==INCD || op==INCW || op==DECD || op==DECW || op==TSTD || op==TSTW || op==ABSD || op==STD  || op== STX || op== STY ||  
@@ -87,11 +87,14 @@ always @* begin
             rslt  = opnd0;
             v_out = 0;
         end
-        ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX,ADDD_IMM,ADDD_IDX: begin  // ADD
+        ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX: begin  // ADD
             {c_out, rslt} = {1'b0, opnd0} + {1'b0, opnd1};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
-            if ( op!=8'h54 || op!=8'h55 )
-                h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
+            h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
+        end
+        ADDD_IMM,ADDD_IDX: begin  // ADD
+            {c_out, rslt} = {1'b0, opnd0} + {1'b0, opnd1};
+            v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
         end
         ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX: begin  // ADC
             {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {16'd0,cc_in[CC_C]};
@@ -106,7 +109,7 @@ always @* begin
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,cc_in[CC_C]};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IMM: begin  // AND, BIT
+        ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IDX: begin  // AND, BIT
             rslt  = opnd0 & opnd1;
             v_out = 0;
         end
@@ -119,10 +122,12 @@ always @* begin
             v_out = 0;
         end
         ANDCC: begin
-            { ..., c_out} = cc_in & opnd1;
+            { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out } = cc_in & opnd1[7:0];
+            rslt=0;
         end
         ORCC: begin
-            { ..., c_out} = cc_in | opnd1;
+            { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out } = cc_in | opnd1[7:0];
+            rslt=0;
         end
         CMPA_IMM,CMPB_IMM,CMPA_IDX,CMPB_IDX,CMPD_IMM,CMPD_IDX,CMPX_IMM,CMPX_IDX,CMPY_IMM,CMPY_IDX,CMPU_IMM,CMPU_IDX,CMPS_IMM,CMPS_IDX: begin  // CMP
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
@@ -173,7 +178,7 @@ always @* begin
             {c_out, rslt} = {opnd0, cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        ABX: rslt = {8'h0, opnd0} + {8'h0, opnd1[7:0]};  // ABX
+        ABX: rslt = {8'h0, opnd0[7:0]} + {8'h0, opnd1[7:0]};  // ABX
         DAA: begin  // DAA
             if ( c_out || opnd0[7:4] > 4'h9 || (opnd0[7:4] > 4'h8 && opnd0[3:0] > 4'h9 ))
                 rslt[7:4] = 4'h6;
@@ -195,8 +200,8 @@ always @* begin
             c_out = rslt[15];
         end
         LMUL: begin
-            { rslt_hi, rslt }  = opnd0*opnd1
-            c_out = rslt_hi[51];
+            { rslt_hi, rslt }  = opnd0*opnd1;
+            c_out = rslt_hi[15];
         end
         // 
         ABSA, ABSB, ABSD: begin  // ABS
@@ -213,9 +218,9 @@ always @* begin
 
     // To do: the condition is wrong, it should be && instead of ||
     // It should also exclude ANDCC and ORCC
-    if ( op!=ABX || op!=ABSA || op!=ABSB || op!=ABSD )
+    if ( op!=ABX && op!=ABSA && op!=ABSB && op!=ABSD && op!=ANDCC && op!=ORCC )
         z_out = (rslt == 0);
-    if ( op!=LEAX || op!=LEAY || op!=LEAU || op!=LEAS || op!=ABX || op!=MUL || op!=LMUL )
+    if ( op!=LEAX && op!=LEAY && op!=LEAU && op!=LEAS && op!=ABX && op!=MUL && op!=LMUL && op!=ANDCC && op!=ORCC)
         n_out = rslt[msb];
 end
 

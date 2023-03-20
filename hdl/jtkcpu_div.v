@@ -39,7 +39,7 @@ wire        larger;
 reg         start_l;
 reg         sign0, sign1, rsi;
 
-assign larger = sub>=divor;
+assign larger = sub>= { 8'd0, divor };
 assign rslt   = sub - { 8'd0, divor };
 assign nx_quot= { fullq[14:0], larger };
 assign quot   = fullq[7:0];

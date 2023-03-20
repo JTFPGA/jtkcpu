@@ -27,6 +27,7 @@ module jtkcpu_pshpul(
     input               pshall,
     input               rti_cc,
     input               rti_other,
+    input               psh_int,
 
     input               pul_go,
     input               psh_go,
@@ -39,6 +40,7 @@ module jtkcpu_pshpul(
     output   reg [ 7:0] psh_sel,
     output              busy,
     output   reg        us_sel
+
 );
 
 `include "jtkcpu.inc"
@@ -49,7 +51,7 @@ assign busy = psh_sel!=0;
 assign postbyte = rti_cc    ? 8'h01 : 
                   psh_pc    ? 8'h80 :
                   rti_other ? ( cc[CC_E] ? 8'hFE : 8'h80 ) : // pull all but CC or only PC
-                  pshint    ? ( cc[CC_E] ? 8'hFF : 8'h81 ) : postdata;
+                  psh_int   ? ( cc[CC_E] ? 8'hFF : 8'h81 ) : postdata;
 
 always @(posedge clk or posedge rst) begin 
     if( rst ) begin

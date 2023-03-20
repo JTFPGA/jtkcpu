@@ -34,37 +34,61 @@ module jtkcpu_ucode(
     // other blocks
 
     // control outputs from ucode
-    output          adridx,
-    output          adrx,
-    output          adry,
-    output          clr_e,
-    output          decb,
-    output          decu,
-    output          decx,
-    output          extsgn,
-    output          idx_en,
-    output          incx,
-    output          mem16,
-    output          ni,
-    output          psh_go,
-    output          pshall,
-    output          pshcc,
-    output          pshpc,
-    output          pul_go,
-    output          rti_cc,
-    output          set_e,
-    output          set_f,
-    output          set_i,
-    output          set_opn0_a,
-    output          set_opn0_d,
-    output          set_opn0_mem,
-    output          set_opn0_regs,
-    output          set_pc_bnz_branch,
-    output          set_pc_branch,
-    output          set_pc_puls,
-    output          set_pc_rst,
-    output          set_pc_xnz_branch,
-    output          we,
+    output          we, 
+    output          up_lmul, 
+    output          set_upregs_alu, 
+    output          set_upreg_alu, 
+    output          uplines, 
+    output          uplea, 
+    output          upld8, 
+    output          upld16, 
+    output          updata, 
+    output          skip_noind, 
+    output          rti_other, 
+    output          rti_cc, 
+    output          pul_pc, 
+    output          pul_go, 
+    output          psh_pc, 
+    output          psh_go, 
+    output          pshpc, 
+    output          pshcc, 
+    output          pshall, 
+    output          set_pc_xnz_branch, 
+    output          set_pc_bnz_branch, 
+    output          set_pc_jmp, 
+    output          set_pc_int, 
+    output          set_pc_branch8, 
+    output          set_pc_branch16, 
+    output          set_opn0_regs, 
+    output          set_opn0_mem, 
+    output          set_opn0_b, 
+    output          set_opn0_a, 
+    output          opd, 
+    output          ni, 
+    output          memhi, 
+    output          mem16, 
+    output          jmp_idx, 
+    output          incy, 
+    output          incx, 
+    output          idx_step, 
+    output          idx_ret, 
+    output          idx_ld, 
+    output          idx_en, 
+    output          set_i, 
+    output          halt, 
+    output          set_f, 
+    output          set_e, 
+    output          clr_e, 
+    output          decx, 
+    output          decu, 
+    output          decb, 
+    output          back2_unz, 
+    output          back1_unz, 
+    output          adr_idx, 
+    output          adr_data, 
+    output          adry, 
+    output          adrx, 
+    output          adridx
     // other outputs
     output reg      int_en,
 );
@@ -89,7 +113,7 @@ reg [OPCAT_AW-1:0] opcat, after_idx, nx_after_idx;
 reg                idx_src; // instruction requires idx decoding first to grab the source operand
 
 wire buserror; // next instruction
-wire waituz, wait16;  
+wire wait_stack, wait16;  
 
 localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 
@@ -110,22 +134,22 @@ always @* begin
         CLRA, INCA, NEGA, COMB, TSTB, DECB, ABSA, SEX, ABX,
         CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:              opcat = SINGLE_ALU_INH
         CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                   opcat = SINGLE_ALU_INH16
-        CLR, INC, NEG, TST, DEC, COM:                               opcat = MEM_ALU_IDX
+        CLR,  INC, NEG, TST, DEC, COM:                               opcat = MEM_ALU_IDX
 
         // Operand in indexed memory
         CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,  
         EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,        
         CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,   
         EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:            begin
-            opcat        = PARSE_IDX
+            opcat        = PARSE_IDX;
             nx_after_idx = SINGLE_ALU_IDX;
         end
         
         CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
         CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
         CMPY_IDX,           LDY_IDX:                                begin
-            nx_after_idx = SINGLE_ALU_IDX;
-            opcat        = SINGLE_ALU_IDX16;
+            opcat        = PARSE_IDX;
+            nx_after_idx = SINGLE_ALU_IDX16;
         end
 
 // FIX MULTI_ALU_INH

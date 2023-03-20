@@ -33,13 +33,14 @@ module jtkcpu_idx(
     output reg [15:0] addr,
     output reg        busy,
     output reg        indirect
+
 );
 
 reg [15:0] offset;
 reg        idx_enl;
 reg [ 7:0] postbyte;
 
-assign idx_sel = { postbyte[1], postbyte[6:5] };
+// assign idx_sel = { postbyte[1], postbyte[6:5] };
 
 always @* begin
     indirect = postbyte[4];

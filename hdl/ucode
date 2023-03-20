@@ -60,13 +60,11 @@ SINGLE_ALU_INH:     OPN0=REGS, UPREGS=ALU
 SINGLE_ALU_INH16:   OPN0=REGS, UPREGS=ALU
                     NI
 
-SINGLE_ALU_IDX:     OPD, IDX_EN
-                    ADRIDX
+SINGLE_ALU_IDX:     ADRIDX
                     OPN0=REGS, UPREGS=ALU
                     NI
 
-SINGLE_ALU_IDX16:   OPD, IDX_EN
-                    ADRIDX, MEM16
+SINGLE_ALU_IDX16:   ADRIDX, MEM16
                     OPN0=REGS, UPREGS=ALU
                     NI
 
@@ -168,8 +166,7 @@ LD16_IDX:           OPD, IDX_EN
                     UPLD16
                     NI
 
-LEA:                OPD, IDX_EN
-                    UPLEA
+LEA:                UPLEA
                     NI
 
 ############### MISC OPERATIONS ##################
@@ -183,7 +180,6 @@ SBRANCH:            OPD
                     PC=BRANCH8
                     NI
 
-# LONG BRANCH IS NOT RELATIVE, RIGHT ???
 LBRANCH:            OPD, MEM16
                     PC=BRANCH16
                     NI

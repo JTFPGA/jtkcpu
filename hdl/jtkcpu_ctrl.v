@@ -69,7 +69,6 @@ module jtkcpu_ctrl(
 wire branch;
 wire pul_go, psh_go, int_en, ni,
      upld16;
-reg  mem16l;
 
 assign up_a = upld8 && ~op[0];
 assign up_b = upld8 &&  op[0];
@@ -115,7 +114,6 @@ always @(posedge clk) begin
     if( rst ) begin
         pc <= 0;
     end else if(cen) begin
-        mem16l <= mem16;
         pc <= ( ni | opd ) ? pc+16'd1 :
               short_branch ? { {8{data[7]}}, data[7:0]}+pc :
               long_branch  ? data+pc :

@@ -40,7 +40,7 @@ wire [15:0] opnd0;
 wire [31:0] rslt;
 wire [15:0] data, idx_reg, mux, d_mux, acc;
 wire [15:0] idx_addr, psh_addr;
-wire [15:0] x, y, u, s, pc, nx_u, nx_s; 
+wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s; 
 wire [ 7:0] a, b, cc, dp;
 wire [ 7:0] alu_op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
@@ -94,8 +94,8 @@ jtkcpu_memctrl u_memctrl(
     .dp         ( dp         ),
     .idx_addr   ( idx_addr   ),
     .psh_addr   ( psh_addr   ),
-    .regs_x     ( x          ),
-    .regs_y     ( y          ),
+    .regs_x     ( regs_x     ),
+    .regs_y     ( regs_y     ),
     .din        ( din        ),
     .dout       ( dout       ),
     // Effective address

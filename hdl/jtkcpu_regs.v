@@ -22,9 +22,8 @@ module jtkcpu_regs(
     input               cen,
 
     input        [15:0] pc,
-    output reg   [ 7:0] cc,
+    input        [15:0] mdata,     // postbyte used to select specific registers
     input        [ 7:0] op,         // op code used to select specific registers
-    input        [ 7:0] mdata,     // postbyte used to select specific registers
     input        [ 7:0] psh_sel,
     input               psh_hilon,
     input               psh_ussel,
@@ -32,7 +31,6 @@ module jtkcpu_regs(
 
     // Register update
     input        [31:0] alu,
-    input        [15:0] mdata,
     input        [15:0] idx_addr,
     input               idx_inc,
     input               up_a,
@@ -43,6 +41,9 @@ module jtkcpu_regs(
     input               up_u,
     input               up_s,
     input               up_lmul,
+    input               up_lea,
+    input               up_alu_a,
+    input               up_alu_b,
 
     // Flags from ALU
     input               set_regs_alu,
@@ -72,11 +73,14 @@ module jtkcpu_regs(
     output   reg [15:0] idx_reg,
     output       [15:0] psh_addr,
     output       [15:0] acc,
+    output   reg [ 7:0] cc,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
     output   reg        up_pul_cc,
     output   reg        up_pul_pc
 );
+
+`include "jtkcpu.inc"
 
 reg         pshdec_u, pshdec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_pul_b, up_pul_dp, inc_pul;
 reg  [ 7:0] a, b, dp;
@@ -134,7 +138,7 @@ always @* begin
 
         CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
         CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
-        CLRD,     NEGD,     ABSD,     LSRD,     RORD,     ASRD,     ASLD,     ROLD,     STD:   mux_reg0 = {a, b};
+            CLRD,     NEGD,     ABSD,      STD: mux_reg0 = {a, b};
         
         CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 = x;
         CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 = y;
@@ -166,8 +170,8 @@ always @* begin
     end 
     nx_u = u;
     nx_s = s;
-    if( up_s  ) nx_s = uplea ? idx_addr : mdata;
-    if( up_u  ) nx_u = uplea ? idx_addr : mdata;
+    if( up_s  ) nx_s = up_lea ? idx_addr : mdata;
+    if( up_u  ) nx_u = up_lea ? idx_addr : mdata;
     if( pshdec_u | dec_u ) nx_u = u - 16'd1;
     if( pshdec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hilon ) begin
@@ -267,8 +271,8 @@ always @(posedge clk, posedge rst) begin
         if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
         if( up_b  || up_pul_b  ) b <= mdata[7:0];
         if( dec_b ) b <= b - 8'd1;
-        if( up_x  ) x  <= up_lmul ? alu[15:0]  : uplea ? idx_addr : mdata;
-        if( up_y  ) y  <= up_lmul ? alu[31:16] : uplea ? idx_addr : mdata;
+        if( up_x  ) x  <= up_lmul ? alu[15:0]  : up_lea ? idx_addr : mdata;
+        if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea ? idx_addr : mdata;
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[15:8];
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
