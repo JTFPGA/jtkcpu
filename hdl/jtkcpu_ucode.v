@@ -80,43 +80,8 @@ module jtkcpu_ucode(
 // another 32 categories reserved for common routines
 
 localparam UCODE_AW = 10, // 1024 ucode lines
-           OPCAT_AW = 7,  // op code categories
-           UCODE_DW = 40; // Number of control signals
 
-// to do: define localparam with op categories
-localparam [5:0] SINGLE_ALU       = 1,
-                 SINGLE_ALU16     = 2,
-                 SINGLE_ALU_INH   = 3,
-                 SINGLE_ALU_INH16 = 4,
-                 SINGLE_ALU_IDX   = 5,
-                 SINGLE_ALU_IDX16 = 6,
-                 MEM_ALU_IDX      = 7,
-                 MULTI_ALU        = 8,
-                 MULTI_ALU_INH    = 9,
-                 MULTI_ALU_IDX    = 10,
-                 WMEM_ALU         = 11,
-                 SBRANCH          = 12,
-                 LBRANCH          = 13,
-                 LOOPX            = 14,
-                 LOOPB            = 15,
-                 BMOVE            = 16,
-                 MOVE             = 17,
-                 BSETA            = 18,
-                 BSETD            = 19,
-                 RTIT             = 20,
-                 RTSR             = 21,
-                 JUMP             = 22,
-                 JMSR             = 23,
-                 PSH              = 24,
-                 PUL              = 25,
-                 NOPE             = 26, 
-                 SETLINES         = 27, // missing
-                 STORE8           = 28,
-                 STORE16          = 29,
-                 FIRQ             = 30,
-                 IRQ              = 31,
-                 NMI              = 32,
-                 RESET            = 33;
+`include "jtkcpu_ucode.inc"
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
 reg [UCODE_AW-1:0] addr; // current ucode position read

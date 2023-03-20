@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"sort"
@@ -16,7 +17,7 @@ const(
 )
 
 type elements struct{
-	labels, nemonics map[string]int
+	labels, mnemonics map[string]int
 	lbl_rev map[int]string
 }
 
@@ -25,7 +26,7 @@ func exists( k string, m map[string]int ) bool {
 	return b
 }
 
-func get_nemonics( f io.Reader ) ( all elements, assign string ) {
+func get_mnemonics( f io.Reader ) ( all elements, assign string ) {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
 	re_label:= regexp.MustCompile("^[A-Z0-9_]*:")
@@ -73,7 +74,7 @@ func get_nemonics( f io.Reader ) ( all elements, assign string ) {
 	for k,_ := range all_nem {
 		sorted[all_nem[k]] = k
 	}
-	all.nemonics = sorted
+	all.mnemonics = sorted
 	return all, assign
 }
 
@@ -113,7 +114,7 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 			if each == "" || each=="NOP" {
 				continue
 			}
-			val |= int64(1) << all.nemonics[each]
+			val |= int64(1) << all.mnemonics[each]
 		}
 		addr := (cur_cat*MAX_ROUTINE)|subidx
 		if val != 0 {
@@ -171,7 +172,7 @@ func dump_inc( a ...string) {
 }
 
 func make_case( rom []int64, all elements ) (s string) {
-	nem_len := len(all.nemonics)
+	nem_len := len(all.mnemonics)
 	i := "    "
 	s += fmt.Sprintf("always @(posedge clk) if(cen) begin\n%scase( addr )\n",i)
 	for k, each := range rom {
@@ -184,12 +185,15 @@ func make_case( rom []int64, all elements ) (s string) {
 			s += fmt.Sprintf("\n")
 		}
 	}
-	s += fmt.Sprintf("%s%sdefault: ucode = 0;\n%sendcase\nend\n",i,i,i)
+	s += fmt.Sprintf("%s%sdefault: ucode <= 0;\n%sendcase\nend\n",i,i,i)
 	return s
 }
 
 func make_params( all elements ) (s string) {
-	s = fmt.Sprintf("localparam [%d:0] = ", len(all.labels)-1 )
+	s += fmt.Sprintf("localparam UCODE_DW = %d;\n",len(all.mnemonics))
+	s += fmt.Sprintf("localparam OPCAT_AW = %d;\n",int(math.Ceil(math.Log2(float64(len(all.labels))))) )
+	s += fmt.Sprintf("localparam UCODE_AW = OPCAT_AW+%d;\n", int(math.Log2(float64(MAX_ROUTINE))) )
+	s += fmt.Sprintf("localparam [%d:0] = ", len(all.labels)-1 )
 	first := true
 	sorted := make([]string,len(all.labels))
 	maxlen := 0
@@ -214,7 +218,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot open " + path)
 	}
-	all, assign := get_nemonics(f)
+	all, assign := get_mnemonics(f)
 	f.Close()
 	// Generate ROM
 	f, _ = os.Open(path)
