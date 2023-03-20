@@ -162,7 +162,7 @@ end
 always @* begin
     pshdec_u = 0;
     pshdec_s = 0;
-    if ( pshdec && !psh_mux) begin
+    if ( pshdec && psh_mux!=0 ) begin
         if (psh_ussel) 
             pshdec_u = 1;
         else 
@@ -232,8 +232,8 @@ always @* begin
 end 
 
 function [15:0] apply_step( input [15:0] rbase );
-    apply_step = !idx_step    ? rbase :
-                  idx_step[1] ? rbase - { idx_step[0], 1'b0 } : rbase;
+    apply_step = ( idx_step!=0 )    ? rbase :
+                  idx_step[1] ? rbase - (16'h1 << idx_step[0]) : rbase;
 endfunction
 
 // indexed idx_reg

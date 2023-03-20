@@ -26,6 +26,7 @@ module jtkcpu_ucode(
     input           branch,
     input           alu_busy,
     input           mem_busy,
+    input           idx_busy,
     input           irq,
     input           nmi,
     input           firq,
@@ -34,66 +35,64 @@ module jtkcpu_ucode(
     // other blocks
 
     // control outputs from ucode
-    output          we, 
-    output          up_lmul, 
-    output          set_upregs_alu, 
-    output          set_upreg_alu, 
-    output          uplines, 
-    output          uplea, 
-    output          upld8, 
-    output          upld16, 
-    output          updata, 
-    output          skip_noind, 
-    output          rti_other, 
-    output          rti_cc, 
-    output          pul_pc, 
-    output          pul_go, 
-    output          psh_pc, 
-    output          psh_go, 
-    output          pshpc, 
-    output          pshcc, 
-    output          pshall, 
-    output          set_pc_xnz_branch, 
-    output          set_pc_bnz_branch, 
-    output          set_pc_jmp, 
-    output          set_pc_int, 
-    output          set_pc_branch8, 
-    output          set_pc_branch16, 
-    output          set_opn0_regs, 
-    output          set_opn0_mem, 
-    output          set_opn0_b, 
-    output          set_opn0_a, 
-    output          opd, 
-    output          ni, 
-    output          memhi, 
-    output          mem16, 
-    output          jmp_idx, 
-    output          incy, 
-    output          incx, 
-    output          idx_step, 
-    output          idx_ret, 
-    output          idx_ld, 
-    output          idx_en, 
-    output          set_i, 
-    output          halt, 
-    output          set_f, 
-    output          set_e, 
-    output          clr_e, 
-    output          decx, 
-    output          decu, 
-    output          decb, 
-    output          back2_unz, 
-    output          back1_unz, 
-    output          adr_idx, 
     output          adr_data, 
-    output          adry, 
+    output          adr_idx, 
     output          adrx, 
-    output          adridx
+    output          adry, 
+    output          back1_unz, 
+    output          back2_unz, 
+    output          buserror, 
+    output          clr_e, 
+    output          decb,
+    output          decu, 
+    output          decx, 
+    output          idx_en, 
+    output          idx_ld, 
+    output          idx_ret, 
+    output          idx_step, 
+    output          incx, 
+    output          incy, 
+    output          jmp_idx, 
+    output          mem16, 
+    output          memhi, 
+    output          ni, 
+    output          opd, 
+    output          psh_go, 
+    output          psh_pc, 
+    output          pshall, 
+    output          pshcc, 
+    output          pshpc, 
+    output          pul_go, 
+    output          pul_pc, 
+    output          rti_cc, 
+    output          rti_other, 
+    output          set_e, 
+    output          set_f, 
+    output          set_i, 
+    output          set_opn0_a, 
+    output          set_opn0_b, 
+    output          set_opn0_mem, 
+    output          set_opn0_regs, 
+    output          set_pc_bnz_branch, 
+    output          set_pc_branch16, 
+    output          set_pc_branch8, 
+    output          set_pc_int, 
+    output          set_pc_jmp, 
+    output          set_pc_xnz_branch, 
+    output          set_upregs_alu, 
+    output          skip_noind, 
+    output          up_lmul, 
+    output          updata, 
+    output          upld16, 
+    output          upld8, 
+    output          uplea, 
+    output          uplines, 
+    output          we, 
     // other outputs
-    output reg      int_en,
+    output reg      int_en
 );
 
-`include "jtkcpu.inc"
+`include "jtkcpu.inc";
 
 // Op codes = 8 bits, many op-codes will be parsed in the
 // same way. Let's assume we only need 64 ucode routines
@@ -103,17 +102,16 @@ module jtkcpu_ucode(
 // using the same ucode. 32 categories used for op codes
 // another 32 categories reserved for common routines
 
-localparam UCODE_AW = 10, // 1024 ucode lines
+// localparam UCODE_AW = 10; // 1024 ucode lines
 
-`include "jtkcpu_ucode.inc"
+`include "jtkcpu_ucode.inc";
 
-reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)];
+reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, after_idx, nx_after_idx;
 reg                idx_src; // instruction requires idx decoding first to grab the source operand
 
-wire buserror; // next instruction
-wire wait_stack, wait16;  
+wire wait_stack, waitalu;  
 
 localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 
@@ -124,17 +122,19 @@ always @* begin
         CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM, 
         CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM, 
         EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
-        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC
+        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC,
         LSRA,     RORA,     ASRA,     ASLA,     ROLA,
         LSRB,     RORB,     ASRB,     ASLB,     ROLB:               opcat = SINGLE_ALU;
        
         CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CMPS_IMM,  
-        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:   opcat = SINGLE_ALU16;
+        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:   opcat = SINGLE_ALU_16;
         
         CLRA, INCA, NEGA, COMB, TSTB, DECB, ABSA, SEX, ABX,
-        CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:              opcat = SINGLE_ALU_INH
-        CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                   opcat = SINGLE_ALU_INH16
-        CLR,  INC, NEG, TST, DEC, COM:                               opcat = MEM_ALU_IDX
+        CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:              opcat = SINGLE_ALU_INH;
+        CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                   opcat = SINGLE_ALU_INH16;
+         
+        CLR,  INC,  NEG,  COM,  TST,  DEC,
+        LSR,  ROR,  ASR,  ASL,  ROL:                                opcat = MEM_ALU_IDX;
 
         // Operand in indexed memory
         CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,  
@@ -154,11 +154,9 @@ always @* begin
 
 // FIX MULTI_ALU_INH
         MUL, LMUL:                                                  opcat = MULTIPLY;
-        DIV_X_B:                                                    opcat = MULTI_ALU_INH
+        DIV_X_B:                                                    opcat = MULTI_ALU_INH;
         LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:           opcat = MULTI_ALU;
         LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:           opcat = MULTI_ALU_IDX;
-// WHAT KIND OF ADDRESSING ARE THESE?
-        LSR, ROR, ASR, ASL, ROL:                                    opcat = MULTI_MEMALU_IDX;
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE, 
@@ -179,6 +177,7 @@ always @* begin
         PUSHU, PUSHS:   opcat = PSH;
         PULLU, PULLS:   opcat = PUL;
         NOP:            opcat = NOPE;
+        // SETLINES_IDX    opcat = SETLINES
         
         STA, STB:       opcat = STORE8;
         STD, STX, STY,
@@ -221,9 +220,9 @@ always @(posedge clk) begin
                 addr <= { NMI, OPLEN };
         end else if ( firq ) begin  // interrupt enabled firq
              addr <= { FIRQ, OPLEN };
-             int_en = 1;
+             int_en <= 1;
         end else    // interrupt disabled
-            int_en = 0;
+            int_en <= 0;
 
         if( !mem_busy && !(idx_en && idx_busy)) begin
             addr <= addr + 1; // keep processing an opcode routine
@@ -235,22 +234,22 @@ always @(posedge clk) begin
         // Indexed addressing parsing
         if( jmp_idx ) begin
             if( !op[7] ) begin
-                addr <= IDX_SUM
+                addr <= { IDX_SUM, OPLEN };
             end else begin
                 case( op[3:0] )
-                    0:        addr <= IDX_RINC;
-                    1:        addr <= IDX_RINC2;
-                    2:        addr <= IDX_RDEC;
-                    3:        addr <= IDX_RDEC2;
-                    4,5,6,11: addr <= IDX_SUM
-                    8,12:     addr <= IDX_OFFSET8;
-                    9,13:     addr <= IDX_OFFSET16;
-                    15:       addr <= IDX_EXTIND;
+                    0:        addr <= { IDX_RINC, OPLEN };
+                    1:        addr <= { IDX_RINC2, OPLEN };
+                    2:        addr <= { IDX_RDEC, OPLEN };
+                    3:        addr <= { IDX_RDEC2, OPLEN };
+                    4,5,6,11: addr <= { IDX_SUM, OPLEN };
+                    8,12:     addr <= { IDX_OFFSET8, OPLEN };
+                    9,13:     addr <= { IDX_OFFSET16, OPLEN };
+                    15:       addr <= { IDX_EXTIND, OPLEN };
                 endcase
             end
         end
         if( idx_ret ) begin
-            addr <= after_idx;
+            addr <= { after_idx, OPLEN };
         end
     end
 end

@@ -60,11 +60,11 @@ SINGLE_ALU_INH:     OPN0=REGS, UPREGS=ALU
 SINGLE_ALU_INH16:   OPN0=REGS, UPREGS=ALU
                     NI
 
-SINGLE_ALU_IDX:     ADRIDX
+SINGLE_ALU_IDX:     ADR_IDX
                     OPN0=REGS, UPREGS=ALU
                     NI
 
-SINGLE_ALU_IDX16:   ADRIDX, MEM16
+SINGLE_ALU_IDX16:   ADR_IDX, MEM16
                     OPN0=REGS, UPREGS=ALU
                     NI
 
@@ -73,7 +73,7 @@ MULTI_ALU:          OPD
                     NI
 
 MEM_ALU_IDX:        OPD, IDX_EN
-                    ADRIDX
+                    ADR_IDX
                     OPN0=MEM, WE
                     NI
 
@@ -82,14 +82,14 @@ MULTI_ALU_INH:      OPD
                     NI
 
 MULTI_ALU_IDX:      OPD, IDX_EN
-                    ADRIDX
-                    OPN0=REGS, UPREG=ALU, WAITALU
+                    ADR_IDX
+                    OPN0=REGS, UPREGS=ALU, WAITALU
                     NI
 
 WMEM_ALU:           OPD, IDX_EN
-                    ADRIDX
+                    ADR_IDX
                     OPN0=MEM, UPDATA, WAITALU
-                    ADRIDX, WE
+                    ADR_IDX, WE
                     NI
 
 MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
@@ -140,11 +140,11 @@ BSETD:              OPN0=A, WE, ADRX, INCX,
 
 ############### LOAD/STORE OPERATIONS ############
 STORE8:             OPD, IDX_EN
-                    OPN0=REGS, ADRIDX, WE,
+                    OPN0=REGS, ADR_IDX, WE,
                     NI
 
 STORE16:            OPD, IDX_EN
-                    OPN0=REGS, ADRIDX, WE, MEM16,
+                    OPN0=REGS, ADR_IDX, WE, MEM16,
                     NI
 
 LD8_IMM:            OPD
@@ -152,7 +152,7 @@ LD8_IMM:            OPD
                     NI
 
 LD8_IDX:            OPD, IDX_EN
-                    ADRIDX
+                    ADR_IDX
                     UPLD8
                     NI
 
@@ -162,16 +162,16 @@ LD16_IMM:           OPD, MEMHI
                     NI
 
 LD16_IDX:           OPD, IDX_EN
-                    ADRIDX, MEM16
+                    ADR_IDX, MEM16
                     UPLD16
                     NI
 
-LEA:                UPLEA
+LEA:                UP_LEA
                     NI
 
 ############### MISC OPERATIONS ##################
 SETLINES:           OPD
-                    UPLINES, NI
+                    UP_LINES, NI
 
 NOPE:               NI
 
@@ -205,7 +205,7 @@ RTSR:               PUL_PC
                     NI
 
 ############### STACK ##################
-PSH:                OPD,
+PSH:                OPD
                     PSH_GO
                     WE, WAIT_STACK
                     NI
@@ -234,4 +234,4 @@ NMI:                PSHALL
                     E=1, I=1, F=1
                     PC=INT
                     NI
-BUSERROR:           HALT
+BUSERROR:           BUSERROR
