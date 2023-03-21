@@ -69,7 +69,7 @@ module jtkcpu_ctrl(
     output            idx_en,
     output            set_regs_alu,
 
-    // output     [ 3:0] intvec,
+    output     [ 3:0] intvec,
 
     // Derived logic
     output            up_a,

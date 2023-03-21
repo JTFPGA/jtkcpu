@@ -106,6 +106,7 @@ jtkcpu_ctrl u_ctrl(
     .idx_ret      ( idx_ret      ),
     .idx_en       ( idx_en       ),
     .set_regs_alu ( set_regs_alu ),
+    .intvec       ( intvec       ),
 
     .up_a         ( up_a         ),
     .up_b         ( up_b         ),

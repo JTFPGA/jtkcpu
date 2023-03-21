@@ -216,22 +216,32 @@ PUL:                OPD
                     NI
 
 ########### INTERRUPTS ####################
-RESET:              PC=INT
+RESET:              INT_EN
+                    NOP
+                    NOP
+                    NOP
                     NI
 
 FIRQ:               PSH_CC
-                    E=0, F=1, I=1
-                    PSH_PC
-                    PC=INT
+                    E=0, F=1, I=1, PSH_PC
+                    INT_EN
+                    NOP
+                    NOP
+                    NOP
                     NI
 
 IRQ:                PSH_ALL
-                    E=1, I=1
-                    PC=INT
+                    E=1, I=1, INT_EN
+                    NOP
+                    NOP
+                    NOP
                     NI
 
 NMI:                PSH_ALL
-                    E=1, I=1, F=1
-                    PC=INT
+                    E=1, I=1, F=1, INT_EN
+                    NOP
+                    NOP
+                    NOP
                     NI
+
 BUSERROR:           BUSERROR

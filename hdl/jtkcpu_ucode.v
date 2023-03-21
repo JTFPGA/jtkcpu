@@ -31,9 +31,6 @@ module jtkcpu_ucode(
     input           nmi,
     input           firq,
 
-    // to do: add all status signals from
-    // other blocks
-
     // control outputs from ucode
     output          adr_data, 
     output          adr_idx, 
@@ -87,9 +84,10 @@ module jtkcpu_ucode(
     output          up_lines, 
     output          up_lmul, 
     output          we, 
+    output          int_en,
 
     // other outputs
-    output reg      int_en
+    output    [3:0] intvec
 );
 
 `include "jtkcpu.inc";
@@ -110,6 +108,7 @@ reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, after_idx, nx_after_idx;
 reg                idx_src; // instruction requires idx decoding first to grab the source operand
+reg          [3:0] cur_int;
 
 wire wait_stack, waitalu;  
 
@@ -206,24 +205,14 @@ end
 //     $readmemh( mem, "jtkcpu_ucode.hex");
 // end
 
+assign intvec = cur_int & {4{int_en}};
+
 always @(posedge clk) begin
     if( rst ) begin
-        addr <= 0;  // Reset starts ucode at 0
-        int_en <= 0;  
+        addr    <= 0;  // Reset starts ucode at 0
+        cur_int <= 0;
     end else if( cen && !buserror ) begin
         after_idx <= nx_after_idx;
-
-        if( irq ) begin // interrupt enabled irq
-            addr <= { IRQ, OPLEN };
-            int_en <= 1;
-        end else if( nmi ) begin  // interrupt enabled nmi
-                addr <= { NMI, OPLEN };
-        end else if ( firq ) begin  // interrupt enabled firq
-             addr <= { FIRQ, OPLEN };
-             int_en <= 1;
-        end else    // interrupt disabled
-            int_en <= 0;
-
 
         if( !mem_busy && !(idx_en && idx_busy)) begin
             addr <= addr + 1; // keep processing an opcode routine
@@ -231,7 +220,21 @@ always @(posedge clk) begin
                 addr <= addr + 2;
             end
         end
-        if( ni      ) addr <= { opcat, OPLEN }; // when a new opcode is read
+        if( ni ) begin
+            if( nmi ) begin // interrupt enabled irq
+                cur_int <= 4'b0100;
+                addr    <= { NMI, OPLEN };
+            end else if( firq ) begin  // interrupt enabled nmi
+                cur_int <= 4'b0010;
+                addr    <= { FIRQ, OPLEN };
+            end else if ( irq ) begin  // interrupt enabled firq
+                cur_int <= 4'b0001;
+                addr    <= { IRQ, OPLEN };
+            end else begin   // interrupt disabled
+                cur_int <= 0;
+                addr    <= { opcat, OPLEN }; // when a new opcode is read
+            end
+        end
         // Indexed addressing parsing
         if( jmp_idx ) begin
             if( !op[7] ) begin
