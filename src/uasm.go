@@ -193,7 +193,7 @@ func make_params( all elements ) (s string) {
 	s += fmt.Sprintf("localparam UCODE_DW = %d;\n",len(all.mnemonics))
 	s += fmt.Sprintf("localparam OPCAT_AW = %d;\n",int(math.Ceil(math.Log2(float64(len(all.labels))))) )
 	s += fmt.Sprintf("localparam UCODE_AW = OPCAT_AW+%d;\n", int(math.Log2(float64(MAX_ROUTINE))) )
-	s += fmt.Sprintf("localparam [%d:0] ", len(all.labels)-1 )
+	s += fmt.Sprintf("localparam [OPCAT_AW-1:0] " )
 	first := true
 	sorted := make([]string,len(all.labels))
 	maxlen := 0
@@ -203,9 +203,10 @@ func make_params( all elements ) (s string) {
 	}
 	fmtstr := fmt.Sprintf("\n        %%-%ds = %%d",maxlen)
 	for v,k := range sorted {
-		if first {
+		if !first {
 			s += fmt.Sprintf(",")
 		}
+		first = false
 		s += fmt.Sprintf(fmtstr, k, v)
 	}
 	s += fmt.Sprintf(";\n")

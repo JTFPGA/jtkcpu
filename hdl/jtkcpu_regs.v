@@ -35,14 +35,15 @@ module jtkcpu_regs(
     input               idx_inc,
     input               up_a,
     input               up_b,
+    input               up_d,
     input               up_x,
     input               up_y,
     input               up_u,
     input               up_s,
     input               up_lmul,
     input               up_lea,
-    input               up_alu_a,
-    input               up_alu_b,
+    // input               up_alu_a,
+    // input               up_alu_b,
 
     // Flags from ALU
     input               set_regs_alu,
@@ -266,8 +267,13 @@ always @(posedge clk, posedge rst) begin
         u <= nx_u;
         s <= nx_s;
 
-        if( up_alu_a ) a <= alu[7:0]; // pul must let fetched data through ALU
-        if( up_alu_b ) b <= alu[7:0];
+        // if( up_alu_a ) a <= alu[7:0]; // pul must let fetched data through ALU
+        // if( up_alu_b ) b <= alu[7:0];
+
+        if( up_d ) begin
+            a <= alu[ 7:0];
+            b <= alu[15:8];
+        end
 
         // if( up_dp || up_pul_dp ) dp <= alu[7:0];
         // Update from memory
@@ -281,7 +287,7 @@ always @(posedge clk, posedge rst) begin
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
         if( up_pul_y &&  psh_hilon ) y[15:8] <= alu[15:8];
         if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
-        
+
         // inc/dec
         if( inc_x ) x <= x + 16'd1;
         if( dec_x ) x <= x - 16'd1;

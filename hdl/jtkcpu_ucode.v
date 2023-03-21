@@ -49,6 +49,7 @@ module jtkcpu_ucode(
     output          idx_step, 
     output          incx, 
     output          incy, 
+    output          int_en,
     output          jmp_idx, 
     output          mem16, 
     output          memhi, 
@@ -71,8 +72,7 @@ module jtkcpu_ucode(
     output          set_opn0_regs, 
     output          set_pc_bnz_branch, 
     output          set_pc_branch16, 
-    output          set_pc_branch8, 
-    output          set_pc_int, 
+    output          set_pc_branch8,  
     output          set_pc_jmp, 
     output          set_pc_xnz_branch, 
     output          set_upregs_alu, 
@@ -84,10 +84,11 @@ module jtkcpu_ucode(
     output          up_lines, 
     output          up_lmul, 
     output          we, 
-    output          int_en,
 
     // other outputs
-    output    [3:0] intvec
+    output    [3:0] intvec,
+    output          idx_inc
+
 );
 
 `include "jtkcpu.inc";
@@ -107,8 +108,9 @@ module jtkcpu_ucode(
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, after_idx, nx_after_idx;
-reg                idx_src; // instruction requires idx decoding first to grab the source operand
 reg          [3:0] cur_int;
+reg                idx_src; // instruction requires idx decoding first to grab the source operand
+reg                idxinc;
 
 wire wait_stack, waitalu;  
 
@@ -206,6 +208,7 @@ end
 // end
 
 assign intvec = cur_int & {4{int_en}};
+assign idx_inc = idxinc;
 
 always @(posedge clk) begin
     if( rst ) begin
@@ -239,16 +242,17 @@ always @(posedge clk) begin
         if( jmp_idx ) begin
             if( !op[7] ) begin
                 addr <= { IDX_SUM, OPLEN };
+                idxinc <= 0;
             end else begin
                 case( op[3:0] )
-                    0:        addr <= { IDX_RINC, OPLEN };
-                    1:        addr <= { IDX_RINC2, OPLEN };
-                    2:        addr <= { IDX_RDEC, OPLEN };
-                    3:        addr <= { IDX_RDEC2, OPLEN };
-                    4,5,6,11: addr <= { IDX_SUM, OPLEN };
-                    8,12:     addr <= { IDX_OFFSET8, OPLEN };
-                    9,13:     addr <= { IDX_OFFSET16, OPLEN };
-                    15:       addr <= { IDX_EXTIND, OPLEN };
+                    0:        begin addr <= { IDX_RINC, OPLEN };     idxinc <= 1; end
+                    1:        begin addr <= { IDX_RINC2, OPLEN };    idxinc <= 1; end 
+                    2:        begin addr <= { IDX_RDEC, OPLEN };     idxinc <= 0; end
+                    3:        begin addr <= { IDX_RDEC2, OPLEN };    idxinc <= 0; end
+                    4,5,6,11: begin addr <= { IDX_SUM, OPLEN };      idxinc <= 0; end
+                    8,12:     begin addr <= { IDX_OFFSET8, OPLEN };  idxinc <= 0; end
+                    9,13:     begin addr <= { IDX_OFFSET16, OPLEN }; idxinc <= 0; end
+                    15:       begin addr <= { IDX_EXTIND, OPLEN };   idxinc <= 0; end
                 endcase
             end
         end

@@ -36,7 +36,7 @@ module jtkcpu_ctrl(
     input             irq,
     input             nmi,
     input             firq,
-    input             alu_busy,
+    input             alu_busy,      
     input             mem_busy,
     input             idx_busy,
 
@@ -70,11 +70,12 @@ module jtkcpu_ctrl(
     output            set_regs_alu,
 
     output     [ 3:0] intvec,
+    output            idx_inc,
 
     // Derived logic
     output            up_a,
     output            up_b,
-    // output            up_d,
+    output            up_d,
     output            up_x,
     output            up_y,
     output            up_u,
@@ -94,34 +95,27 @@ module jtkcpu_ctrl(
 // to do: signals that are resolved within the
 // module should be here as wires. Watchout for buses
 wire branch;
-wire pul_go, psh_go, psh_all, int_en, ni, psh_busy,
+wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
+     int_en, ni, psh_busy,
+     up_ld16, up_ld8, 
      rti_cc, rti_other, 
+     jmp_idx, set_pc_jmp,
      set_pc_branch16,
      set_pc_branch8,         
      buserror,
-
-     up_ld16, up_ld8, 
+     
      addr_data,
      addr_idx,
      back1_unz,        
      back2_unz,
-
-     idx_step,           
-     jmp_idx,                       
-     psh_cc,          
-     psh_pc,           
-     pul_pc,          
-                     
+     idx_step,                                  
+     pul_pc,                
      set_opn0_a,      
      set_opn0_b,      
      set_opn0_mem,    
      set_opn0_regs,   
      set_pc_bnz_branch,
-    
-     set_pc_int,
-     set_pc_jmp,
      set_pc_xnz_branch,
-     
      skip_noind,
      up_data;
 
@@ -129,7 +123,7 @@ wire pul_go, psh_go, psh_all, int_en, ni, psh_busy,
 assign up_a = up_ld8 && ~op[0];
 assign up_b = up_ld8 &&  op[0];
 
-// assign up_d = (up_ld16 && op[3:1]==0);
+assign up_d = (up_ld16 && op[3:1]==0);
 assign up_x = (up_ld16 && op[3:1]==1) || (up_lea && op[1:0]==LEAX[1:0]) || up_lmul;
 assign up_y = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lmul;
 assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
@@ -148,7 +142,8 @@ jtkcpu_ucode u_ucode(
     .irq               ( irq               ),
     .nmi               ( nmi               ),
     .firq              ( firq              ),
-    .int_en            ( int_en            ),
+    .intvec            ( intvec            ),
+    .idx_inc           ( idx_inc           ),
 
     .adr_data          ( addr_data         ),
     .adr_idx           ( addr_idx          ),
@@ -167,6 +162,7 @@ jtkcpu_ucode u_ucode(
     .idx_step          ( idx_step          ),
     .incx              ( incx              ),
     .incy              ( incy              ),
+    .int_en            ( int_en            ),
     .jmp_idx           ( jmp_idx           ),
     .mem16             ( mem16             ),
     .memhi             ( memhi             ),
@@ -190,7 +186,6 @@ jtkcpu_ucode u_ucode(
     .set_pc_bnz_branch ( set_pc_bnz_branch ),
     .set_pc_branch16   ( set_pc_branch16   ), 
     .set_pc_branch8    ( set_pc_branch8    ), 
-    .set_pc_int        ( set_pc_int        ),
     .set_pc_jmp        ( set_pc_jmp        ),
     .set_pc_xnz_branch ( set_pc_xnz_branch ),
     .set_upregs_alu    ( set_regs_alu      ),
@@ -215,7 +210,8 @@ always @(posedge clk) begin
         pc <= ( ni | opd ) ? pc+16'd1 :
               short_branch ? { {8{data[7]}}, data[7:0]}+pc :
               long_branch  ? data+pc :
-              set_pc_int   ? pc  : pc; // up_pc
+              int_en       ? data : pc;  
+        // up_pc
         // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
         // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
                
