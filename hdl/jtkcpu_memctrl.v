@@ -26,7 +26,7 @@ module jtkcpu_memctrl(
 
     // inputs to address mux
     input      [15:0] pc,
-    input      [ 7:0] dp,
+    // input      [ 7:0] dp,
     input      [15:0] idx_addr,
     input      [15:0] psh_addr,
     input      [15:0] regs_x,
@@ -50,7 +50,7 @@ module jtkcpu_memctrl(
     input             mem16,
     input             memhi,
     input             halt,   // hold the current address
-    input             uplines,
+    input             up_lines,
     input             idx_en,
     input             psh_en,
     input             addrx,
@@ -83,7 +83,7 @@ always @(posedge clk, posedge rst) begin
         // signals active for a single clock cycle:
         up_pc <= 0;
         we    <= 0;
-        if( uplines ) lines <= data[7:0];
+        if( up_lines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
             addr <= addr + 1;  // pick up the next byte

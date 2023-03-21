@@ -35,7 +35,6 @@ module jtkcpu_regs(
     input               idx_inc,
     input               up_a,
     input               up_b,
-    input               up_dp,
     input               up_x,
     input               up_y,
     input               up_u,
@@ -53,8 +52,8 @@ module jtkcpu_regs(
     input               set_i,
     input               set_f,
     input               clr_e,
-    input               clr_i,
-    input               clr_f,
+    //input               clr_i,
+    //input               clr_f,
 
     // Direct increment/decrement
     input               inc_x,
@@ -73,7 +72,11 @@ module jtkcpu_regs(
     output   reg [15:0] idx_reg,
     output       [15:0] psh_addr,
     output       [15:0] acc,
+    output   reg [15:0] x,
+    output   reg [15:0] y,
     output   reg [ 7:0] cc,
+    output   reg [ 7:0] a,
+    output   reg [ 7:0] b,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
     output   reg        up_pul_cc,
@@ -83,8 +86,8 @@ module jtkcpu_regs(
 `include "jtkcpu.inc"
 
 reg         pshdec_u, pshdec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_pul_b, up_pul_dp, inc_pul;
-reg  [ 7:0] a, b, dp;
-reg  [15:0] x, y, u, s; 
+reg  [ 7:0] dp;
+reg  [15:0] u, s; 
 wire [15:0] psh_other;
 wire        idx_incx, idx_incy, idx_incu, idx_incs;
 wire [ 1:0] idx_step;
@@ -269,7 +272,7 @@ always @(posedge clk, posedge rst) begin
         // if( up_dp || up_pul_dp ) dp <= alu[7:0];
         // Update from memory
         if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
-        if( up_b  || up_pul_b  ) b <= mdata[7:0];
+        if( up_b  || up_pul_b  ) b <= mdata[7:0]; 
         if( dec_b ) b <= b - 8'd1;
         if( up_x  ) x  <= up_lmul ? alu[15:0]  : up_lea ? idx_addr : mdata;
         if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea ? idx_addr : mdata;
@@ -278,6 +281,7 @@ always @(posedge clk, posedge rst) begin
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
         if( up_pul_y &&  psh_hilon ) y[15:8] <= alu[15:8];
         if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
+        
         // inc/dec
         if( inc_x ) x <= x + 16'd1;
         if( dec_x ) x <= x - 16'd1;
@@ -290,8 +294,8 @@ always @(posedge clk, posedge rst) begin
         if( set_i ) cc[CC_I] <= 1;
         if( set_f ) cc[CC_F] <= 1;
         if( clr_e ) cc[CC_E] <= 0;
-        if( clr_i ) cc[CC_I] <= 0;
-        if( clr_f ) cc[CC_F] <= 0;
+        //if( clr_i ) cc[CC_I] <= 0;
+        //if( clr_f ) cc[CC_F] <= 0;
     end
 end
 

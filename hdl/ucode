@@ -88,7 +88,7 @@ MULTI_ALU_IDX:      OPD, IDX_EN
 
 WMEM_ALU:           OPD, IDX_EN
                     ADR_IDX
-                    OPN0=MEM, UPDATA, WAITALU
+                    OPN0=MEM, UP_DATA, WAITALU
                     ADR_IDX, WE
                     NI
 
@@ -98,7 +98,7 @@ MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
                     NOP
                     NOP
                     NOP     # 6th clock tick
-                    UPREG=ALU
+                    UPREGS=ALU
                     NI
 
 LMULTIPLY:          NOP     # 20+ cycles in original
@@ -148,22 +148,22 @@ STORE16:            OPD, IDX_EN
                     NI
 
 LD8_IMM:            OPD
-                    UPLD8
+                    UP_LD8
                     NI
 
 LD8_IDX:            OPD, IDX_EN
                     ADR_IDX
-                    UPLD8
+                    UP_LD8
                     NI
 
 LD16_IMM:           OPD, MEMHI
                     OPD
-                    UPLD16
+                    UP_LD16
                     NI
 
 LD16_IDX:           OPD, IDX_EN
                     ADR_IDX, MEM16
-                    UPLD16
+                    UP_LD16
                     NI
 
 LEA:                UP_LEA
@@ -219,18 +219,18 @@ PUL:                OPD
 RESET:              PC=INT
                     NI
 
-FIRQ:               PSHCC
+FIRQ:               PSH_CC
                     E=0, F=1, I=1
-                    PSHPC
+                    PSH_PC
                     PC=INT
                     NI
 
-IRQ:                PSHALL
+IRQ:                PSH_ALL
                     E=1, I=1
                     PC=INT
                     NI
 
-NMI:                PSHALL
+NMI:                PSH_ALL
                     E=1, I=1, F=1
                     PC=INT
                     NI

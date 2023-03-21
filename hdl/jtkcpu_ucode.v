@@ -37,13 +37,13 @@ module jtkcpu_ucode(
     // control outputs from ucode
     output          adr_data, 
     output          adr_idx, 
-    output          adrx, 
+    output          adrx,
     output          adry, 
     output          back1_unz, 
     output          back2_unz, 
     output          buserror, 
     output          clr_e, 
-    output          decb,
+    output          decb, 
     output          decu, 
     output          decx, 
     output          idx_en, 
@@ -57,11 +57,10 @@ module jtkcpu_ucode(
     output          memhi, 
     output          ni, 
     output          opd, 
+    output          psh_all, 
+    output          psh_cc, 
     output          psh_go, 
     output          psh_pc, 
-    output          pshall, 
-    output          pshcc, 
-    output          pshpc, 
     output          pul_go, 
     output          pul_pc, 
     output          rti_cc, 
@@ -81,13 +80,14 @@ module jtkcpu_ucode(
     output          set_pc_xnz_branch, 
     output          set_upregs_alu, 
     output          skip_noind, 
+    output          up_data, 
+    output          up_ld16, 
+    output          up_ld8, 
+    output          up_lea, 
+    output          up_lines, 
     output          up_lmul, 
-    output          updata, 
-    output          upld16, 
-    output          upld8, 
-    output          uplea, 
-    output          uplines, 
     output          we, 
+
     // other outputs
     output reg      int_en
 );
@@ -223,6 +223,7 @@ always @(posedge clk) begin
              int_en <= 1;
         end else    // interrupt disabled
             int_en <= 0;
+
 
         if( !mem_busy && !(idx_en && idx_busy)) begin
             addr <= addr + 1; // keep processing an opcode routine
