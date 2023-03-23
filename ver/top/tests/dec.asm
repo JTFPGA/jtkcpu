@@ -40,7 +40,8 @@ BAD: 	LDY #$DEAD
 ; fill with zeros... up to interrupt table
 ;FILL $FFFE-$
 
-dc.b [(*+255)&$FFFFFFFE-*]0
+;dc.b [(*+255)&$FFFFFFFE-*]0
 
+CPU 6809/6309
 FDB RESET
 

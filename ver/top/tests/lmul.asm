@@ -14,14 +14,15 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #55
-        COMA
-        CMPA #aa
-        BNE BAD
-        LDB #aa
-        COMB
-        CMPB #55
-        BNE BAD
+RESET:  LDX #$2000
+        LDA #$02
+        LDB #$03
+        MUL
+        STD ,X+ 
+        CLRA
+        CLRB
+        CMPD #0006 
+        BNE BAD  
 
 END:    LDX #$BABE
         LDA #1
@@ -33,6 +34,9 @@ BAD:    LDX #$DEAD
         LDX #TESTCTRL
         STA ,X                  ; Finish test, result bad
         BRA BAD
+
+Tabla1  FCB 03,02,01,24
+Tabla2  FCB 01,02,03,64
 
 ; fill with zeros... up to interrupt table
 ;FILL $FFFE-$
