@@ -14,16 +14,18 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$05    
-        LDB #$0A    
-        ADDA B  
-        CMPA #0F
+RESET:  LDA #$FA     
+        LDB #$06 
+        ADCB A
+        CMPB #FF  
         BNE BAD
+
 END:    LDX #$BABE
         LDA #1
         LDX #TESTCTRL
         STA ,X                  ; Finish test, result ok
         BRA END
+
 BAD:    LDX #$DEAD
         LDA #3
         LDX #TESTCTRL

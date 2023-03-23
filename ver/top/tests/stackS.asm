@@ -14,24 +14,36 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$05    
-        LDB #$0A    
-        ADDA B  
-        CMPA #0F
+RESET:  LDA #$FE
+	PUSHS A
+	LDB #$3C
+	PSHS B
+	CLRA
+	CLRB
+	PULLS A
+	PULLS B
+        CMPA #$3C 
         BNE BAD
+	PULLU B
+	CMPB #$FE
+	BNE BAD
+
 END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
+	LDA #1 
+	LDX #TESTCTRL 
+	STA ,X
         BRA END
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+
+BAD: 	LDX #$DEAD
+	LDA #3
+	LDX #TESTCTRL 
+	STA ,X
+ 	BRA BAD
 
 ; fill with zeros... up to interrupt table
-FILL $FFFE-$
+;FILL $FFFE-$
 
-DD RESET
+DC.B [(*+255)&$FFFE-*]0
+
+FDB RESET
 
