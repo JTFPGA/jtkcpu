@@ -39,12 +39,12 @@ assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 
 `include "jtkcpu.inc";
 
-wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==CMPX_IMM || op==CMPX_IDX || op==CMPY_IMM || op==CMPY_IDX || op==CMPU_IMM || op==CMPU_IDX || op==RORW ||
-                   op==CMPS_IMM || op==CMPS_IDX || op==ADDD_IMM || op==ADDD_IDX || op==SUBD_IMM || op==SUBD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW ||
-                   op==ASLD_IMM || op==ASLD_IDX || op==ROLD_IMM || op==ROLD_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORD_IMM || op==RORD_IDX || op==NEGD || op==ASLW ||
-                   op== LDD_IMM || op== LDD_IDX || op== LDX_IMM || op== LDX_IDX || op== LDY_IMM || op== LDY_IDX || op== LDU_IMM || op== LDU_IDX || op==NEGW || op==ROLW ||
-                   op== LDS_IMM || op== LDS_IDX || op==INCD || op==INCW || op==DECD || op==DECW || op==TSTD || op==TSTW || op==ABSD || op==STD  || op== STX || op== STY ||  
-                   op==LSRW || op== STS || op== ABX || op==SEX || op==STU;
+wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
+                   op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
+                   op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||  
+                   op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW || 
+                   op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW;
+                     
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
 // Divider
@@ -88,7 +88,7 @@ always @* begin
             v_out = 0;
         end
         ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX: begin  // ADD
-            {c_out, rslt} = {1'b0, opnd0} + {1'b0, opnd1};
+            {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} + {1'b0, opnd1[7:0]};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
@@ -97,16 +97,20 @@ always @* begin
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
         end
         ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX: begin  // ADC
-            {c_out, rslt} =  {1'b0, opnd0} + {1'b0, opnd1} + {16'd0,cc_in[CC_C]};
+            {c_out, rslt[7:0]} =  {1'b0, opnd0[7:0]} + {1'b0, opnd1[7:0]} + {8'd0,cc_in[CC_C]};
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
-        SUBA_IMM,SUBB_IMM,SUBA_IDX,SUBB_IDX,SUBD_IMM,SUBD_IDX: begin  // SUB
+        SUBA_IMM,SUBB_IMM,SUBA_IDX,SUBB_IDX: begin  // SUB
+            {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]};
+            v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
+        end
+        SUBD_IMM,SUBD_IDX: begin  // SUB
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         SBCA_IMM,SBCB_IMM,SBCA_IDX,SBCB_IDX: begin   // SBC
-            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1} - {16'd0,cc_in[CC_C]};
+            {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]} - {8'd0,cc_in[CC_C]};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IDX: begin  // AND, BIT
@@ -143,18 +147,21 @@ always @* begin
             c_out = 1;
             v_out = 0;
         end
-        NEGA,NEGB,NEG,NEGD,NEGW: begin  // NEG, NEGD , NEGW
-            rslt  = ~opnd0 + 1'b1;
-            c_out = alu16 ? rslt!=0 : rslt[7:0]!=0;
+        NEGA,NEGB,NEG: begin  // NEG, NEGA , NEGB
+            { c_out, rslt[7:0] } = ~{ opnd0[7], opnd0[7:0] } + 9'b1;
+            v_out = opnd0[msb]==rslt[msb];
+        end
+        NEGD,NEGW: begin  
+            { c_out, rslt } = ~{ opnd0[15], opnd0 } + 17'b1;
             v_out = opnd0[msb]==rslt[msb];
         end
         INCA,INCB,INC,INCD,INCW: begin  // INC, INCD, INCW
             rslt  = opnd0 + 1'b1;
-            v_out = (~opnd0[msb] & rslt[msb]);
+            v_out = (~opnd0[msb] & rslt[msb]); // overflow calculated for signed integers
         end
         DECA,DECB,DEC,DECD,DECW: begin  // DEC, DECD, DECW
             rslt  = opnd0 - 1'b1;
-            v_out = (opnd0[msb] & ~rslt[msb]);
+            v_out = (opnd0[msb] & ~rslt[msb]); // overflow calculated for signed integers
         end
         LSRA,LSRB,LSR,LSRW,LSRD_IMM,LSRD_IDX: begin  // LSR, LSRW, LSRD
             // {rslt, c_out} = {1'b0, opnd0};
@@ -165,7 +172,9 @@ always @* begin
             {rslt, c_out} = {c_out, opnd0};
         end
         ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD 
-            {rslt, c_out} = {opnd0[msb], opnd0};
+            rslt      = opnd0>>1;
+            rslt[msb] = opnd0[msb];
+            c_out     = opnd0[0];
         end
         ASLA,ASLB,ASL,ASLW,ASLD_IMM,ASLD_IDX: begin  // LSL, ASL, ASLW, ASLD
             // {c_out, rslt} = {opnd0, 1'b0};
