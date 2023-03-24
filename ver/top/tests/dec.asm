@@ -42,6 +42,5 @@ BAD: 	LDY #$DEAD
 
 ;dc.b [(*+255)&$FFFFFFFE-*]0
 
-CPU 6809/6309
 FDB RESET
 
