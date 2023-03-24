@@ -91,7 +91,7 @@ module jtkcpu_ucode(
 
 );
 
-`include "jtkcpu.inc";
+`include "jtkcpu.inc"
 
 // Op codes = 8 bits, many op-codes will be parsed in the
 // same way. Let's assume we only need 64 ucode routines
@@ -103,7 +103,7 @@ module jtkcpu_ucode(
 
 // localparam UCODE_AW = 10; // 1024 ucode lines
 
-`include "jtkcpu_ucode.inc";
+`include "jtkcpu_ucode.inc"
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
@@ -212,8 +212,8 @@ assign idx_inc = idxinc;
 
 always @(posedge clk) begin
     if( rst ) begin
-        addr    <= 0;  // Reset starts ucode at 0
-        cur_int <= 0;
+        addr    <= { RESET, OPLEN };  // Reset starts ucode at 0
+        cur_int <= 4'b1000;
     end else if( cen && !buserror ) begin
         after_idx <= nx_after_idx;
 

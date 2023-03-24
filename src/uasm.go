@@ -201,7 +201,7 @@ func make_params( all elements ) (s string) {
 		sorted[v] = k
 		if len(k)>maxlen { maxlen = len(k) }
 	}
-	fmtstr := fmt.Sprintf("\n        %%-%ds = %%d",maxlen)
+	fmtstr := fmt.Sprintf("\n        %%-%ds = 'o%%o",maxlen)
 	for v,k := range sorted {
 		if !first {
 			s += fmt.Sprintf(",")

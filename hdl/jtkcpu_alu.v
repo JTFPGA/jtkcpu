@@ -27,7 +27,7 @@ module jtkcpu_alu(
     input      [ 7:0] cc_in,
     output     [ 7:0] cc_out,
 
-    output reg        busy,
+    output            busy,
 
     output reg [15:0] rslt,
     output reg [15:0] rslt_hi // used only in lmul
@@ -37,7 +37,7 @@ reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
 assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out }; 
 
-`include "jtkcpu.inc";
+`include "jtkcpu.inc"
 
 wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
                    op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
@@ -52,15 +52,12 @@ reg         div_start = 0, div_len = 0, div_sign = 0;
 wire        div_v;
 wire [ 7:0] div_quot, div_rem;
 
-reg [ 7:0]  div_op1 = opnd1[7:0];
-
-
 jtkcpu_div u_div(
     .rst  ( rst         ),
     .clk  ( clk         ),
     .cen  ( cen         ),
     .op0  ( opnd0       ),
-    .op1  ( div_op1     ),
+    .op1  ( opnd1[7:0]  ),
     .len  ( div_len     ),
     .sign ( div_sign    ),
     .start( div_start   ),

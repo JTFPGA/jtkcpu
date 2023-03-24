@@ -210,8 +210,7 @@ always @(posedge clk) begin
         pc <= ( ni | opd ) ? pc+16'd1 :
               short_branch ? { {8{data[7]}}, data[7:0]}+pc :
               long_branch  ? data+pc :
-              int_en       ? data : pc;  
-        // up_pc
+              up_pc        ? data    : pc;
         // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
         // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
                

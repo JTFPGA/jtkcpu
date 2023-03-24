@@ -36,9 +36,11 @@ module jtkcpu_idx(
 
 );
 
-reg [15:0] offset;
-reg        idx_enl;
-reg [ 7:0] postbyte = mdata[7:0];
+reg  [15:0] offset;
+reg         idx_enl;
+wire [ 7:0] postbyte;
+
+assign postbyte = mdata[7:0];
 
 // assign idx_sel = { postbyte[1], postbyte[6:5] };
 

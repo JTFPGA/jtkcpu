@@ -73,16 +73,17 @@ reg is_int;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        addr  <= 0;
-        data  <= 0;
-        busy  <= 0;
-        up_pc <= 0;
-        is_op <= 0;
-        lines <= 0;
+        addr   <= 0;
+        data   <= 0;
+        busy   <= 0;
+        up_pc  <= 0;
+        is_op  <= 0;
+        is_int <= 0;
+        lines  <= 0;
     end else if( cen2 && !halt ) begin
         // signals active for a single clock cycle:
-        up_pc <= 0;
-        we    <= 0;
+        up_pc  <= 0;
+        we     <= 0;
         if( up_lines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
@@ -92,6 +93,7 @@ always @(posedge clk, posedge rst) begin
             dout <= alu_dout[7:0];
             if( we ) we <= 1; // keep it high for one more cycle
         end else if( !up_pc ) begin
+            is_int <= 0;
             // Select the active address
             if( is_int ) begin // Keep the address constant while waiting
                 is_op <= 1;    // for the PC to get the interrupt intvec
