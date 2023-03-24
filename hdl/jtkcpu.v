@@ -23,9 +23,9 @@ module jtkcpu(
     input               cen2,
 
     input               halt,
-    input               nmi,
-    input               irq,
-    input               firq,
+    input               nmi_n,
+    input               irq_n,
+    input               firq_n,
     input               dtack, 
 
     // memory bus
@@ -75,9 +75,9 @@ jtkcpu_ctrl u_ctrl(
     .alu_busy     ( alu_busy     ),
     .mem_busy     ( mem_busy     ),
     .idx_busy     ( idx_busy     ),
-    .irq          ( irq          ),
-    .firq         ( firq         ),
-    .nmi          ( nmi          ),
+    .irq_n        ( irq_n        ),
+    .firq_n       ( firq_n       ),
+    .nmi_n        ( nmi_n        ),
 
     .addr_x       ( addr_x       ),
     .addr_y       ( addr_y       ),

@@ -33,9 +33,9 @@ module jtkcpu_ctrl(
     input             up_pul_pc,
 
     // System status
-    input             irq,
-    input             nmi,
-    input             firq,
+    input             irq_n,
+    input             nmi_n,
+    input             firq_n,
     input             alu_busy,      
     input             mem_busy,
     input             idx_busy,
@@ -139,9 +139,9 @@ jtkcpu_ucode u_ucode(
     .alu_busy          ( alu_busy          ),
     .mem_busy          ( mem_busy          ),
     .idx_busy          ( idx_busy          ),
-    .irq               ( irq               ),
-    .nmi               ( nmi               ),
-    .firq              ( firq              ),
+    .irq_n             ( irq_n             ),
+    .nmi_n             ( nmi_n             ),
+    .firq_n            ( firq_n            ),
     .intvec            ( intvec            ),
     .idx_inc           ( idx_inc           ),
 

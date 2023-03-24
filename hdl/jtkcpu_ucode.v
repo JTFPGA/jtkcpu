@@ -27,9 +27,9 @@ module jtkcpu_ucode(
     input           alu_busy,
     input           mem_busy,
     input           idx_busy,
-    input           irq,
-    input           nmi,
-    input           firq,
+    input           irq_n,
+    input           nmi_n,
+    input           firq_n,
 
     // control outputs from ucode
     output          adr_data, 
@@ -224,13 +224,13 @@ always @(posedge clk) begin
             end
         end
         if( ni ) begin
-            if( nmi ) begin // interrupt enabled irq
+            if( !nmi_n ) begin // interrupt enabled irq
                 cur_int <= 4'b0100;
                 addr    <= { NMI, OPLEN };
-            end else if( firq ) begin  // interrupt enabled nmi
+            end else if( !firq_n ) begin  // interrupt enabled nmi
                 cur_int <= 4'b0010;
                 addr    <= { FIRQ, OPLEN };
-            end else if ( irq ) begin  // interrupt enabled firq
+            end else if ( !irq_n ) begin  // interrupt enabled firq
                 cur_int <= 4'b0001;
                 addr    <= { IRQ, OPLEN };
             end else begin   // interrupt disabled
