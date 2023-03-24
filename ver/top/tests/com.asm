@@ -14,13 +14,13 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #55
+RESET:  LDA #$55
         COMA
-        CMPA #aa
+        CMPA #$AA
         BNE BAD
-        LDB #aa
+        LDB #$AA
         COMB
-        CMPB #55
+        CMPB #$55
         BNE BAD
 
 END:    LDX #$BABE
@@ -34,5 +34,5 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET

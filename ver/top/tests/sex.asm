@@ -16,8 +16,7 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:  LDB #$FF    
         SEX        
-        BPL BA 
-
+        BMI BAD
 
 END:    LDX #$BABE
         LDA #1
@@ -30,6 +29,5 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
-

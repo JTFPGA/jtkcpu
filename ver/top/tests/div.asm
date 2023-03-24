@@ -14,9 +14,7 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$2000
-        LDA #7D
-        STA ,X
+RESET:  LDA #$7D
         LDB #05
         DIV X,B
         CMPX #19
@@ -36,6 +34,6 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
 

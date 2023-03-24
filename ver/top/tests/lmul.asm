@@ -36,6 +36,6 @@ BAD:    LDX #$DEAD
         BRA BAD
 
 ; fill with zeros... up to interrupt table
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
 

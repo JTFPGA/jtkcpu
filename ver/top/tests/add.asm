@@ -30,11 +30,5 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-<<<<<<< HEAD
         DC.B  [$FFFE-*]0
         FDB   RESET
-
-=======
-        DC.B  [(*+255)&$FFFE-*]0
-        FDB   RESET
->>>>>>> update tests asm

@@ -16,8 +16,8 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:  LDA #$FA     
         LDB #$06 
-        ADCB A
-        CMPB #FF  
+        SBCB #120
+        CMPB #$FF  
         BNE BAD
 
 END:    LDX #$BABE
@@ -32,7 +32,5 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-; fill with zeros... up to interrupt table
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
-

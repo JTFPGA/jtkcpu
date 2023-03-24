@@ -14,9 +14,7 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$2000
-        LDY #$2050
-        LDA #$03
+RESET:  LDA #$03
         STA ,X
         LDB #$03
         STB ,Y
@@ -38,6 +36,6 @@ BAD:    LDX #$DEAD
         BRA BAD
 
 ; fill with zeros... up to interrupt table
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
 

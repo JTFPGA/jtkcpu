@@ -17,14 +17,13 @@ TESTCTRL EQU $1000
 RESET:  LDA #$FE
 	PUSHS A
 	LDB #$3C
-	PSHS B
+	PUSHS B
 	CLRA
 	CLRB
 	PULLS A
 	PULLS B
         CMPA #$3C 
         BNE BAD
-	PULLU B
 	CMPB #$FE
 	BNE BAD
 
@@ -40,6 +39,5 @@ BAD: 	LDX #$DEAD
 	STA ,X
  	BRA BAD
 
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
-

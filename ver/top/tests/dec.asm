@@ -14,8 +14,8 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$2000
-        LDY #$2020
+RESET:  LDX #1243
+        LDY #2020
         LDB #$10
 
 LOOP:   LDA ,X+

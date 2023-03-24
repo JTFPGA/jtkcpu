@@ -18,7 +18,6 @@ RESET:  LDA #$9B
         ADDA #$06
         DAA
 
-
 END:    LDX #$BABE
         LDA #1
         LDX #TESTCTRL
@@ -30,8 +29,5 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-; fill with zeros... up to interrupt table
-
-       DC.B  [(*+255)&$FFFE-*]0
-       FDB   RESET
-
+        DC.B  [$FFFE-*]0
+        FDB   RESET

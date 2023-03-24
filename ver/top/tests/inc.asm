@@ -21,7 +21,7 @@ LOOP:   INCA
         DECB 
         BNE LOOP
         CMPA #$0F
-        BEN BAD
+        BNE BAD
 
 END:    LDY #$BABE
         LDA #1
@@ -29,13 +29,12 @@ END:    LDY #$BABE
         STA ,Y 
         BRA END
 
-BAD:    LDY #DEAD
+BAD:    LDY #$DEAD
         LDA #3
         LDY #TESTCTRL
         STA ,Y
         BRA BAD
 
 ; fill with zeros... up to interrupt table
-        DC.B  [(*+255)&$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
-

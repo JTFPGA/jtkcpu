@@ -14,8 +14,7 @@
 TESTCTRL EQU $1000
 
         ORG  $F000
-RESET:  LDS   #$3400
-        LDA   #$FE
+RESET:  LDA   #$FE
         PUSHS A
         CLRA
         JSR   SUBRUTINE
@@ -45,6 +44,5 @@ ONE:
         STA   $1000
         RTS
 
-; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
         FDB   RESET
