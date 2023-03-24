@@ -30,8 +30,6 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-; fill with zeros... up to interrupt table
-FILL $FFFE-$
-
-DD RESET
+        DC.B  [(*+255)&$FFFE-*]0
+        FDB   RESET
 

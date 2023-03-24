@@ -17,20 +17,17 @@ TESTCTRL EQU $1000
 RESET:  
 
 END:    LDX #$BABE
-                LDA #1
-                LDX #TESTCTRL
-                STA ,X                  ; Finish test, result ok
-                BRA END
+        LDA #1
+        LDX #TESTCTRL
+        STA ,X                  ; Finish test, result ok
+        BRA END
 BAD:    LDX #$DEAD
-                LDA #3
-                LDX #TESTCTRL
-                STA ,X                  ; Finish test, result bad
-                BRA BAD
+        LDA #3
+        LDX #TESTCTRL
+        STA ,X                  ; Finish test, result bad
+        BRA BAD
 
 ; fill with zeros... up to interrupt table
-;FILL $FFFE-$
-
-DC.B [(*+255)&$FFFE-*]0
-
-FDB RESET
+        DC.B  [(*+255)&$FFFE-*]0
+        FDB   RESET
 

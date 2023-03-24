@@ -46,9 +46,5 @@ ONE:
         RTS
 
 ; fill with zeros... up to interrupt table
-;FILL $FFFE-$
-
-DC.B [(*+255)&$FFFE-*]0
-
-FDB RESET
-
+        DC.B  [$FFFE-*]0
+        FDB   RESET

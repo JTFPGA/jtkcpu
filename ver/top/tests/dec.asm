@@ -24,23 +24,18 @@ LOOP:   LDA ,X+
         BNE LOOP
         CMPB #$00
         BNE BAD
-
-END:    LDY #$BABE
+END:    
+        LDY #$BABE
         LDB #1
         LDY #TESTCTRL
         STB ,Y 
         BRA END
-
-BAD: 	LDY #$DEAD
+BAD: 	
+        LDY #$DEAD
         LDB #3
         LDY #TESTCTRL
         STB ,Y
- 	BRA BAD
+        BRA BAD
 
-; fill with zeros... up to interrupt table
-;FILL $FFFE-$
-
-;dc.b [(*+255)&$FFFFFFFE-*]0
-
-FDB RESET
-
+        DC.B  [$FFFE-*]0
+        FDB   RESET
