@@ -19,9 +19,9 @@ RESET:  LDA #$03
         LDB #$03
         STB ,Y
         LMUL
-        CMPX 
+        CMPX ; Add value here!
         BNE BAD
-        CMPY
+        CMPY ; Add value here!
         BNE BAD  
 
 END:    LDX #$BABE

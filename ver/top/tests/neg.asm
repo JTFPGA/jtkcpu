@@ -19,7 +19,7 @@ RESET:  LDA #$88
         BMI BAD
         LDB #55
         NEGB
-        BPL BAG
+        BPL BAD
 
 END:    LDX #$BABE
         LDA #1

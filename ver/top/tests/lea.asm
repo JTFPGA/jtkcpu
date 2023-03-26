@@ -14,10 +14,11 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LEAX $1234
-        LEAY $3421
-        LEAU $2341
-        LEAS $4123
+RESET:  LDX  #0
+        LEAX X,$1234
+        LEAY X,$3421
+        LEAU X,$2341
+        LEAS X,$4123
 
 END:    LDY #$BABE
         LDA #1
