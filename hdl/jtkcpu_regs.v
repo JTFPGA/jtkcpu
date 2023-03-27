@@ -104,31 +104,23 @@ assign idx_step  = mdata[1:0];
 
 // exg/tfr mux
 always @* begin
-    case(mdata[7:4] )
-        4'b0000: mux = {a, b};
-        4'b0001: mux = x;
-        4'b0010: mux = y;
-        4'b0011: mux = u;
+    case( mdata[7:4] )
+        4'b0000: mux = {8'hFF,  a};
+        4'b0001: mux = {8'hFF,  b};
+        4'b0010: mux = x;
+        4'b0011: mux = y;
         4'b0100: mux = s;
-        4'b0101: mux = pc;
-        4'b1000: mux = {8'hFF,  a};
-        4'b1001: mux = {8'hFF,  b};
-        4'b1010: mux = {8'hFF, cc};
-        4'b1011: mux = {8'hFF, dp};
+        4'b0101: mux = u;
         default: mux = 0;
     endcase 
 
     case( mdata[3:0] )
-        4'b0000: d_mux = {a, b};
-        4'b0001: d_mux = x;
-        4'b0010: d_mux = y;
-        4'b0011: d_mux = u;
+        4'b0000: d_mux = {8'hFF,  a};
+        4'b0001: d_mux = {8'hFF,  b};
+        4'b0010: d_mux = x;
+        4'b0011: d_mux = y;
         4'b0100: d_mux = s;
-        4'b0101: d_mux = pc;
-        4'b1000: d_mux = {8'hFF,  a};
-        4'b1001: d_mux = {8'hFF,  b};
-        4'b1010: d_mux = {8'hFF, cc};
-        4'b1011: d_mux = {8'hFF, dp};
+        4'b0101: d_mux = u;
         default: d_mux = 0; 
     endcase   
 end

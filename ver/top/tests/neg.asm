@@ -17,7 +17,7 @@ TESTCTRL EQU $1000
 RESET:  LDA #$88
         NEGA 
         BMI BAD
-        LDB #55
+        LDB #$55
         NEGB
         BPL BAD
 
