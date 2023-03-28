@@ -1,9 +1,14 @@
 #!/bin/bash
 
+# reassemble the ucode
+cd ../../src
+go run uasm.go || exit $?
+cd -
+
 TEST=$1
 
 if [ ! -z "$ASPATH" ]; then
-    ASPATH=`which asl`
+    ASPATH=`which asl`/
 fi
 
 if [ ! -e "tests/$TEST".asm ]; then
@@ -11,8 +16,8 @@ if [ ! -e "tests/$TEST".asm ]; then
     exit 1
 fi
 
-$ASPATH/asl -cpu 6809 tests/$TEST.asm > asl.log || (cat asl.log; exit 1)
-$ASPATH/p2bin tests/$TEST.p >> asl.log || ( cat asl.log; exit 1)
+${ASPATH}asl -cpu 052001 tests/$TEST.asm -l > asl.log || (cat asl.log; exit 1)
+${ASPATH}p2bin tests/$TEST.p >> asl.log || ( cat asl.log; exit 1)
 mv tests/$TEST.bin test.bin
 rm -f tests/$TEST.p
 

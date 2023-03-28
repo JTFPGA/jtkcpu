@@ -71,9 +71,9 @@ jtkcpu uut(
     .cen2       ( cen2      ),
 
     .halt       ( halt      ),
-    .nmi        ( nmi       ),
-    .irq        ( irq       ),
-    .firq       ( firq      ),
+    .nmi_n      ( ~nmi      ),
+    .irq_n      ( ~irq      ),
+    .firq_n     ( ~firq     ),
     .dtack      ( dtack     ),
 
     // memory bus
