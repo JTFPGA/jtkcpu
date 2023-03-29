@@ -1,3 +1,19 @@
+# JTKCPU
+
+Verilog core compatible with Konami's 052001
+
+You can show your appreciation through
+* [Patreon](https://patreon.com/jotego), by supporting releases
+* [Paypal](https://paypal.me/topapate), with a donation
+
+# Assembler
+
+[Alfred Arnold's assembler](http://john.ccac.rwth-aachen.de:8000/as/index.html) supports the 052001 instruction set. The [top-level simulations](ver/top/sim.sh) expect this assembler in the system to run the unit tests.
+
+# Game Library
+
+The following games used the 052001 CPU as the main or sound processor. The set names and source files refer to the MAME emulator
+
 Games                                        | Setname        | Source
 ---------------------------------------------|----------------|------------
 '88 Games                                    | 88games        | 88games.cpp
