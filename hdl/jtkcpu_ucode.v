@@ -120,8 +120,12 @@ localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 always @* begin
     nx_after_idx = after_idx;
     case( op )
-        CMPA_IMM, ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
-        CMPB_IMM, ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
+        CMPA_IMM, CMPB_IMM:                                         opcat = CMP8;
+        CMPA_IDX, CMPB_IDX:                                   begin opcat = PARSE_IDX;
+                                                                    nx_after_idx = CMP8;
+                                                              end
+        ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
+        ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
         EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
         EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC,
         LSRA,     RORA,     ASRA,     ASLA,     ROLA,

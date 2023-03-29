@@ -7,8 +7,11 @@ cd -
 
 TEST=$1
 
-if [ ! -z "$ASPATH" ]; then
+if [ -z "$ASPATH" ]; then
     ASPATH=`which asl`/
+    echo "Using $ASPATH"
+else
+    ASPATH="$ASPATH"/
 fi
 
 if [ ! -e "tests/$TEST".asm ]; then

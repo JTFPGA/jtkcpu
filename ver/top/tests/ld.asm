@@ -24,6 +24,7 @@ RESET:	LDA #$FF	; Immediate
 		BNE BAD
 		CMPB #$55
 		BNE BAD
+		LDD #$D00D
 		CMPX #$ABCD
 		BNE BAD
 		CMPY #$1234
@@ -31,6 +32,8 @@ RESET:	LDA #$FF	; Immediate
 		CMPU #$5678
 		BNE BAD
 		CMPS #$BABE
+		BNE BAD
+		CMPD #$D00D
 		BNE BAD
 
 END:	LDX #$BABE

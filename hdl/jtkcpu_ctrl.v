@@ -130,6 +130,23 @@ assign up_y = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lm
 assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
 assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 
+wire short_branch = set_pc_branch8  & branch;
+wire long_branch  = set_pc_branch16 & branch | set_pc_jmp;
+
+always @(posedge clk) begin
+    if( rst ) begin
+        pc <= 0;
+    end else if(cen) begin
+        pc <= ( ni | opd ) ? pc+16'd1 :
+              short_branch ? { {8{data[7]}}, data[7:0]}+pc :
+              long_branch  ? data+pc :
+              up_pc        ? data    : pc;
+        // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
+        // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
+
+    end
+end
+
 jtkcpu_ucode u_ucode(
     .rst               ( rst               ),
     .clk               ( clk               ),
@@ -200,23 +217,6 @@ jtkcpu_ucode u_ucode(
     .we                ( wrq               )
 
 );
-
-wire short_branch = set_pc_branch8  & branch;
-wire long_branch  = set_pc_branch16 & branch | set_pc_jmp;
-
-always @(posedge clk) begin
-    if( rst ) begin
-        pc <= 0;
-    end else if(cen) begin
-        pc <= ( ni | opd ) ? pc+16'd1 :
-              short_branch ? { {8{data[7]}}, data[7:0]}+pc :
-              long_branch  ? data+pc :
-              up_pc        ? data    : pc;
-        // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
-        // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
-
-    end
-end
 
 jtkcpu_branch u_branch(
     .op         ( op         ),

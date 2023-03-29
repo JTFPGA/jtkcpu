@@ -50,8 +50,12 @@ SINGLE_ALU:         OPD
                     OPN0=REGS, UP_CC, UP_LD8
                     NI
 
-SINGLE_ALU_16:      OPD
-                    OPD, MEMHI
+CMP8:               OPD
+                    OPN0=REGS, UP_CC
+                    NI
+
+SINGLE_ALU_16:      OPD, MEMHI
+                    OPD 
                     OPN0=REGS, UP_CC, UP_LD16
                     NI
 

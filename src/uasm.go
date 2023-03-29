@@ -117,9 +117,9 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 			val |= int64(1) << all.mnemonics[each]
 		}
 		addr := (cur_cat*MAX_ROUTINE)|subidx
-		if val != 0 {
-			fmt.Printf("%2X - %X\n",addr,val)
-		}
+		// if val != 0 {
+		// 	fmt.Printf("%2X - %X\n",addr,val)
+		// }
 		rom[ addr ] = val
 	}
 	return rom

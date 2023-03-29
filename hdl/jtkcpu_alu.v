@@ -102,7 +102,14 @@ always @* begin
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        SUBD_IMM,SUBD_IDX: begin  // SUB
+        SUBD_IMM, SUBD_IDX,
+        CMPA_IMM, CMPB_IMM,
+        CMPA_IDX, CMPB_IDX,
+        CMPD_IMM, CMPD_IDX,
+        CMPX_IMM, CMPX_IDX,
+        CMPY_IMM, CMPY_IDX,
+        CMPU_IMM, CMPU_IDX,
+        CMPS_IMM, CMPS_IDX:  begin  // SUB/CMP
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
@@ -130,9 +137,6 @@ always @* begin
             { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out } = cc_in | opnd1[7:0];
             rslt=0;
         end
-        CMPA_IMM,CMPB_IMM,CMPA_IDX,CMPB_IDX,CMPD_IMM,CMPD_IDX,CMPX_IMM,CMPX_IDX,CMPY_IMM,CMPY_IDX,CMPU_IMM,CMPU_IDX,CMPS_IMM,CMPS_IDX: begin  // CMP
-            {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
-            v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         CLRA,CLRB,CLR,CLRD,CLRW: begin  // CLR, CLRD, CLRW
             rslt  = 0;
