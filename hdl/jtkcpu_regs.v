@@ -264,8 +264,8 @@ always @(posedge clk, posedge rst) begin
         // if( up_alu_b ) b <= alu[7:0];
 
         if( up_d ) begin
-            a <= alu[ 7:0];
-            b <= alu[15:8];
+            a <= alu[15:8];
+            b <= alu[ 7:0];
         end
 
         // if( up_dp || up_pul_dp ) dp <= alu[7:0];

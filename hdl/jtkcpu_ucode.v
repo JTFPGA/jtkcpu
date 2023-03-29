@@ -120,10 +120,6 @@ localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 always @* begin
     nx_after_idx = after_idx;
     case( op )
-        CMPA_IMM, CMPB_IMM:                                         opcat = CMP8;
-        CMPA_IDX, CMPB_IDX:                                   begin opcat = PARSE_IDX;
-                                                                    nx_after_idx = CMP8;
-                                                              end
         ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
         ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
         EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
@@ -131,8 +127,8 @@ always @* begin
         LSRA,     RORA,     ASRA,     ASLA,     ROLA,
         LSRB,     RORB,     ASRB,     ASLB,     ROLB:               opcat = SINGLE_ALU;
 
-        CMPD_IMM, CMPY_IMM, LDD_IMM, LDY_IMM, ADDD_IMM, CMPS_IMM,
-        CMPX_IMM, CMPU_IMM, LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:   opcat = SINGLE_ALU_16;
+        LDD_IMM, LDY_IMM, ADDD_IMM,
+        LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:                       opcat = SINGLE_ALU_16;
 
         CLRA, INCA, NEGA, COMB, TSTB, DECB, ABSA, SEX, ABX,
         CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:              opcat = SINGLE_ALU_INH;
@@ -141,33 +137,40 @@ always @* begin
         CLR,  INC,  NEG,  COM,  TST,  DEC,
         LSR,  ROR,  ASR,  ASL,  ROL:                                opcat = MEM_ALU_IDX;
 
+        CMPA_IMM, CMPB_IMM:                                         opcat = CMP8;
+        CMPD_IMM, CMPX_IMM, CMPY_IMM, CMPU_IMM,CMPS_IMM:            opcat = CMP16;
+
         // Operand in indexed memory
-        CMPA_IDX, ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,
+        CMPA_IDX, CMPB_IDX:                                   begin opcat        = PARSE_IDX;
+                                                                    nx_after_idx = CMP8;
+                                                              end
+        CMPD_IDX, CMPX_IDX, CMPY_IDX, CMPU_IDX, CMPS_IDX:     begin opcat        = PARSE_IDX;
+                                                                    nx_after_idx = CMP16;
+                                                              end
+
+        ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,
         EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,
-        CMPB_IDX, ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,
-        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:            begin
-            opcat        = PARSE_IDX;
-            nx_after_idx = SINGLE_ALU_IDX;
-        end
+        ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,
+        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:      begin opcat        = PARSE_IDX;
+                                                                    nx_after_idx = SINGLE_ALU_IDX;
+                                                              end
 
-        CMPD_IDX, CMPU_IDX, LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
-        CMPX_IDX, CMPS_IDX, LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX,
-        CMPY_IDX,           LDY_IDX:                                begin
-            opcat        = PARSE_IDX;
-            nx_after_idx = SINGLE_ALU_IDX16;
-        end
+        LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
+        LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX, LDY_IDX:      begin opcat        = PARSE_IDX;
+                                                                    nx_after_idx = SINGLE_ALU_IDX16;
+                                                              end
 
-// FIX MULTI_ALU_INH
+        // FIX MULTI_ALU_INH
         MUL, LMUL:                                                  opcat = MULTIPLY;
         DIV_X_B:                                                    opcat = MULTI_ALU_INH;
         LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:           opcat = MULTI_ALU;
         LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:           opcat = MULTI_ALU_IDX;
 
-        LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW:  opcat = WMEM_ALU;
+        LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW: opcat = WMEM_ALU;
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE,
-        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:                 opcat = SBRANCH;
+        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:                opcat = SBRANCH;
         LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE,
-        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE:        opcat = LBRANCH;
+        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE:       opcat = LBRANCH;
 
         DECX_JNZ:       opcat = LOOPX;
         DECB_JNZ:       opcat = LOOPB;
