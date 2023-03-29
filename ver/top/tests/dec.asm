@@ -14,25 +14,24 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #1243
-        LDY #2020
-        LDB #$10
-
-LOOP:   LDA ,X+
-        STA ,Y+
+RESET:  LDA #05
+        LDB #$03
         DECB
+        CMPB #$02
+        BNE BAD
+LOOP:   DECA
         BNE LOOP
-        CMPB #$00
+        CMPA #00
         BNE BAD
 END:    
         LDY #$BABE
-        LDB #1
+        LDA #1
         LDY #TESTCTRL
         STB ,Y 
         BRA END
 BAD: 	
         LDY #$DEAD
-        LDB #3
+        LDA #3
         LDY #TESTCTRL
         STB ,Y
         BRA BAD
