@@ -1,0 +1,83 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Wed Mar 29 04:19:21 2023
+[*]
+[dumpfile] "/home/jtejada/jtmisc/ip/jtkcpu/ver/top/test.lxt"
+[dumpfile_mtime] "Wed Mar 29 04:18:07 2023"
+[dumpfile_size] 300243
+[savefile] "/home/jtejada/jtmisc/ip/jtkcpu/ver/top/test.gtkw"
+[timestart] 3123
+[size] 1278 996
+[pos] -1 -1
+*-7.722390 3555 1675 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] test.
+[treeopen] test.uut.
+[treeopen] test.uut.u_ctrl.
+[sst_width] 223
+[signals_width] 211
+[sst_expanded] 1
+[sst_vpaned_height] 292
+@28
+test.uut.u_ctrl.u_ucode.buserror[0]
+test.uut.clk[0]
+@30
+test.uut.u_ctrl.u_ucode.addr[8:0]
+@28
+test.uut.u_ctrl.u_ucode.int_en[0]
+@22
+test.uut.u_ctrl.u_ucode.intvec[3:0]
+test.uut.u_ctrl.u_ucode.cur_int[3:0]
+@28
+test.uut.u_ctrl.u_ucode.ni[0]
+@200
+-
+@28
+test.uut.u_memctrl.cen2[0]
+test.uut.u_memctrl.is_int[0]
+@22
+test.uut.u_memctrl.addr[15:0]
+test.uut.u_memctrl.din[7:0]
+@28
+test.uut.u_memctrl.up_pc[0]
+@22
+test.uut.u_ctrl.op[7:0]
+@200
+-
+@28
+test.uut.u_memctrl.cen[0]
+test.uut.u_memctrl.opd[0]
+@200
+-
+@28
+test.uut.u_ctrl.ni[0]
+@22
+test.uut.u_ctrl.pc[15:0]
+@28
+test.uut.u_memctrl.is_op[0]
+@200
+-
+-ADDR
+@23
+test.uut.u_memctrl.addr[15:0]
+@22
+[color] 2
+test.uut.u_memctrl.op[7:0]
+test.uut.u_memctrl.data[15:0]
+@200
+-ALU
+@22
+test.uut.u_alu.opnd0[15:0]
+test.uut.u_alu.opnd1[15:0]
+test.uut.u_alu.rslt[15:0]
+@200
+-REGS
+@22
+test.uut.u_regs.a[7:0]
+test.uut.u_regs.b[7:0]
+test.uut.u_regs.x[15:0]
+test.uut.u_regs.y[15:0]
+test.uut.u_regs.u[15:0]
+test.uut.u_regs.s[15:0]
+test.uut.u_regs.cc[7:0]
+[pattern_trace] 1
+[pattern_trace] 0

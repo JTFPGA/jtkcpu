@@ -46,7 +46,7 @@ module jtkcpu_regs(
     // input               up_alu_b,
 
     // Flags from ALU
-    input               set_regs_alu,
+    input               up_cc,
     input        [ 7:0] alu_cc,
     // Flags from control
     input               set_e,
@@ -68,8 +68,8 @@ module jtkcpu_regs(
     output   reg [15:0] d_mux,
     output   reg [15:0] mux_reg0,
     output   reg [15:0] mux_reg1,
-    output   reg [15:0] nx_u,    
-    output   reg [15:0] nx_s,    
+    output   reg [15:0] nx_u,
+    output   reg [15:0] nx_s,
     output   reg [15:0] idx_reg,
     output       [15:0] psh_addr,
     output       [15:0] acc,
@@ -80,15 +80,16 @@ module jtkcpu_regs(
     output   reg [ 7:0] b,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
-    output   reg        up_pul_cc,
     output   reg        up_pul_pc
 );
 
 `include "jtkcpu.inc"
 
-reg         pshdec_u, pshdec_s, up_pul_x, up_pul_y, up_pul_other, up_pul_a, up_pul_b, up_pul_dp, inc_pul;
+reg         pshdec_u, pshdec_s, inc_pul,
+            up_pul_x, up_pul_y, up_pul_other,
+            up_pul_a, up_pul_b, up_pul_dp, up_pul_cc;
 reg  [ 7:0] dp;
-reg  [15:0] u, s; 
+reg  [15:0] u, s;
 wire [15:0] psh_other;
 wire        idx_incx, idx_incy, idx_incu, idx_incs;
 wire [ 1:0] idx_step;
@@ -112,7 +113,7 @@ always @* begin
         4'b0100: mux = s;
         4'b0101: mux = u;
         default: mux = 0;
-    endcase 
+    endcase
 
     case( mdata[3:0] )
         4'b0000: d_mux = {8'hFF,  a};
@@ -121,11 +122,11 @@ always @* begin
         4'b0011: d_mux = y;
         4'b0100: d_mux = s;
         4'b0101: d_mux = u;
-        default: d_mux = 0; 
-    endcase   
+        default: d_mux = 0;
+    endcase
 end
 
-always @* begin 
+always @* begin
     case ( op )
         ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
         ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
@@ -135,7 +136,7 @@ always @* begin
         CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
         CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
             CLRD,     NEGD,     ABSD,      STD: mux_reg0 = {a, b};
-        
+
         CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 = x;
         CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 = y;
         CMPU_IMM, CMPU_IDX, STU:       mux_reg0 = u;
@@ -146,7 +147,7 @@ always @* begin
     endcase
 end
 
-always @* begin 
+always @* begin
     case ( op )
         ABX:     mux_reg1 = {8'hFF,  b};
         LMUL:    mux_reg1 = x;
@@ -159,11 +160,11 @@ always @* begin
     pshdec_u = 0;
     pshdec_s = 0;
     if ( pshdec && psh_mux!=0 ) begin
-        if (psh_ussel) 
+        if (psh_ussel)
             pshdec_u = 1;
-        else 
+        else
             pshdec_s = 1;
-    end 
+    end
     nx_u = u;
     nx_s = s;
     if( up_s  ) nx_s = up_lea ? idx_addr : mdata;
@@ -171,16 +172,16 @@ always @* begin
     if( pshdec_u | dec_u ) nx_u = u - 16'd1;
     if( pshdec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hilon ) begin
-        if( psh_ussel ) 
-            nx_s[15:8] = alu[7:0]; 
-        else 
-            nx_u[15:8] = alu[7:0]; 
+        if( psh_ussel )
+            nx_s[15:8] = alu[7:0];
+        else
+            nx_u[15:8] = alu[7:0];
     end
     if( up_pul_other && !psh_hilon ) begin
-        if( psh_ussel ) 
-            nx_s[ 7:0] = alu[7:0]; 
-        else 
-            nx_u[ 7:0] = alu[7:0]; 
+        if( psh_ussel )
+            nx_s[ 7:0] = alu[7:0];
+        else
+            nx_u[ 7:0] = alu[7:0];
     end
 
     if( inc_pul &&  psh_ussel )
@@ -207,25 +208,25 @@ end
 always @* begin
     up_pul_cc = 0; // output
     up_pul_a  = 0; // define all as regs
-    up_pul_b  = 0; 
-    up_pul_dp = 0; 
-    up_pul_x  = 0; 
-    up_pul_y  = 0; 
+    up_pul_b  = 0;
+    up_pul_dp = 0;
+    up_pul_x  = 0;
+    up_pul_y  = 0;
     up_pul_other = 0;
-    up_pul_pc = 0; // output    
+    up_pul_pc = 0; // output
     casez( psh_sel )
-        8'b????_???1: up_pul_cc    = pul_en; 
-        8'b????_??10: up_pul_a     = pul_en; 
-        8'b????_?100: up_pul_b     = pul_en; 
-        8'b????_1000: up_pul_dp    = pul_en; 
-        8'b???1_0000: up_pul_x     = pul_en; 
-        8'b??10_0000: up_pul_y     = pul_en; 
-        8'b?100_0000: up_pul_other = pul_en; 
-        default:      up_pul_pc    = pul_en; 
-    endcase    
-    inc_pul = |{ up_pul_cc, up_pul_a, up_pul_b, up_pul_dp, up_pul_x, 
+        8'b????_???1: up_pul_cc    = pul_en;
+        8'b????_??10: up_pul_a     = pul_en;
+        8'b????_?100: up_pul_b     = pul_en;
+        8'b????_1000: up_pul_dp    = pul_en;
+        8'b???1_0000: up_pul_x     = pul_en;
+        8'b??10_0000: up_pul_y     = pul_en;
+        8'b?100_0000: up_pul_other = pul_en;
+        default:      up_pul_pc    = pul_en;
+    endcase
+    inc_pul = |{ up_pul_cc, up_pul_a, up_pul_b, up_pul_dp, up_pul_x,
         up_pul_y, up_pul_other, up_pul_pc };
-end 
+end
 
 function [15:0] apply_step( input [15:0] rbase );
     apply_step = ( idx_step!=0 )    ? rbase :
@@ -270,7 +271,7 @@ always @(posedge clk, posedge rst) begin
         // if( up_dp || up_pul_dp ) dp <= alu[7:0];
         // Update from memory
         if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
-        if( up_b  || up_pul_b  ) b <= mdata[7:0]; 
+        if( up_b  || up_pul_b  ) b <= mdata[7:0];
         if( dec_b ) b <= b - 8'd1;
         if( up_x  ) x  <= up_lmul ? alu[15:0]  : up_lea ? idx_addr : mdata;
         if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea ? idx_addr : mdata;
@@ -285,9 +286,8 @@ always @(posedge clk, posedge rst) begin
         if( dec_x ) x <= x - 16'd1;
         if( inc_y ) y <= y + 16'd1; // no dec_y ?
 
-        if( set_regs_alu ) begin
-            cc <= alu_cc;
-        end
+        if( up_cc     ) cc <= alu_cc;
+        if( up_pul_cc ) cc <= mdata[7:0];
         if( set_e ) cc[CC_E] <= 1;
         if( set_i ) cc[CC_I] <= 1;
         if( set_f ) cc[CC_F] <= 1;

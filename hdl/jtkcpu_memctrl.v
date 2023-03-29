@@ -38,7 +38,7 @@ module jtkcpu_memctrl(
     output reg [15:0] addr,
     output reg [ 7:0] lines,
     output reg        we,
-    
+
     // Data fetched can be 8 or 16 bits
     output reg [ 7:0] op,
     output reg [15:0] data,
@@ -55,6 +55,7 @@ module jtkcpu_memctrl(
     input             psh_en,
     input             addrx,
     input             addry,
+    input             ni,
     input             opd,    // the next byte (word) is an operand
     input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
 
@@ -69,7 +70,10 @@ localparam FIRQ = 16'hFFF6,
            NMI  = 16'hFFFC,
            RST  = 16'hFFFE;
 
-reg is_int;
+reg  is_int;
+wire mem_en;
+
+assign mem_en = ni | opd | psh_en| addrx | addry | idx_en;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
@@ -98,7 +102,7 @@ always @(posedge clk, posedge rst) begin
             if( is_int ) begin // Keep the address constant while waiting
                 is_op <= 1;    // for the PC to get the interrupt intvec
                 up_pc <= 1;
-            end else begin
+            end else if( mem_en ) begin
                 addr <= pc;
                 is_op <= 1;
                 if( opd    ) begin is_op <= 0; end

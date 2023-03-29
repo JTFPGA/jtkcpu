@@ -14,7 +14,7 @@
 
 #   Author: Jose Tejada Gomez. Twitter: @topapate
 #   Version: 1.0
-#   Date: 3-03-2023 
+#   Date: 3-03-2023
 
 ########## INDEX ADDR ##################
 PARSE_IDX:          OPD
@@ -47,29 +47,30 @@ IDX_EXTIND:         OPD, MEMHI                  # Extended indirect
 
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
-                    OPN0=REGS, UPREGS=ALU
+                    OPN0=REGS, UP_CC, UP_LD8
                     NI
 
-SINGLE_ALU_16:      OPD, MEM16
-                    OPN0=REGS, UPREGS=ALU
+SINGLE_ALU_16:      OPD
+                    OPD, MEMHI
+                    OPN0=REGS, UP_CC, UP_LD16
                     NI
 
-SINGLE_ALU_INH:     OPN0=REGS, UPREGS=ALU
+SINGLE_ALU_INH:     OPN0=REGS, UP_CC
                     NI
 
-SINGLE_ALU_INH16:   OPN0=REGS, UPREGS=ALU
+SINGLE_ALU_INH16:   OPN0=REGS, UP_CC
                     NI
 
 SINGLE_ALU_IDX:     ADR_IDX
-                    OPN0=REGS, UPREGS=ALU
+                    OPN0=REGS, UP_CC
                     NI
 
 SINGLE_ALU_IDX16:   ADR_IDX, MEM16
-                    OPN0=REGS, UPREGS=ALU
+                    OPN0=REGS, UP_CC
                     NI
 
 MULTI_ALU:          OPD
-                    OPN0=REGS, WAITALU, UPREGS=ALU
+                    OPN0=REGS, WAITALU, UP_CC
                     NI
 
 MEM_ALU_IDX:        OPD, IDX_EN
@@ -78,12 +79,12 @@ MEM_ALU_IDX:        OPD, IDX_EN
                     NI
 
 MULTI_ALU_INH:      OPD
-                    OPN0=REGS, UPREGS=ALU, WAITALU
+                    OPN0=REGS, UP_CC, WAITALU
                     NI
 
 MULTI_ALU_IDX:      OPD, IDX_EN
                     ADR_IDX
-                    OPN0=REGS, UPREGS=ALU, WAITALU
+                    OPN0=REGS, UP_CC, WAITALU
                     NI
 
 WMEM_ALU:           OPD, IDX_EN
@@ -98,7 +99,7 @@ MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
                     NOP
                     NOP
                     NOP     # 6th clock tick
-                    UPREGS=ALU
+                    UP_CC
                     NI
 
 LMULTIPLY:          NOP     # 20+ cycles in original
@@ -221,6 +222,7 @@ RESET:              INT_EN
                     NOP
                     NOP
                     NI
+                    NOP
 
 FIRQ:               PSH_CC
                     E=0, F=1, I=1, PSH_PC

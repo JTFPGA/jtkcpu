@@ -21,8 +21,8 @@ module jtkcpu_alu(
     input             clk,
     input             cen,
 
-    input      [ 7:0] op, 
-    input      [15:0] opnd0, 
+    input      [ 7:0] op,
+    input      [15:0] opnd0,
     input      [15:0] opnd1, // data from memory
     input      [ 7:0] cc_in,
     output     [ 7:0] cc_out,
@@ -35,16 +35,16 @@ module jtkcpu_alu(
 
 reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
-assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out }; 
+assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 
 `include "jtkcpu.inc"
 
 wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
                    op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
-                   op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||  
-                   op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW || 
+                   op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
+                   op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
                    op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW;
-                     
+
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
 // Divider
@@ -81,7 +81,7 @@ always @* begin
     case (op)
         LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
         LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,STD,STX,STY,STU,STS,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
-            rslt  = opnd0;
+            rslt  = opnd1;
             v_out = 0;
         end
         ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX: begin  // ADD
@@ -134,7 +134,7 @@ always @* begin
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
-        CLRA,CLRB,CLR,CLRD,CLRW: begin  // CLR, CLRD, CLRW 
+        CLRA,CLRB,CLR,CLRD,CLRW: begin  // CLR, CLRD, CLRW
             rslt  = 0;
             c_out = 0;
             v_out = 0;
@@ -148,7 +148,7 @@ always @* begin
             { c_out, rslt[7:0] } = ~{ opnd0[7], opnd0[7:0] } + 9'b1;
             v_out = opnd0[msb]==rslt[msb];
         end
-        NEGD,NEGW: begin  
+        NEGD,NEGW: begin
             { c_out, rslt } = ~{ opnd0[15], opnd0 } + 17'b1;
             v_out = opnd0[msb]==rslt[msb];
         end
@@ -165,10 +165,10 @@ always @* begin
             rslt  = opnd0 >> 1;
             c_out = opnd0[msb];
         end
-        RORA,RORB,ROR,RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD 
+        RORA,RORB,ROR,RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD
             {rslt, c_out} = {c_out, opnd0};
         end
-        ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD 
+        ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD
             rslt      = opnd0>>1;
             rslt[msb] = opnd0[msb];
             c_out     = opnd0[0];
@@ -200,7 +200,7 @@ always @* begin
         SEX: begin  // SEX
             rslt  = {{8{opnd0[7]}}, opnd0[7:0]};
             v_out = 0;
-        end                
+        end
         MUL: begin
             rslt  = opnd0[15:8]*opnd0[7:0];
             c_out = rslt[15];
@@ -209,23 +209,23 @@ always @* begin
             { rslt_hi, rslt }  = opnd0*opnd1;
             c_out = rslt_hi[15];
         end
-        // 
+        //
         ABSA, ABSB, ABSD: begin  // ABS
             if (opnd0[msb] )
                 rslt = alu16 ? -opnd0 : {opnd0[15:8],-opnd0[7:0]};
-            else 
+            else
                 rslt = opnd0;
             c_out = 0;
             v_out = 0;
-        end        
-        default: 
+        end
+        default:
             rslt = opnd0;
     endcase
 
     // To do: the condition is wrong, it should be && instead of ||
     // It should also exclude ANDCC and ORCC
     if ( op!=ABX && op!=ABSA && op!=ABSB && op!=ABSD && op!=ANDCC && op!=ORCC )
-        z_out = (rslt == 0);
+        z_out = alu16 ? rslt==0 : rslt[7:0]==0;
     if ( op!=LEAX && op!=LEAY && op!=LEAU && op!=LEAS && op!=ABX && op!=MUL && op!=LMUL && op!=ANDCC && op!=ORCC)
         n_out = rslt[msb];
 end

@@ -36,7 +36,7 @@ module jtkcpu_ctrl(
     input             irq_n,
     input             nmi_n,
     input             firq_n,
-    input             alu_busy,      
+    input             alu_busy,
     input             mem_busy,
     input             idx_busy,
 
@@ -60,6 +60,7 @@ module jtkcpu_ctrl(
     output            decx,
     output            incx,
     output            incy,
+    output            ni,
     output            set_i,
     output            set_e,
     output            set_f,
@@ -67,7 +68,7 @@ module jtkcpu_ctrl(
     output            idx_ld,
     output            idx_ret,
     output            idx_en,
-    output            set_regs_alu,
+    output            up_cc,
 
     output     [ 3:0] intvec,
     output            idx_inc,
@@ -96,24 +97,24 @@ module jtkcpu_ctrl(
 // module should be here as wires. Watchout for buses
 wire branch;
 wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
-     int_en, ni, psh_busy,
-     up_ld16, up_ld8, 
-     rti_cc, rti_other, 
+     int_en, psh_busy,
+     up_ld16, up_ld8,
+     rti_cc, rti_other,
      jmp_idx, set_pc_jmp,
      set_pc_branch16,
-     set_pc_branch8,         
+     set_pc_branch8,
      buserror,
-     
+
      addr_data,
      addr_idx,
-     back1_unz,        
+     back1_unz,
      back2_unz,
-     idx_step,                                  
-     pul_pc,                
-     set_opn0_a,      
-     set_opn0_b,      
-     set_opn0_mem,    
-     set_opn0_regs,   
+     idx_step,
+     pul_pc,
+     set_opn0_a,
+     set_opn0_b,
+     set_opn0_mem,
+     set_opn0_regs,
      set_pc_bnz_branch,
      set_pc_xnz_branch,
      skip_noind,
@@ -134,7 +135,7 @@ jtkcpu_ucode u_ucode(
     .clk               ( clk               ),
     .cen               ( cen               ),
 
-    .op                ( op                ), 
+    .op                ( op                ),
     .branch            ( branch            ),
     .alu_busy          ( alu_busy          ),
     .mem_busy          ( mem_busy          ),
@@ -171,7 +172,7 @@ jtkcpu_ucode u_ucode(
     .psh_all           ( psh_all           ),
     .psh_cc            ( psh_cc            ),
     .psh_go            ( psh_go            ),
-    .psh_pc            ( psh_pc            ), 
+    .psh_pc            ( psh_pc            ),
     .pul_go            ( pul_go            ),
     .pul_pc            ( pul_pc            ),
     .rti_cc            ( rti_cc            ),
@@ -184,11 +185,11 @@ jtkcpu_ucode u_ucode(
     .set_opn0_mem      ( set_opn0_mem      ),
     .set_opn0_regs     ( set_opn0_regs     ),
     .set_pc_bnz_branch ( set_pc_bnz_branch ),
-    .set_pc_branch16   ( set_pc_branch16   ), 
-    .set_pc_branch8    ( set_pc_branch8    ), 
+    .set_pc_branch16   ( set_pc_branch16   ),
+    .set_pc_branch8    ( set_pc_branch8    ),
     .set_pc_jmp        ( set_pc_jmp        ),
     .set_pc_xnz_branch ( set_pc_xnz_branch ),
-    .set_upregs_alu    ( set_regs_alu      ),
+    .up_cc             ( up_cc             ),
     .skip_noind        ( skip_noind        ),
     .up_data           ( up_data           ),
     .up_ld16           ( up_ld16           ),
@@ -213,14 +214,14 @@ always @(posedge clk) begin
               up_pc        ? data    : pc;
         // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
         // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
-               
+
     end
 end
 
 jtkcpu_branch u_branch(
-    .op         ( op         ), 
-    .cc         ( cc         ), 
-    .branch     ( branch     ) 
+    .op         ( op         ),
+    .cc         ( cc         ),
+    .branch     ( branch     )
 );
 
 jtkcpu_pshpul u_pshpul(
@@ -228,7 +229,7 @@ jtkcpu_pshpul u_pshpul(
     .clk        ( clk        ),
     .cen        ( cen        ),
 
-    .op         ( op         ), 
+    .op         ( op         ),
     .postdata   ( postdata   ),
     .cc         ( cc         ),
     .psh_all    ( psh_all    ),

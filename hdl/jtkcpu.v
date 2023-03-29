@@ -26,21 +26,21 @@ module jtkcpu(
     input               nmi_n,
     input               irq_n,
     input               firq_n,
-    input               dtack, 
+    input               dtack,
 
     // memory bus
     input        [ 7:0] din,
     output       [ 7:0] dout,
     output       [23:0] addr,
     output              we    // write enable
-    //output              as      
+    //output              as
 );
 
 wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
 wire [15:0] data, idx_reg, mux, d_mux, acc;
 wire [15:0] idx_addr, psh_addr;
-wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s; 
+wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s;
 wire [ 7:0] a, b, cc, cc_out;
 wire [ 7:0] op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
@@ -48,29 +48,28 @@ wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
 wire        alu_busy, mem_busy, idx_busy;
 wire        idx_en, hi_lon;
-wire        is_op; 
-wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc; 
-wire        indirect, branch, mem16, memhi; 
+wire        is_op;
+wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
+wire        indirect, branch, mem16, memhi;
 wire        pul_en, pshdec, us_sel, idx_ld, idx_ret;
-wire        wrq, opd, addr_x, addr_y, up_lines, up_lea, up_lmul, 
-            inc_x, inc_y, dec_b, dec_u, dec_x, 
+wire        wrq, ni, opd, addr_x, addr_y, up_lines, up_lea, up_lmul,
+            inc_x, inc_y, dec_b, dec_u, dec_x,
             clr_e, set_e, set_f, set_i,
-            set_regs_alu, up_pul_pc,
-            idx_inc;
+            up_pul_pc, idx_inc;
 
 jtkcpu_ctrl u_ctrl(
     .rst          ( rst          ),
     .clk          ( clk          ),
     .cen          ( cen          ),
 
-    .op           ( op           ), 
+    .op           ( op           ),
     .postdata     ( data     ),
     .psh_bit      ( psh_bit      ),
     .cc           ( cc           ),
     .data         ( data         ),
     .halt         ( halt         ),
-    .up_pc        ( up_pc        ), 
-    
+    .up_pc        ( up_pc        ),
+
     // System status
     .alu_busy     ( alu_busy     ),
     .mem_busy     ( mem_busy     ),
@@ -85,6 +84,7 @@ jtkcpu_ctrl u_ctrl(
     .hi_lon       ( hi_lon       ),
     .mem16        ( mem16        ),
     .memhi        ( memhi        ),
+    .ni           ( ni           ),
     .opd          ( opd          ),
     .psh_sel      ( psh_sel      ),
     .pul_en       ( pul_en       ),
@@ -105,7 +105,7 @@ jtkcpu_ctrl u_ctrl(
     .idx_ld       ( idx_ld       ),
     .idx_ret      ( idx_ret      ),
     .idx_en       ( idx_en       ),
-    .set_regs_alu ( set_regs_alu ),
+    .up_cc        ( up_cc        ),
     .intvec       ( intvec       ),
     .idx_inc      ( idx_inc      ),
 
@@ -148,6 +148,7 @@ jtkcpu_memctrl u_memctrl(
     .is_op        ( is_op        ),
     .mem16        ( mem16        ),
     .memhi        ( memhi        ),
+    .ni           ( ni           ),
     .halt         ( halt         ),
     .up_lines     ( up_lines     ),
     .idx_en       ( idx_en       ),
@@ -165,8 +166,8 @@ jtkcpu_alu u_alu(
     .clk          ( clk          ),
     .cen          ( cen          ),
 
-    .op           ( op           ), 
-    .opnd0        ( opnd0        ), 
+    .op           ( op           ),
+    .opnd0        ( opnd0        ),
     .opnd1        ( data         ),
     .cc_in        ( cc           ),
     .cc_out       ( cc_out       ),
@@ -182,13 +183,13 @@ jtkcpu_regs u_regs(
     .cen          ( cen          ),
 
     .pc           ( pc           ),
-    .x            ( regs_x       ), 
+    .x            ( regs_x       ),
     .y            ( regs_y       ),
     .cc           ( cc           ),
-    .a            ( a            ), 
+    .a            ( a            ),
     .b            ( b            ),
-    .mdata        ( data         ), 
-    .op           ( op           ), 
+    .mdata        ( data         ),
+    .op           ( op           ),
     .psh_sel      ( psh_sel      ),
     .psh_hilon    ( hi_lon       ),
     .psh_ussel    ( us_sel       ),
@@ -207,7 +208,7 @@ jtkcpu_regs u_regs(
     .up_lea       ( up_lea       ),
     // .up_alu_a     ( up_alu_a     ),
     // .up_alu_b     ( up_alu_b     ),
-    .set_regs_alu ( set_regs_alu ),
+    .up_cc        ( up_cc        ),
     .alu_cc       ( cc_out       ),
     .set_e        ( set_e        ),
     .set_i        ( set_i        ),
@@ -221,7 +222,7 @@ jtkcpu_regs u_regs(
     .dec_b        ( dec_b        ),
     .dec_u        ( dec_u        ),
     .pshdec       ( pshdec       ),
-    
+
     .mux          ( mux          ),
     .d_mux        ( d_mux        ),
     .mux_reg0     ( opnd0        ),
@@ -229,25 +230,24 @@ jtkcpu_regs u_regs(
     .nx_u         ( nx_u         ),
     .nx_s         ( nx_s         ),
     .idx_reg      ( idx_reg      ),
-    .psh_addr     ( psh_addr     ), 
+    .psh_addr     ( psh_addr     ),
     .acc          ( acc          ),
     .psh_mux      ( psh_mux      ),
     .psh_bit      ( psh_bit      ),
-    .up_pul_cc    ( up_cc        ),
     .up_pul_pc    ( up_pul_pc    )
 );
 
 jtkcpu_idx u_idx(
-    .rst          ( rst          ), 
-    .clk          ( clk          ), 
+    .rst          ( rst          ),
+    .clk          ( clk          ),
     .cen          ( cen          ),
 
-    .idx_reg      ( idx_reg      ), 
-    .mdata        ( data         ), 
-    .a            ( a            ), 
+    .idx_reg      ( idx_reg      ),
+    .mdata        ( data         ),
+    .a            ( a            ),
     .b            ( b            ),
-    .idx_ret      ( idx_ret      ), 
-    .idx_ld       ( idx_ld       ), 
+    .idx_ret      ( idx_ret      ),
+    .idx_ld       ( idx_ld       ),
     .addr         ( idx_addr     ),
     .busy         ( idx_busy     ),
     .indirect     ( indirect     )
