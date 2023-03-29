@@ -14,13 +14,9 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDB #$0A
-        LDA #$05
-
-LOOP:   INCA
-        DECB 
-        BNE LOOP
-        CMPA #$0F
+RESET:  LDA #$05
+        INCA
+        CMPA #$06
         BNE BAD
 
 END:    LDY #$BABE
