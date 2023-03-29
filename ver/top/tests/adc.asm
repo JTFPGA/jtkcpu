@@ -14,10 +14,13 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$FA     
-        LDB #$06 
-        ADCB #120
-        CMPB #$FF  
+RESET:  LDA #$03
+        LDB #$0F
+        ADCB #08
+        CMPB #$17
+        BNE BAD
+        ADCA #09
+        CMPA #$0D
         BNE BAD
 
 END:    LDX #$BABE
