@@ -263,6 +263,9 @@ always @(posedge clk, posedge rst) begin
         // if( up_alu_a ) a <= alu[7:0]; // pul must let fetched data through ALU
         // if( up_alu_b ) b <= alu[7:0];
 
+        if( up_a ) a <= up_pul_a ? mdata[7:0] : alu[7:0];
+        if( up_b ) b <= up_pul_b ? mdata[7:0] : alu[7:0];
+
         if( up_d ) begin
             a <= alu[15:8];
             b <= alu[ 7:0];
@@ -270,8 +273,8 @@ always @(posedge clk, posedge rst) begin
 
         // if( up_dp || up_pul_dp ) dp <= alu[7:0];
         // Update from memory
-        if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
-        if( up_b  || up_pul_b  ) b <= mdata[7:0];
+        // if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
+        // if( up_b  || up_pul_b  ) b <= mdata[7:0];
         if( dec_b ) b <= b - 8'd1;
         if( up_x  ) x  <= up_lmul ? alu[15:0]  : up_lea ? idx_addr : mdata;
         if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea ? idx_addr : mdata;
