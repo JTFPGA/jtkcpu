@@ -130,12 +130,12 @@ always @* begin
         LDD_IMM, LDY_IMM, ADDD_IMM,
         LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:                       opcat = SINGLE_ALU_16;
 
-        CLRA, INCA, NEGA, COMA, TSTA, DECA, DAA,
+        CLRA, INCA, NEGA, COMA, TSTA, DECA, DAA, SEX,
         ABSA, LSRA, RORA, ASRA, ASLA, ROLA:                         opcat = SINGLE_A_INH;
         CLRB, INCB, NEGB, COMB, TSTB, DECB,
         ABSB, LSRB, RORB, ASRB, ASLB, ROLB:                         opcat = SINGLE_B_INH;
 
-        ABX, SEX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:               opcat = SINGLE_ALU_INH16;
+        ABX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:               opcat = SINGLE_ALU_INH16;
 
         CLR,  INC,  NEG,  COM,  TST,  DEC,
         LSR,  ROR,  ASR,  ASL,  ROL:                                opcat = MEM_ALU_IDX;

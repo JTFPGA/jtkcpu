@@ -14,9 +14,10 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDB #$A1
-        SEX        
-        BMI BAD
+RESET:  LDA #$AB
+        ASLA
+        LDB #$0F
+        ASLB
 
 END:    LDX #$BABE
         LDA #1
@@ -29,5 +30,7 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
+; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
         FDB   RESET
+
