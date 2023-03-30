@@ -38,8 +38,8 @@ RESET:	LDA #$FF	; Immediate
 
 END:	LDX #$BABE
 		LDA #1
-		LDX #TESTCTRL
-		STA ,X			; Finish test, result ok
+		LDY #TESTCTRL
+		STA ,Y			; Finish test, result ok
 		BRA END
 BAD:	LDX #$DEAD
 		LDA #3

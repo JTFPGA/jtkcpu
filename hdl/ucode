@@ -19,31 +19,30 @@
 ########## INDEX ADDR ##################
 PARSE_IDX:          OPD
                     JMP_IDX
+                    # IDX_IND either jumps to IDX_IND or
+                    # does a IDX_RET depending on the indirect bit
 
-IDX_RINC:           IDX_STEP, IDX_RET           # R+
-IDX_RINC2:          ADR_IDX, MEM16, SKIP_NOIND  # R++ / [R++]
-                    ADR_DATA, MEM16
-                    IDX_STEP
-                    IDX_STEP, IDX_RET
-IDX_RDEC:           IDX_STEP, IDX_RET           #  -R
-IDX_RDEC2:          ADR_IDX, MEM16, SKIP_NOIND  # --R / [--R]
-                    ADR_DATA, MEM16
-                    IDX_STEP,
-                    IDX_STEP, IDX_RET
-IDX_SUM:            IDX_RET                     # R+ACC/offset 0/5
-IDX_OFFSET8:        OPD, SKIP_NOIND             # Fixed offset 8
-                    IDX_RET
-                    ADR_DATA, MEM16
-                    IDX_LD, IDX_RET
-IDX_OFFSET16:       OPD, MEMHI                  # Fixed offset 16
-                    OPD, SKIP_NOIND
-                    IDX_RET
-                    ADR_DATA, MEM16
-                    IDX_LD, IDX_RET
-IDX_EXTIND:         OPD, MEMHI                  # Extended indirect
+IDX_RINC:           IDX_POST1, IDX_IND          # 0 - R+
+IDX_RINC2:          IDX_POST2, IDX_IND          # 1 - R++ / [R++]
+IDX_RDEC:           IDX_PRE1,  IDX_IND          # 2 -  -R
+IDX_RDEC2:          IDX_PRE2,  IDX_IND          # 3 - --R
+IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
+                    IDX8, IDX_IND
+IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
                     OPD
-                    ADR_DATA, MEM16
-                    IDX_LD, IDX_RET
+                    IDX16, IDX_IND
+IDX_IND:            ADR_IDX, MEMHI              # 6 - ,R
+                    ADR_IDX
+                    DATA2ADR
+                    IDX_RET
+IDX_EXT:            OPD, MEMHI                  # 7 Extended
+                    OPD
+                    DATA2ADR
+                    IDX_IND
+IDX_DP:             OPD                         # 1,4  - DP
+                    IDX_DP, IDX_IND
+IDX_ACC:            IDX_ACC, IDX_IND            # 1,other  - A, B or D
+
 
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
@@ -55,7 +54,7 @@ CMP8:               OPD
                     NI
 
 SINGLE_ALU_16:      OPD, MEMHI
-                    OPD 
+                    OPD
                     OPN0=REGS, UP_CC, UP_LD16
                     NI
 

@@ -20,11 +20,11 @@ module jtkcpu_idx(
     input             rst,
     input             clk,
     input             cen,
-    
-    input      [15:0] idx_reg, 
+
+    input      [15:0] idx_reg,
     input      [15:0] mdata,
-    input      [ 7:0] a, 
-    input      [ 7:0] b, 
+    input      [ 7:0] a,
+    input      [ 7:0] b,
 
     // Control
     input             idx_ret,
@@ -45,28 +45,25 @@ assign postbyte = mdata[7:0];
 // assign idx_sel = { postbyte[1], postbyte[6:5] };
 
 always @* begin
-    indirect = postbyte[4];
+    indirect = postbyte[3];
+    use_dp   = postbyte==8'hc4 || postbyte==8'hcc;
 
-    if ( !postbyte[7] ) begin // 5-bit-offset    
-        case( postbyte[3:0] )
-            4'b0000: offset =  1;
-            4'b0001: offset =  2;
-            4'b0010: offset = -1;
-            4'b0011: offset = -2;
-            4'b0100: offset =  0;
-            4'b0101: offset =  { {8{b[7]}}, b };
-            4'b0110: offset =  { {8{a[7]}}, a };
-            4'b1000: offset =  { {8{mdata[7]}}, mdata[7:0] };
-            4'b1001: offset =  mdata;
-            4'b1011: offset =  {a, b};
-            4'b1100: offset =  { {8{mdata[7]}}, mdata[7:0] };
-            4'b1101: offset =  mdata;
-            4'b1111: offset =  0;
-            default: offset =  0;
-        endcase
-    end else begin
-        offset = { {11{postbyte[4]}}, postbyte[4:0] }; // 5-bit sign extension
-    end
+    case( { postbyte[7], postbyte[2:0] } )
+        4'b0_000: offset =  1;
+        4'b0_001: offset =  2;
+        4'b0_010: offset = -1;
+        4'b0_011: offset = -2;
+        4'b0_100: offset =  0;
+        4'b0_101: offset =  { {8{b[7]}}, b };
+        4'b0_110: offset =  { {8{a[7]}}, a };
+        4'b1_000: offset =  { {8{mdata[7]}}, mdata[7:0] };
+        4'b1_001: offset =  mdata;
+        4'b1_011: offset =  {a, b};
+        4'b1_100: offset =  { {8{mdata[7]}}, mdata[7:0] };
+        4'b1_101: offset =  mdata;
+        4'b1_111: offset =  0;
+        default: offset =  0;
+    endcase
 end
 
 always @(posedge clk, posedge rst) begin

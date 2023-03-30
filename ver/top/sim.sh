@@ -8,8 +8,8 @@ cd -
 TEST=$1
 
 if [ -z "$ASPATH" ]; then
-    ASPATH=`which asl`/
-    echo "Using $ASPATH"
+    ASPATH=`which asl`
+    ASPATH=${ASPATH%asl}
 else
     ASPATH="$ASPATH"/
 fi
