@@ -45,7 +45,7 @@ IDX_EXT:            OPD, MEMHI                  # 7 Extended
 IDX_DP:             OPD                         # 1,4  - DP
                     IDX_DP, IDX_IND
 IDX_ACC:            NOP
-                    IDX_ACC, IDX_IND            # 1,other  - A, B or D
+                    IDX_ACC=1, IDX_IND            # 1,other  - A, B or D
 
 
 ########## ALU OPERATIONS ##################

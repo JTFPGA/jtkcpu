@@ -33,7 +33,7 @@ module jtkcpu_ucode(
     output reg       idx_ld,
     output           idx_8,
     output           idx_16,
-    output           idx_acc,
+    output reg       idx_acc,
     output           idx_dp,
     output           idx_en,
     output           data2addr,
@@ -252,6 +252,7 @@ always @(posedge clk) begin
         post_idx   <= 0;
         idx_post   <= 0;
         idx_ld     <= 0;
+        idx_acc    <= 0;
     end else if( cen && !buserror ) begin
         nil       <= ni;
         post_idx  <= nx_cat;
@@ -281,6 +282,7 @@ always @(posedge clk) begin
         end
         // Indexed addressing parsing
         if( set_idx_post ) idx_postl <= 1;
+        idx_acc <= set_idx_acc;
         if( idx_jmp ) begin
             addr       <= {idx_cat, OPLEN};
             idx_rsel   <= mdata[6:4];
