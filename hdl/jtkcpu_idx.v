@@ -50,7 +50,7 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin
         addr <= 0;
     end else if (cen) begin
-        if( idx_ld    ) addr <= idx_reg + offset;
+        if( idx_ld | idx_8 | idx_16 ) addr <= idx_reg + offset;
         if( idx_dp    ) addr <= { dp, mdata[7:0] };
         if( data2addr ) addr <= mdata;
     end

@@ -12,7 +12,7 @@ reg  [ 7:0] ram[0:2**12-1], rom[0:2**12-1];
 reg  [ 7:0] cpu_din;
 wire [ 7:0] cpu_dout;
 reg  [ 1:0] cen_cnt=0;
-reg         sim_bad, simctrl_cs;
+reg         sim_bad, simctrl_cs, ram_cs;
 wire [23:0] cpu_addr;
 integer     f, fcnt, finish_cnt=-1;
 
@@ -59,13 +59,21 @@ always @(posedge clk) begin
         sim_bad <= cpu_dout[1];
         {nmi,firq,irq} <= cpu_dout[7:5];
     end
+    if( ram_cs && cpu_we ) begin
+        if(cen2) $display("RAM write %X -> %X", cpu_dout, cpu_addr );
+        ram[cpu_addr[11:0]] <= cpu_dout;
+    end
 end
 
 always @* begin
     cpu_din    = 0;
     simctrl_cs = 0;
+    ram_cs     = 0;
     casez( cpu_addr[15:0] )
-        16'h0???: cpu_din = ram[cpu_addr[11:0]];
+        16'h0???: begin
+            cpu_din = ram[cpu_addr[11:0]];
+            ram_cs  = 1;
+        end
         16'h1??0: simctrl_cs = 1;
         16'h1??1: cpu_din = cpu_addr[23:16];
         16'hf???: cpu_din = rom[cpu_addr[11:0]];

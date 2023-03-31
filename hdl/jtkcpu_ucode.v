@@ -29,7 +29,7 @@ module jtkcpu_ucode(
     output reg [1:0] idx_asel,
     output reg       idx_post,
     output           idx_pre,
-    output           idxw,
+    output reg       idxw,
     output reg       idx_ld,
     output           idx_8,
     output           idx_16,
@@ -169,11 +169,11 @@ always @* begin
 
         // Operand in indexed memory
         CMPA_IDX, CMPB_IDX:                           begin opcat  = PARSE_IDX;
-                                                            nx_cat = CMP8;
+                                                            nx_cat = CMP8_IDX;
                                                             end
         CMPX_IDX, CMPY_IDX, CMPD_IDX,
         CMPU_IDX, CMPS_IDX:                           begin opcat  = PARSE_IDX;
-                                                            nx_cat = CMP16;
+                                                            nx_cat = CMP16_IDX;
                                                             end
 
         ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,
@@ -279,22 +279,24 @@ always @(posedge clk) begin
             end
         end
         // Indexed addressing parsing
+        if( set_idx_post ) idx_postl <= 1;
         if( idx_jmp ) begin
             addr       <= {idx_cat, OPLEN};
             idx_rsel   <= mdata[6:4];
             idx_asel   <= mdata[1:0];
             idx_ind_rq <= mdata[3];
-            idx_postl  <= set_idx_post;
             idxwl      <= set_idxw;
         end
         if( idx_ind ) begin
-            idx_ld <= !data2addr && !idx_dp;
-            addr   <= idx_ind_rq ? {IDX_IND, OPLEN} : {nx_cat, OPLEN};
+            idx_ld    <= !data2addr && !idx_dp && !idx_8 && !idx_16;
+            idxw      <= set_idxw;
+            addr      <= idx_ind_rq ? {IDX_IND, OPLEN} : {nx_cat, OPLEN};
+            idx_post  <= idx_postl;
+            idx_postl <= 0;
         end
         if( idx_ret ) begin
-            idx_post   <= idx_postl;
-            idx_postl  <= 0;
             idx_ind_rq <= 0;
+            idxw       <= 0;
             addr       <= {nx_cat, OPLEN};
         end
     end

@@ -29,8 +29,8 @@ IDX_RINC2:          IDX_POST=1, IDXW=1          # 1 - R++ / [R++]
                     IDX_IND
 IDX_RDEC:           IDX_PRE
                     IDX_IND                     # 2 -  -R
-IDX_RDEC2:          IDX_PRE
-                    IDX_IND, IDXW=1             # 3 - --R
+IDX_RDEC2:          IDX_PRE, IDXW=1
+                    IDX_IND                     # 3 - --R
 IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
                     IDX_8, IDX_IND
 IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
@@ -57,6 +57,10 @@ CMP8:               OPD
                     OPN0=REGS, UP_CC
                     NI
 
+CMP8_IDX:           IDX_EN
+                    OPN0=REGS, UP_CC
+                    NI
+
 SINGLE_ALU_16:      OPD, MEMHI
                     OPD
                     OPN0=REGS, UP_CC, UP_LD16
@@ -64,6 +68,11 @@ SINGLE_ALU_16:      OPD, MEMHI
 
 CMP16:              OPD, MEMHI
                     OPD
+                    OPN0=REGS, UP_CC
+                    NI
+
+CMP16_IDX:          IDX_EN, MEMHI
+                    IDX_EN, ADDR_PLUS1
                     OPN0=REGS, UP_CC
                     NI
 
@@ -77,12 +86,12 @@ SINGLE_ALU_INH16:   OPN0=REGS, UP_CC, UP_LD16
                     NI
 
 SINGLE_ALU_IDX:     IDX_EN
-                    OPN0=REGS, UP_CC
+                    OPN0=REGS, UP_CC, UP_LD8
                     NI
 
 SINGLE_ALU_IDX16:   IDX_EN, MEMHI
                     IDX_EN, ADDR_PLUS1
-                    OPN0=REGS, UP_CC
+                    OPN0=REGS, UP_CC, UP_LD16
                     NI
 
 MULTI_ALU:          OPD
@@ -159,23 +168,23 @@ STORE8:             OPN0=REGS, IDX_EN, WE,
 STORE16:            OPN0=REGS, IDX_EN, WE, MEM16,
                     NI
 
-LD8_IMM:            OPD
-                    UP_LD8
-                    NI
-
-LD8_IDX:            IDX_EN
-                    UP_LD8
-                    NI
-
-LD16_IMM:           OPD, MEMHI
-                    OPD
-                    UP_LD16
-                    NI
-
-LD16_IDX:           IDX_EN, MEMHI
-                    IDX_EN
-                    UP_LD16
-                    NI
+# LD8_IMM:            OPD
+#                     UP_LD8
+#                     NI
+#
+# LD8_IDX:            IDX_EN
+#                     UP_LD8
+#                     NI
+#
+# LD16_IMM:           OPD, MEMHI
+#                     OPD
+#                     UP_LD16
+#                     NI
+#
+# LD16_IDX:           IDX_EN, MEMHI
+#                     IDX_EN
+#                     UP_LD16
+#                     NI
 
 LEA:                UP_LEA, UP_CC
                     NI

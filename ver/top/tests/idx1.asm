@@ -12,6 +12,7 @@
 ; 7 -> set to trigger NMI.  Clear manually
 
 TESTCTRL EQU $1000
+DATAW    EQU $0100
 
         ORG $F000
 RESET:  LEAX DATAR
@@ -31,11 +32,10 @@ CHECK:  LDA  ,-X
         DECB
         BNE CHECK
 
-
 END:    LDX #$BABE
         LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
+        LDY #TESTCTRL
+        STA ,Y                  ; Finish test, result ok
         BRA END
 
 BAD:    LDX #$DEAD
@@ -44,7 +44,7 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-DATAR:  FDB   0,1,2,3,4,5,6,7,8,9,$A,$B,$C,$D,$E,$F
+DATAR:  DB   0,1,2,3,4,5,6,7,8,9,$A,$B,$C,$D,$E,$F
 
-DATAW:  DC.B  [$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET
