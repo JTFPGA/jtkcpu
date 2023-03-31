@@ -121,7 +121,6 @@ jtkcpu_regs uut_regs (
     .up_s       ( up_s       ),
     .mux        ( mux        ),
     .idx_reg    ( idx_reg    ),
-    .acc        ( acc        ),
     .up_pul_cc  ( up_pul_cc  ),
     .up_pul_pc  ( up_pul_pc  ),
     .nx_u       ( nx_u       ),

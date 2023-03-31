@@ -38,7 +38,7 @@ module jtkcpu(
 
 wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
-wire [15:0] mdata, mux, d_mux, acc;
+wire [15:0] mdata, mux, d_mux;
 wire [15:0] psh_addr;
 wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s;
 wire [ 7:0] cc, cc_out, dp;
@@ -253,7 +253,6 @@ jtkcpu_regs u_regs(
     .nx_u         ( nx_u         ),
     .nx_s         ( nx_s         ),
     .psh_addr     ( psh_addr     ),
-    .acc          ( acc          ),
     .psh_mux      ( psh_mux      ),
     .psh_bit      ( psh_bit      ),
     .up_pul_pc    ( up_pul_pc    )

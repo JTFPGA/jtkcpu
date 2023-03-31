@@ -80,7 +80,6 @@ module jtkcpu_regs(
     output   reg [15:0] nx_u,
     output   reg [15:0] nx_s,
     output       [15:0] psh_addr,
-    output       [15:0] acc,
     output   reg [15:0] x,
     output   reg [15:0] y,
     output   reg [ 7:0] cc,
@@ -98,10 +97,11 @@ reg  [ 7:0] a, b;
 reg  [15:0] u, s;
 wire [15:0] psh_other;
 wire        idx_upx, idx_upy, idx_upu, idx_ups;
-wire [15:0] idx_step;
+wire [15:0] idx_step, d;
 wire        idx_x, idx_y, idx_u, idx_s;
 
-assign acc = { b, a };
+assign d   = { a, b };
+
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
 // Indexed increments/decrements
