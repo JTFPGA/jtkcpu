@@ -89,6 +89,7 @@ module jtkcpu_ucode(
     output          up_ld8,
     output          up_lda,
     output          up_ldb,
+    output          up_ab,
     output          up_lea,
     output          up_lines,
     output          up_lmul,

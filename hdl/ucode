@@ -121,7 +121,7 @@ MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
                     NOP
                     NOP
                     NOP     # 6th clock tick
-                    UP_CC, UP_LD8
+                    UP_CC, UP_AB
                     NI
 
 LMULTIPLY:          NOP     # 20+ cycles in original
