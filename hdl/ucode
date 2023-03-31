@@ -29,10 +29,10 @@ IDX_RDEC:           IDX_PRE
 IDX_RDEC2:          IDX_PRE
                     IDX_IND, IDXW=1             # 3 - --R
 IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
-                    IDX8, IDX_IND
+                    IDX_8, IDX_IND
 IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
                     OPD
-                    IDX16, IDX_IND
+                    IDX_16, IDX_IND
 IDX_IND:            ADDR_IDX, MEMHI              # 6 - ,R
                     ADDR_IDX, ADDR_PLUS1
                     DATA2ADR, IDX_RET
