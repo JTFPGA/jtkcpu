@@ -146,8 +146,8 @@ end
 always @* begin
     nx_cat = post_idx;
     case( op )
-        ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,  ANDCC,
-        ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,   ORCC,
+        ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
+        ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
         EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM,
         EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:    opcat = SINGLE_ALU;
 
@@ -164,7 +164,7 @@ always @* begin
         CLR,  INC,  NEG,  COM,  TST,  DEC,
         LSR,  ROR,  ASR,  ASL,  ROL:                        opcat = MEM_ALU_IDX;
 
-        CMPA_IMM, CMPB_IMM:                                 opcat = CMP8;
+        CMPA_IMM, CMPB_IMM, ANDCC, ORCC:                    opcat = CMP8;
         CMPD_IMM, CMPX_IMM, CMPY_IMM, CMPU_IMM,CMPS_IMM:    opcat = CMP16;
 
         // Operand in indexed memory
