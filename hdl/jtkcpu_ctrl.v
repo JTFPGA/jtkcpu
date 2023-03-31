@@ -42,6 +42,7 @@ module jtkcpu_ctrl(
     output           idx_16,
     output           idx_acc,
     output           idx_dp,
+    output           idx_en,
     output           data2addr,
 
     // System status
@@ -193,6 +194,7 @@ jtkcpu_ucode u_ucode(
     .idx_16            ( idx_16            ),
     .idx_acc           ( idx_acc           ),
     .idx_dp            ( idx_dp            ),
+    .idx_en            ( idx_en            ),
     .data2addr         ( data2addr         ),
 
     .incx              ( incx              ),

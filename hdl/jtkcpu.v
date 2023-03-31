@@ -61,7 +61,7 @@ wire [15:0] idx_addr, idx_reg, idx_racc;
 wire [ 2:0] idx_rsel;
 wire [ 1:0] idx_asel;
 wire        idx_post, idx_pre, idxw,   idx_ld,
-            idx_8,    idx_16,  idx_acc,idx_dp,
+            idx_8,    idx_16,  idx_acc,idx_dp, idx_en,
             data2addr;
 
 jtkcpu_ctrl u_ctrl(
@@ -87,6 +87,7 @@ jtkcpu_ctrl u_ctrl(
     .idx_16       ( idx_16       ),
     .idx_acc      ( idx_acc      ),
     .idx_dp       ( idx_dp       ),
+    .idx_en       ( idx_en       ),
     .data2addr    ( data2addr    ),
 
     // System status
@@ -141,8 +142,11 @@ jtkcpu_memctrl u_memctrl(
     .cen          ( cen          ),
     .cen2         ( cen2         ),
 
-    .pc           ( pc           ),
+    // Indexed addressing
     .idx_addr     ( idx_addr     ),
+    .idx_en       ( idx_en       ),
+
+    .pc           ( pc           ),
     .psh_addr     ( psh_addr     ),
     .regs_x       ( regs_x       ),
     .regs_y       ( regs_y       ),
@@ -163,7 +167,6 @@ jtkcpu_memctrl u_memctrl(
     .ni           ( ni           ),
     .halt         ( halt         ),
     .up_lines     ( up_lines     ),
-    .idx_en       ( idx_en       ),
     .psh_en       ( pshdec       ),
     .addrx        ( addr_x       ),
     .addry        ( addr_y       ),

@@ -88,6 +88,7 @@ always @(posedge clk, posedge rst) begin
         // signals active for a single clock cycle:
         up_pc  <= 0;
         we     <= 0;
+        dout   <= alu_dout[7:0];
         if( up_lines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and

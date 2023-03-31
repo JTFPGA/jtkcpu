@@ -35,6 +35,7 @@ module jtkcpu_ucode(
     output           idx_16,
     output           idx_acc,
     output           idx_dp,
+    output           idx_en,
     output           data2addr,
     // status inputs
     input           branch,
@@ -118,7 +119,7 @@ reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
 reg                idx_postl, nil, idxwl, idx_ind_rq;
-wire               idx_ret, idx_ind, jmp_idx;
+wire               idx_ret, idx_ind, idx_jmp;
 
 wire wait_stack, waitalu;
 assign idx_w = set_idxw | idxwl;
@@ -132,7 +133,7 @@ always @* begin
         4'b0_011: idx_cat = IDX_RDEC2;
         4'b0_100: idx_cat = IDX_OFFSET8;
         4'b0_101: idx_cat = IDX_OFFSET16;
-        4'b0_110: idx_cat = IDX_IND;
+        4'b0_110: idx_cat = IDX_R;
         4'b1_100: idx_cat = IDX_DP;
         4'b1_000,
         4'b1_001,
@@ -237,7 +238,11 @@ always @(posedge clk) begin
     if( rst ) begin
         addr       <= { RESET, OPLEN };  // Reset starts ucode at 0
         cur_int    <= 4'b1000;
+        idx_rsel   <= 0;
+        idx_asel   <= 0;
         idx_ind_rq <= 0;
+        idx_postl  <= 0;
+        idxwl      <= 0;
         nil        <= 0;
         post_idx   <= 0;
         idx_post   <= 0;
@@ -270,7 +275,7 @@ always @(posedge clk) begin
             end
         end
         // Indexed addressing parsing
-        if( jmp_idx ) begin
+        if( idx_jmp ) begin
             addr       <= {idx_cat, OPLEN};
             idx_rsel   <= mdata[6:4];
             idx_asel   <= mdata[1:0];

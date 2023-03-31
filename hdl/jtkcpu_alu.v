@@ -79,7 +79,11 @@ always @* begin
     rslt_hi = 0;
 
     case (op)
-        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,STA,STB,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
+        STA, STB: begin
+            rslt  = opnd0;
+            v_out = 0;      // TO DO: do STA/B modify any flag?
+        end
+        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
         LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,STD,STX,STY,STU,STS,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
             rslt  = opnd1;
             v_out = 0;

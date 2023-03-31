@@ -14,7 +14,7 @@ wire [ 7:0] cpu_dout;
 reg  [ 1:0] cen_cnt=0;
 reg         sim_bad, simctrl_cs;
 wire [23:0] cpu_addr;
-integer     f, fcnt;
+integer     f, fcnt, finish_cnt=-1;
 
 assign cen2 =  cen_cnt[0];
 assign cen  = &cen_cnt[1:0];
@@ -46,8 +46,16 @@ end
 
 always @(posedge clk) begin
     cen_cnt <= cen_cnt+1'd1;
+    if( finish_cnt>0  ) finish_cnt <= finish_cnt - 1;
+    if( finish_cnt==0 ) begin
+        if( sim_bad )
+            $display("FAIL");
+        else
+            $display("PASS");
+        $finish;
+    end
     if( simctrl_cs && cpu_we ) begin
-        if( cpu_dout[0] ) #100 $finish;
+        if( cpu_dout[0] ) finish_cnt <= 20;
         sim_bad <= cpu_dout[1];
         {nmi,firq,irq} <= cpu_dout[7:5];
     end

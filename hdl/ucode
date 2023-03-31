@@ -18,12 +18,15 @@
 
 ########## INDEX ADDR ##################
 PARSE_IDX:          OPD
-                    JMP_IDX
+                    IDX_JMP
                     # IDX_IND either jumps to IDX_IND or
                     # does a IDX_RET depending on the indirect bit
-
-IDX_RINC:           IDX_POST=1, IDX_IND         # 0 - R+
-IDX_RINC2:          IDX_POST=1, IDX_IND, IDXW=1 # 1 - R++ / [R++]
+IDX_R:              NOP
+                    IDX_IND
+IDX_RINC:           IDX_POST=1                  # 0 - R+
+                    IDX_IND
+IDX_RINC2:          IDX_POST=1, IDXW=1          # 1 - R++ / [R++]
+                    IDX_IND
 IDX_RDEC:           IDX_PRE
                     IDX_IND                     # 2 -  -R
 IDX_RDEC2:          IDX_PRE
@@ -33,15 +36,16 @@ IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
 IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
                     OPD
                     IDX_16, IDX_IND
-IDX_IND:            ADDR_IDX, MEMHI              # 6 - ,R
-                    ADDR_IDX, ADDR_PLUS1
-                    DATA2ADR, IDX_RET
+IDX_IND:            IDX_EN, MEMHI              # 6 - ,R
+                    IDX_EN, ADDR_PLUS1
+                    DATA2ADDR, IDX_RET
 IDX_EXT:            OPD, MEMHI                  # 7 Extended
                     OPD
-                    DATA2ADR, IDX_IND
+                    DATA2ADDR, IDX_IND
 IDX_DP:             OPD                         # 1,4  - DP
                     IDX_DP, IDX_IND
-IDX_ACC:            IDX_ACC, IDX_IND            # 1,other  - A, B or D
+IDX_ACC:            NOP
+                    IDX_ACC, IDX_IND            # 1,other  - A, B or D
 
 
 ########## ALU OPERATIONS ##################
@@ -72,12 +76,12 @@ SINGLE_B_INH:       OPN0=REGS, UP_CC, UP_LDB
 SINGLE_ALU_INH16:   OPN0=REGS, UP_CC, UP_LD16
                     NI
 
-SINGLE_ALU_IDX:     ADDR_IDX
+SINGLE_ALU_IDX:     IDX_EN
                     OPN0=REGS, UP_CC
                     NI
 
-SINGLE_ALU_IDX16:   ADDR_IDX, MEMHI
-                    ADDR_IDX, ADDR_PLUS1
+SINGLE_ALU_IDX16:   IDX_EN, MEMHI
+                    IDX_EN, ADDR_PLUS1
                     OPN0=REGS, UP_CC
                     NI
 
@@ -85,8 +89,7 @@ MULTI_ALU:          OPD
                     OPN0=REGS, WAITALU, UP_CC
                     NI
 
-MEM_ALU_IDX:        OPD, IDX_EN
-                    ADDR_IDX
+MEM_ALU_IDX:        IDX_EN
                     OPN0=MEM, WE
                     NI
 
@@ -94,15 +97,13 @@ MULTI_ALU_INH:      OPD
                     OPN0=REGS, UP_CC, WAITALU
                     NI
 
-MULTI_ALU_IDX:      OPD, IDX_EN
-                    ADDR_IDX
+MULTI_ALU_IDX:      IDX_EN
                     OPN0=REGS, UP_CC, WAITALU
                     NI
 
-WMEM_ALU:           OPD, IDX_EN
-                    ADDR_IDX
+WMEM_ALU:           IDX_EN
                     OPN0=MEM, UP_DATA, WAITALU
-                    ADDR_IDX, WE
+                    IDX_EN, WE
                     NI
 
 MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
@@ -152,20 +153,17 @@ BSETD:              OPN0=A, WE, ADRX, INCX,
                     NI
 
 ############### LOAD/STORE OPERATIONS ############
-STORE8:             OPD, IDX_EN
-                    OPN0=REGS, ADDR_IDX, WE,
+STORE8:             OPN0=REGS, IDX_EN, WE,
                     NI
 
-STORE16:            OPD, IDX_EN
-                    OPN0=REGS, ADDR_IDX, WE, MEM16,
+STORE16:            OPN0=REGS, IDX_EN, WE, MEM16,
                     NI
 
 LD8_IMM:            OPD
                     UP_LD8
                     NI
 
-LD8_IDX:            OPD, IDX_EN
-                    ADDR_IDX
+LD8_IDX:            IDX_EN
                     UP_LD8
                     NI
 
@@ -174,8 +172,8 @@ LD16_IMM:           OPD, MEMHI
                     UP_LD16
                     NI
 
-LD16_IDX:           OPD, IDX_EN
-                    ADDR_IDX, MEM16
+LD16_IDX:           IDX_EN, MEMHI
+                    IDX_EN
                     UP_LD16
                     NI
 
