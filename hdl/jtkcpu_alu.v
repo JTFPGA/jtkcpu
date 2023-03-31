@@ -163,13 +163,19 @@ always @* begin
             rslt  = opnd0 - 1'b1;
             v_out = (opnd0[msb] & ~rslt[msb]); // overflow calculated for signed integers
         end
-        LSRA,LSRB,LSR,LSRW,LSRD_IMM,LSRD_IDX: begin  // LSR, LSRW, LSRD
-            // {rslt, c_out} = {1'b0, opnd0};
-            rslt  = opnd0 >> 1;
-            c_out = opnd0[msb];
+        LSRA,LSRB,LSR: begin  // LSR, LSRW, LSRD
+            {rslt[7:0], c_out} = {1'b0, opnd0[7:0]};
+            // rslt  = opnd0 >> 1;
+            // c_out = opnd0[msb];
         end
-        RORA,RORB,ROR,RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD
-            {rslt, c_out} = {c_out, opnd0};
+        LSRW,LSRD_IMM,LSRD_IDX: begin  // LSR, LSRW, LSRD
+            {rslt[15:0], c_out} = {1'b0, opnd0[15:0]};
+        end
+        RORA,RORB,ROR: begin  // ROR, RORW, RORD
+            {rslt[7:0], c_out} = {cc_in[CC_C], opnd0[7:0]};
+        end
+        RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD
+            {rslt[15:0], c_out} = {cc_in[CC_C], opnd0[15:0]};
         end
         ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD
             rslt      = opnd0>>1;
@@ -225,9 +231,7 @@ always @* begin
             rslt = opnd0;
     endcase
 
-    // To do: the condition is wrong, it should be && instead of ||
-    // It should also exclude ANDCC and ORCC
-    if ( op!=ABX && op!=ABSA && op!=ABSB && op!=ABSD && op!=ANDCC && op!=ORCC )
+    if ( op!=LEAU && op!=LEAS && op!=ABX && op!=ABSA && op!=ABSB && op!=ABSD && op!=ANDCC && op!=ORCC )
         z_out = alu16 ? rslt==0 : rslt[7:0]==0;
     if ( op!=LEAX && op!=LEAY && op!=LEAU && op!=LEAS && op!=ABX && op!=MUL && op!=LMUL && op!=ANDCC && op!=ORCC)
         n_out = rslt[msb];

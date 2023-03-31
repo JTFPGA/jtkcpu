@@ -17,7 +17,14 @@ TESTCTRL EQU $1000
 RESET:  LDA #$64
         LDB #$22
         LSRA
+        LSRA
+        LSRA
+        CMPA #$0C
+        BNE BAD
         LSRB
+        LSRB
+        CMPB #$08
+        BNE BAD
 
 END:    LDX #$BABE
         LDA #1
