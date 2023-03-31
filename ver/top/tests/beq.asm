@@ -17,21 +17,23 @@ TESTCTRL EQU $1000
 RESET:  LDA #$07
         LDB #$02
 
-LOOP    DECA
-        BEQ LOOP
+LOOP    INCB
+        DECA
         CMPA #$00
-        BNE BAD
+        BNE LOOP
+        CMPA #$00
+        BEQ END
 
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
 BAD:    LDX #$DEAD
         LDA #3
         LDX #TESTCTRL
         STA ,X                  ; Finish test, result bad
         BRA BAD
+END:    LDX #$BABE
+        LDA #1
+        LDX #TESTCTRL
+        STA ,X                  ; Finish test, result ok
+        BRA END
 
         DC.B  [$FFFE-*]0
         FDB   RESET

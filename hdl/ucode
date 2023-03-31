@@ -63,7 +63,10 @@ CMP16:              OPD, MEMHI
                     OPN0=REGS, UP_CC
                     NI
 
-SINGLE_ALU_INH:     OPN0=REGS, UP_CC, UP_LD8
+SINGLE_A_INH:       OPN0=REGS, UP_CC, UP_LDA
+                    NI
+
+SINGLE_B_INH:       OPN0=REGS, UP_CC, UP_LDB
                     NI
 
 SINGLE_ALU_INH16:   OPN0=REGS, UP_CC, UP_LD16

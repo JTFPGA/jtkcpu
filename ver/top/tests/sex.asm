@@ -14,7 +14,7 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDB #$FF    
+RESET:  LDB #$A1
         SEX        
         BMI BAD
 

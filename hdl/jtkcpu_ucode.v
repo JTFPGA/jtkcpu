@@ -84,6 +84,8 @@ module jtkcpu_ucode(
     output          up_data,
     output          up_ld16,
     output          up_ld8,
+    output          up_lda,
+    output          up_ldb,
     output          up_lea,
     output          up_lines,
     output          up_lmul,
@@ -142,16 +144,17 @@ always @* begin
         ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
         ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
         EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
-        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC,
-        LSRA,     RORA,     ASRA,     ASLA,     ROLA,
-        LSRB,     RORB,     ASRB,     ASLB,     ROLB:               opcat = SINGLE_ALU;
+        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC:     opcat = SINGLE_ALU;
 
         LDD_IMM, LDY_IMM, ADDD_IMM,
         LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:                       opcat = SINGLE_ALU_16;
 
-        CLRA, INCA, NEGA, COMB, TSTB, DECB, ABSA, SEX, ABX,
-        CLRB, INCB, NEGB, COMA, TSTA, DECA, ABSB, DAA:              opcat = SINGLE_ALU_INH;
-        CLRD, INCD, NEGD,       TSTD, DECD, ABSD:                   opcat = SINGLE_ALU_INH16;
+        CLRA, INCA, NEGA, COMA, TSTA, DECA, DAA, SEX,
+        ABSA, LSRA, RORA, ASRA, ASLA, ROLA:                         opcat = SINGLE_A_INH;
+        CLRB, INCB, NEGB, COMB, TSTB, DECB,
+        ABSB, LSRB, RORB, ASRB, ASLB, ROLB:                         opcat = SINGLE_B_INH;
+
+        ABX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:               opcat = SINGLE_ALU_INH16;
 
         CLR,  INC,  NEG,  COM,  TST,  DEC,
         LSR,  ROR,  ASR,  ASL,  ROL:                                opcat = MEM_ALU_IDX;
