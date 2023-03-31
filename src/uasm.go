@@ -94,6 +94,8 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 		if line=="" || line[0] == '#' {
 			continue
 		}
+		comment_split := strings.Split(line,"#")
+		line = comment_split[0]
 		line = strings.ToUpper(line)
 		if re_label.MatchString(line) {
 			halves := strings.Split(line,":")
