@@ -21,19 +21,25 @@ module jtkcpu_ucode(
     input            clk,
     input            cen,
 
-    input      [7:0] op,     // data fetched from memory
-    input      [7:0] mdata,
-    // index addressing
+    input     [ 7:0] op,     // data fetched from memory
+    input     [15:0] mdata,
+
+    // indexed addressing
     output reg [2:0] idx_rsel,
-    output reg       idx_ind_rq,
+    output reg [1:0] idx_asel,
     output reg       idx_post,
     output           idx_pre,
     output           idxw,
+    output reg       idx_ld,
+    output           idx_8,
+    output           idx_16,
+    output           idx_acc,
+    output           idx_dp,
+    output           data2addr,
     // status inputs
     input           branch,
     input           alu_busy,
     input           mem_busy,
-    input           idx_busy,
     input           irq_n,
     input           nmi_n,
     input           firq_n,
@@ -49,14 +55,9 @@ module jtkcpu_ucode(
     output          decb,
     output          decu,
     output          decx,
-    output          idx_en,
-    output          idx_ld,
-    output          idx_ret,
     output          incx,
     output          incy,
     output          int_en,
-    output          jmp_idx,
-    output          mem16,
     output          memhi,
     output          ni,
     output          opd,
@@ -93,7 +94,7 @@ module jtkcpu_ucode(
     output          we,
 
     // other outputs
-    output    [3:0] intvec,
+    output    [3:0] intvec
 );
 
 `include "jtkcpu.inc"
@@ -114,12 +115,12 @@ localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
-reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat;
+reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
-reg                idxinc, nil, idxwl, idx_pre;
+reg                idx_postl, nil, idxwl, idx_ind_rq;
+wire               idx_ret, idx_ind, jmp_idx;
 
 wire wait_stack, waitalu;
-
 assign idx_w = set_idxw | idxwl;
 
 always @* begin
@@ -144,58 +145,60 @@ end
 always @* begin
     nx_cat = post_idx;
     case( op )
-        ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
-        ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
-        EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM, ANDCC,
-        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM,  ORCC:     opcat = SINGLE_ALU;
+        ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,  ANDCC,
+        ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,   ORCC,
+        EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM,
+        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:    opcat = SINGLE_ALU;
 
         LDD_IMM, LDY_IMM, ADDD_IMM,
-        LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:                       opcat = SINGLE_ALU_16;
+        LDX_IMM, LDU_IMM, SUBD_IMM,  LDS_IMM:               opcat = SINGLE_ALU_16;
 
         CLRA, INCA, NEGA, COMA, TSTA, DECA, DAA, SEX,
-        ABSA, LSRA, RORA, ASRA, ASLA, ROLA:                         opcat = SINGLE_A_INH;
+        ABSA, LSRA, RORA, ASRA, ASLA, ROLA:                 opcat = SINGLE_A_INH;
         CLRB, INCB, NEGB, COMB, TSTB, DECB,
-        ABSB, LSRB, RORB, ASRB, ASLB, ROLB:                         opcat = SINGLE_B_INH;
+        ABSB, LSRB, RORB, ASRB, ASLB, ROLB:                 opcat = SINGLE_B_INH;
 
-        ABX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:               opcat = SINGLE_ALU_INH16;
+        ABX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:            opcat = SINGLE_ALU_INH16;
 
         CLR,  INC,  NEG,  COM,  TST,  DEC,
-        LSR,  ROR,  ASR,  ASL,  ROL:                                opcat = MEM_ALU_IDX;
+        LSR,  ROR,  ASR,  ASL,  ROL:                        opcat = MEM_ALU_IDX;
 
-        CMPA_IMM, CMPB_IMM:                                         opcat = CMP8;
-        CMPD_IMM, CMPX_IMM, CMPY_IMM, CMPU_IMM,CMPS_IMM:            opcat = CMP16;
+        CMPA_IMM, CMPB_IMM:                                 opcat = CMP8;
+        CMPD_IMM, CMPX_IMM, CMPY_IMM, CMPU_IMM,CMPS_IMM:    opcat = CMP16;
 
         // Operand in indexed memory
-        CMPA_IDX, CMPB_IDX:                                   begin opcat  = PARSE_IDX;
-                                                                    nx_cat = CMP8;
-                                                              end
-        CMPD_IDX, CMPX_IDX, CMPY_IDX, CMPU_IDX, CMPS_IDX:     begin opcat  = PARSE_IDX;
-                                                                    nx_cat = CMP16;
-                                                              end
+        CMPA_IDX, CMPB_IDX:                           begin opcat  = PARSE_IDX;
+                                                            nx_cat = CMP8;
+                                                            end
+        CMPX_IDX, CMPY_IDX, CMPD_IDX,
+        CMPU_IDX, CMPS_IDX:                           begin opcat  = PARSE_IDX;
+                                                            nx_cat = CMP16;
+                                                            end
 
         ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,
         EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,
-        ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,
-        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:      begin opcat  = PARSE_IDX;
-                                                                    nx_cat = SINGLE_ALU_IDX;
-                                                              end
+        ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,  ORB_IDX,
+        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX:       begin opcat  = PARSE_IDX;
+                                                            nx_cat = SINGLE_ALU_IDX;
+                                                            end
 
-        LDU_IDX, LDD_IDX, LEAU, LEAX, ADDD_IDX,
-        LDS_IDX, LDX_IDX, LEAS, LEAY, SUBD_IDX, LDY_IDX:      begin opcat  = PARSE_IDX;
-                                                                    nx_cat = SINGLE_ALU_IDX16;
-                                                              end
+        LDU_IDX, LDX_IDX, LEAU, LEAX, ADDD_IDX, LDD_IDX,
+        LDS_IDX, LDY_IDX, LEAS, LEAY, SUBD_IDX:       begin opcat  = PARSE_IDX;
+                                                            nx_cat = SINGLE_ALU_IDX16;
+                                                            end
 
         // FIX MULTI_ALU_INH
-        MUL, LMUL:                                                  opcat = MULTIPLY;
-        DIV_X_B:                                                    opcat = MULTI_ALU_INH;
-        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:           opcat = MULTI_ALU;
-        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:           opcat = MULTI_ALU_IDX;
+        MUL, LMUL:                                          opcat = MULTIPLY;
+        DIV_X_B:                                            opcat = MULTI_ALU_INH;
+        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:   opcat = MULTI_ALU;
+        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:   opcat = MULTI_ALU_IDX;
 
-        LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW, INCW, DECW, TSTW: opcat = WMEM_ALU;
+        LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW,
+        INCW, DECW, TSTW:                                   opcat = WMEM_ALU;
         BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE,
-        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:                opcat = SBRANCH;
-        LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE,
-        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT, LBLE:       opcat = LBRANCH;
+        BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:        opcat = SBRANCH;
+        LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, LBLE,
+        LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT:     opcat = LBRANCH;
 
         DECX_JNZ:       opcat = LOOPX;
         DECB_JNZ:       opcat = LOOPB;
@@ -229,19 +232,23 @@ end
 // end
 
 assign intvec = cur_int & {4{int_en}};
-assign idx_inc = idxinc;
 
 always @(posedge clk) begin
     if( rst ) begin
-        addr    <= { RESET, OPLEN };  // Reset starts ucode at 0
-        cur_int <= 4'b1000;
+        addr       <= { RESET, OPLEN };  // Reset starts ucode at 0
+        cur_int    <= 4'b1000;
+        idx_ind_rq <= 0;
+        nil        <= 0;
+        post_idx   <= 0;
+        idx_post   <= 0;
+        idx_ld     <= 0;
     end else if( cen && !buserror ) begin
         nil       <= ni;
         post_idx  <= nx_cat;
-        idx_post1 <= 0;
-        idx_post2 <= 0;
+        idx_post  <= 0;
+        idx_ld    <= 0;
 
-        if( !mem_busy && !(idx_en && idx_busy)) begin
+        if( !mem_busy ) begin
             addr <= addr + 1; // keep processing an opcode routine
             if( skip_noind && !op[4] ) begin
                 addr <= addr + 2;
@@ -265,18 +272,21 @@ always @(posedge clk) begin
         // Indexed addressing parsing
         if( jmp_idx ) begin
             addr       <= {idx_cat, OPLEN};
-            idx_rsel    <= mdata[6:4];
+            idx_rsel   <= mdata[6:4];
+            idx_asel   <= mdata[1:0];
             idx_ind_rq <= mdata[3];
             idx_postl  <= set_idx_post;
             idxwl      <= set_idxw;
         end
         if( idx_ind ) begin
-            addr <= { IDX_IND, OPLEN}
+            idx_ld <= !data2addr && !idx_dp;
+            addr   <= idx_ind_rq ? {IDX_IND, OPLEN} : {nx_cat, OPLEN};
         end
         if( idx_ret ) begin
-            idx_post  <= idx_postl;
-            idx_postl <= 0;
-            addr <= { nx_cat, OPLEN };
+            idx_post   <= idx_postl;
+            idx_postl  <= 0;
+            idx_ind_rq <= 0;
+            addr       <= {nx_cat, OPLEN};
         end
     end
 end

@@ -22,15 +22,27 @@ module jtkcpu_ctrl(
     input             cen,
 
     input      [ 7:0] op,
-    input      [15:0] postdata,
+    input      [15:0] mdata,
     input      [ 7:0] psh_bit,
     input      [ 7:0] cc,
-    input      [15:0] data,
 
     input             halt,
 
     input             up_pc,
     input             up_pul_pc,
+
+    // indexed addressing
+    output     [2:0] idx_rsel,
+    output     [1:0] idx_asel,
+    output           idx_post,
+    output           idx_pre,
+    output           idxw,
+    output           idx_ld,
+    output           idx_8,
+    output           idx_16,
+    output           idx_acc,
+    output           idx_dp,
+    output           data2addr,
 
     // System status
     input             irq_n,
@@ -38,14 +50,12 @@ module jtkcpu_ctrl(
     input             firq_n,
     input             alu_busy,
     input             mem_busy,
-    input             idx_busy,
 
     // Direct microcode outputs
     output            addr_x,
     output            addr_y,
     output            pshdec,
     output            hi_lon,
-    output            mem16,
     output            memhi,
     output            opd,
     output     [ 7:0] psh_sel,
@@ -65,13 +75,9 @@ module jtkcpu_ctrl(
     output            set_e,
     output            set_f,
     output            clr_e,
-    output            idx_ld,
-    output            idx_ret,
-    output            idx_en,
     output            up_cc,
 
     output     [ 3:0] intvec,
-    output            idx_inc,
 
     // Derived logic
     output            up_a,
@@ -100,9 +106,7 @@ wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
      int_en, psh_busy,
      up_ld16, up_ld8, up_lda, up_ldb,
      rti_cc, rti_other,
-     jmp_idx, set_pc_jmp,
-     set_pc_branch16,
-     set_pc_branch8,
+     set_pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
      buserror,
 
      addr_data,
@@ -131,6 +135,7 @@ assign up_x = (up_ld16 && op[3:1]==1) || (up_lea && op[1:0]==LEAX[1:0]) || up_lm
 assign up_y = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lmul;
 assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
 assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
+assign pc_inc1 = idx_post && idx_rsel==7;
 
 wire short_branch = set_pc_branch8  & branch;
 wire long_branch  = set_pc_branch16 & branch | set_pc_jmp;
@@ -139,10 +144,10 @@ always @(posedge clk) begin
     if( rst ) begin
         pc <= 0;
     end else if(cen) begin
-        pc <= ( ni | opd ) ? pc+16'd1 :
-              short_branch ? { {8{data[7]}}, data[7:0]}+pc :
-              long_branch  ? data+pc :
-              up_pc        ? data    : pc;
+        pc <= ( ni | opd | pc_inc1 ) ? pc+16'd1 :
+              short_branch ? { {8{mdata[7]}}, mdata[7:0]}+pc :
+              long_branch  ? mdata+pc :
+              up_pc        ? mdata    : pc;
         // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
         // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
 
@@ -155,15 +160,15 @@ jtkcpu_ucode u_ucode(
     .cen               ( cen               ),
 
     .op                ( op                ),
+    .mdata             ( mdata             ),
+
     .branch            ( branch            ),
     .alu_busy          ( alu_busy          ),
     .mem_busy          ( mem_busy          ),
-    .idx_busy          ( idx_busy          ),
     .irq_n             ( irq_n             ),
     .nmi_n             ( nmi_n             ),
     .firq_n            ( firq_n            ),
     .intvec            ( intvec            ),
-    .idx_inc           ( idx_inc           ),
 
     .adr_data          ( addr_data         ),
     .adr_idx           ( addr_idx          ),
@@ -176,15 +181,23 @@ jtkcpu_ucode u_ucode(
     .decb              ( decb              ),
     .decu              ( decu              ),
     .decx              ( decx              ),
-    .idx_en            ( idx_en            ),
+
+    // Indexed addressing
+    .idx_rsel          ( idx_rsel          ),
+    .idx_asel          ( idx_asel          ),
+    .idx_post          ( idx_post          ),
+    .idx_pre           ( idx_pre           ),
+    .idxw              ( idxw              ),
     .idx_ld            ( idx_ld            ),
-    .idx_ret           ( idx_ret           ),
-    .idx_step          ( idx_step          ),
+    .idx_8             ( idx_8             ),
+    .idx_16            ( idx_16            ),
+    .idx_acc           ( idx_acc           ),
+    .idx_dp            ( idx_dp            ),
+    .data2addr         ( data2addr         ),
+
     .incx              ( incx              ),
     .incy              ( incy              ),
     .int_en            ( int_en            ),
-    .jmp_idx           ( jmp_idx           ),
-    .mem16             ( mem16             ),
     .memhi             ( memhi             ),
     .ni                ( ni                ),
     .opd               ( opd               ),
@@ -234,7 +247,7 @@ jtkcpu_pshpul u_pshpul(
     .cen        ( cen        ),
 
     .op         ( op         ),
-    .postdata   ( postdata   ),
+    .postdata   ( mdata      ),
     .cc         ( cc         ),
     .psh_all    ( psh_all    ),
     .rti_cc     ( rti_cc     ),

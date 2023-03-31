@@ -30,11 +30,15 @@ module jtkcpu_regs(
     input               pul_en,
 
     // Index addressing
-    input        [ 2:0] idx_rsel,   // register to modify on indexed addressing
+    input        [ 2:0] idx_rsel,   // register to modify
+    input        [ 1:0] idx_asel,   // accumulator used
     output       [15:0] idx_reg,
+    output       [15:0] idx_racc,
     input        [15:0] idx_addr,
     input               idx_post,
     input               idx_pre,
+    input               idxw,
+    output reg   [ 7:0] dp,
 
     // Register update
     input        [31:0] alu,
@@ -75,14 +79,11 @@ module jtkcpu_regs(
     output   reg [15:0] mux_reg1,
     output   reg [15:0] nx_u,
     output   reg [15:0] nx_s,
-    output   reg [15:0] idx_rsel,
     output       [15:0] psh_addr,
     output       [15:0] acc,
     output   reg [15:0] x,
     output   reg [15:0] y,
     output   reg [ 7:0] cc,
-    output   reg [ 7:0] a,
-    output   reg [ 7:0] b,
     output   reg [ 7:0] psh_mux,
     output   reg [ 7:0] psh_bit,
     output   reg        up_pul_pc
@@ -93,7 +94,7 @@ module jtkcpu_regs(
 reg         pshdec_u, pshdec_s, inc_pul,
             up_pul_x, up_pul_y, up_pul_other,
             up_pul_a, up_pul_b, up_pul_dp, up_pul_cc;
-reg  [ 7:0] dp;
+reg  [ 7:0] a, b;
 reg  [15:0] u, s;
 wire [15:0] psh_other;
 wire        idx_upx, idx_upy, idx_upu, idx_ups;
@@ -109,6 +110,7 @@ assign idx_x    = idx_rsel==2,
        idx_u    = idx_rsel==5,
        idx_s    = idx_rsel==6;
 assign idx_reg  = idx_x ? x : idx_y ? y : idx_u ? u : idx_s ? s : pc;
+assign idx_racc = idx_asel==0 ? { {8{a[7]}},a } : idx_asel==1 ? { {8{b[7]}},b } : { a, b };
 assign idx_upx  = (idx_post || idx_pre) && idx_x,
        idx_upy  = (idx_post || idx_pre) && idx_y,
        idx_upu  = (idx_post || idx_pre) && idx_u,
@@ -242,7 +244,7 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin // CHECK reset values, especially CC
         a  <= 0;
         b  <= 0;
-        dp <= 0; // To do: delete DP ?
+        dp <= 0;
         x  <= 0;
         y  <= 0;
         u  <= 0;
@@ -267,7 +269,7 @@ always @(posedge clk, posedge rst) begin
             b <= alu[ 7:0];
         end
 
-        // if( up_dp || up_pul_dp ) dp <= alu[7:0];
+        if( up_pul_dp ) dp <= alu[7:0];
         // Update from memory
         // if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
         // if( up_b  || up_pul_b  ) b <= mdata[7:0];
@@ -281,12 +283,9 @@ always @(posedge clk, posedge rst) begin
         if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
 
         // inc/dec
-        if( inc_x || idx_incx ) x <= x + 16'd1;
-        if( inc_y || idx_incy ) y <= y + 16'd1;
-        if( idx_inc2x ) x <= x + 16'd2;
-        if( idx_inc2y ) y <= y + 16'd2;
-        if( dec_x || idx_decx  ) x <= x - 16'd1;
-        if( dec_x || idx_dec2x ) x <= x - 16'd1;
+        if( inc_x ) x <= x + 16'd1;
+        if( inc_y ) y <= y + 16'd1;
+        if( dec_x ) x <= x - 16'd1;
 
         if( up_cc     ) cc <= alu_cc;
         if( up_pul_cc ) cc <= mdata[7:0];

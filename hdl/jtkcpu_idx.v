@@ -32,6 +32,7 @@ module jtkcpu_idx(
     input             idx_acc,
     input             idx_ld,
     input             idx_dp,
+    input             data2addr,
 
     output reg [15:0] addr
 );
@@ -40,15 +41,14 @@ reg  [15:0] offset;
 
 always @* begin
     offset = 0;
-    if( idx8    ) offset = { {8{mdata[7]}}, mdata[7:0] };
-    if( idx16   ) offset = mdata;
+    if( idx_8   ) offset = { {8{mdata[7]}}, mdata[7:0] };
+    if( idx_16  ) offset = mdata;
     if( idx_acc ) offset = idx_racc;
 end
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
         addr <= 0;
-        busy <= 0;
     end else if (cen) begin
         if( idx_ld    ) addr <= idx_reg + offset;
         if( idx_dp    ) addr <= { dp, mdata[7:0] };

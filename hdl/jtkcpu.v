@@ -38,24 +38,31 @@ module jtkcpu(
 
 wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
-wire [15:0] data, idx_reg, mux, d_mux, acc;
-wire [15:0] idx_addr, psh_addr;
+wire [15:0] mdata, mux, d_mux, acc;
+wire [15:0] psh_addr;
 wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s;
-wire [ 7:0] a, b, cc, cc_out;
+wire [ 7:0] cc, cc_out, dp;
 wire [ 7:0] op, postbyte;
 wire [ 7:0] psh_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
-wire        alu_busy, mem_busy, idx_busy;
-wire        idx_en, hi_lon;
+wire        alu_busy, mem_busy;
+wire        hi_lon;
 wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
-wire        indirect, branch, mem16, memhi;
-wire        pul_en, pshdec, us_sel, idx_ld, idx_ret;
-wire        wrq, ni, opd, addr_x, addr_y, up_lines, up_lea, up_lmul,
+wire        branch, memhi;
+wire        pul_en, pshdec, us_sel,
+            wrq, ni, opd, addr_x, addr_y, up_lines, up_lea, up_lmul,
             inc_x, inc_y, dec_b, dec_u, dec_x,
             clr_e, set_e, set_f, set_i,
-            up_pul_pc, idx_inc;
+            up_pul_pc;
+// Indexed addressing
+wire [15:0] idx_addr, idx_reg, idx_racc;
+wire [ 2:0] idx_rsel;
+wire [ 1:0] idx_asel;
+wire        idx_post, idx_pre, idxw,   idx_ld,
+            idx_8,    idx_16,  idx_acc,idx_dp,
+            data2addr;
 
 jtkcpu_ctrl u_ctrl(
     .rst          ( rst          ),
@@ -63,17 +70,28 @@ jtkcpu_ctrl u_ctrl(
     .cen          ( cen          ),
 
     .op           ( op           ),
-    .postdata     ( data     ),
+    .mdata        ( mdata        ),
     .psh_bit      ( psh_bit      ),
     .cc           ( cc           ),
-    .data         ( data         ),
     .halt         ( halt         ),
     .up_pc        ( up_pc        ),
+
+    // Indexed addressing
+    .idx_rsel     ( idx_rsel     ),   // register to modify
+    .idx_asel     ( idx_asel     ),   // accumulator used
+    .idx_post     ( idx_post     ),
+    .idx_pre      ( idx_pre      ),
+    .idxw         ( idxw         ),
+    .idx_ld       ( idx_ld       ),
+    .idx_8        ( idx_8        ),
+    .idx_16       ( idx_16       ),
+    .idx_acc      ( idx_acc      ),
+    .idx_dp       ( idx_dp       ),
+    .data2addr    ( data2addr    ),
 
     // System status
     .alu_busy     ( alu_busy     ),
     .mem_busy     ( mem_busy     ),
-    .idx_busy     ( idx_busy     ),
     .irq_n        ( irq_n        ),
     .firq_n       ( firq_n       ),
     .nmi_n        ( nmi_n        ),
@@ -82,7 +100,6 @@ jtkcpu_ctrl u_ctrl(
     .addr_y       ( addr_y       ),
     .pshdec       ( pshdec       ),
     .hi_lon       ( hi_lon       ),
-    .mem16        ( mem16        ),
     .memhi        ( memhi        ),
     .ni           ( ni           ),
     .opd          ( opd          ),
@@ -102,12 +119,8 @@ jtkcpu_ctrl u_ctrl(
     .set_i        ( set_i        ),
     .set_f        ( set_f        ),
     .clr_e        ( clr_e        ),
-    .idx_ld       ( idx_ld       ),
-    .idx_ret      ( idx_ret      ),
-    .idx_en       ( idx_en       ),
     .up_cc        ( up_cc        ),
     .intvec       ( intvec       ),
-    .idx_inc      ( idx_inc      ),
 
     .up_a         ( up_a         ),
     .up_b         ( up_b         ),
@@ -129,7 +142,6 @@ jtkcpu_memctrl u_memctrl(
     .cen2         ( cen2         ),
 
     .pc           ( pc           ),
-    // .dp           ( dp           ),
     .idx_addr     ( idx_addr     ),
     .psh_addr     ( psh_addr     ),
     .regs_x       ( regs_x       ),
@@ -142,11 +154,11 @@ jtkcpu_memctrl u_memctrl(
 
     .we           ( we           ),
     .op           ( op           ),
-    .data         ( data         ),
+    .data         ( mdata        ),
     .busy         ( mem_busy     ),
     .up_pc        ( up_pc        ),
     .is_op        ( is_op        ),
-    .mem16        ( mem16        ),
+    .mem16        ( 1'b0         ),
     .memhi        ( memhi        ),
     .ni           ( ni           ),
     .halt         ( halt         ),
@@ -168,7 +180,7 @@ jtkcpu_alu u_alu(
 
     .op           ( op           ),
     .opnd0        ( opnd0        ),
-    .opnd1        ( data         ),
+    .opnd1        ( mdata        ),
     .cc_in        ( cc           ),
     .cc_out       ( cc_out       ),
     .busy         ( alu_busy     ),
@@ -183,20 +195,28 @@ jtkcpu_regs u_regs(
     .cen          ( cen          ),
 
     .pc           ( pc           ),
+    .dp           ( dp           ),
     .x            ( regs_x       ),
     .y            ( regs_y       ),
     .cc           ( cc           ),
-    .a            ( a            ),
-    .b            ( b            ),
-    .mdata        ( data         ),
+    .mdata        ( mdata        ),
     .op           ( op           ),
     .psh_sel      ( psh_sel      ),
     .psh_hilon    ( hi_lon       ),
     .psh_ussel    ( us_sel       ),
     .pul_en       ( pul_en       ),
     .alu          ( rslt         ),
+
+    // Indexed addressing
+    .idx_rsel     ( idx_rsel     ),   // register to modify
+    .idx_asel     ( idx_asel     ),   // accumulator used
+    .idx_reg      ( idx_reg      ),
+    .idx_racc     ( idx_racc     ),
     .idx_addr     ( idx_addr     ),
-    .idx_inc      ( idx_inc      ),
+    .idx_post     ( idx_post     ),
+    .idx_pre      ( idx_pre      ),
+    .idxw         ( idxw         ),
+
     .up_a         ( up_a         ),
     .up_b         ( up_b         ),
     .up_d         ( up_d         ),
@@ -229,7 +249,6 @@ jtkcpu_regs u_regs(
     .mux_reg1     ( opnd1        ),
     .nx_u         ( nx_u         ),
     .nx_s         ( nx_s         ),
-    .idx_reg      ( idx_reg      ),
     .psh_addr     ( psh_addr     ),
     .acc          ( acc          ),
     .psh_mux      ( psh_mux      ),
@@ -243,14 +262,17 @@ jtkcpu_idx u_idx(
     .cen          ( cen          ),
 
     .idx_reg      ( idx_reg      ),
-    .mdata        ( data         ),
-    .a            ( a            ),
-    .b            ( b            ),
-    .idx_ret      ( idx_ret      ),
+    .idx_racc     ( idx_racc     ),
+    .dp           ( dp           ),
+    .mdata        ( mdata        ),
+    // Control
     .idx_ld       ( idx_ld       ),
-    .addr         ( idx_addr     ),
-    .busy         ( idx_busy     ),
-    .indirect     ( indirect     )
+    .idx_8        ( idx_8        ),
+    .idx_16       ( idx_16       ),
+    .idx_acc      ( idx_acc      ),
+    .idx_dp       ( idx_dp       ),
+
+    .addr         ( idx_addr     )
 );
 
 endmodule

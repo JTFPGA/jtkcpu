@@ -33,8 +33,8 @@ IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
 IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
                     OPD
                     IDX16, IDX_IND
-IDX_IND:            ADR_IDX, MEMHI              # 6 - ,R
-                    ADR_IDX
+IDX_IND:            ADDR_IDX, MEMHI              # 6 - ,R
+                    ADDR_IDX, ADDR_PLUS1
                     DATA2ADR, IDX_RET
 IDX_EXT:            OPD, MEMHI                  # 7 Extended
                     OPD
@@ -72,11 +72,12 @@ SINGLE_B_INH:       OPN0=REGS, UP_CC, UP_LDB
 SINGLE_ALU_INH16:   OPN0=REGS, UP_CC, UP_LD16
                     NI
 
-SINGLE_ALU_IDX:     ADR_IDX
+SINGLE_ALU_IDX:     ADDR_IDX
                     OPN0=REGS, UP_CC
                     NI
 
-SINGLE_ALU_IDX16:   ADR_IDX, MEM16
+SINGLE_ALU_IDX16:   ADDR_IDX, MEMHI
+                    ADDR_IDX, ADDR_PLUS1
                     OPN0=REGS, UP_CC
                     NI
 
@@ -85,7 +86,7 @@ MULTI_ALU:          OPD
                     NI
 
 MEM_ALU_IDX:        OPD, IDX_EN
-                    ADR_IDX
+                    ADDR_IDX
                     OPN0=MEM, WE
                     NI
 
@@ -94,14 +95,14 @@ MULTI_ALU_INH:      OPD
                     NI
 
 MULTI_ALU_IDX:      OPD, IDX_EN
-                    ADR_IDX
+                    ADDR_IDX
                     OPN0=REGS, UP_CC, WAITALU
                     NI
 
 WMEM_ALU:           OPD, IDX_EN
-                    ADR_IDX
+                    ADDR_IDX
                     OPN0=MEM, UP_DATA, WAITALU
-                    ADR_IDX, WE
+                    ADDR_IDX, WE
                     NI
 
 MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
@@ -152,11 +153,11 @@ BSETD:              OPN0=A, WE, ADRX, INCX,
 
 ############### LOAD/STORE OPERATIONS ############
 STORE8:             OPD, IDX_EN
-                    OPN0=REGS, ADR_IDX, WE,
+                    OPN0=REGS, ADDR_IDX, WE,
                     NI
 
 STORE16:            OPD, IDX_EN
-                    OPN0=REGS, ADR_IDX, WE, MEM16,
+                    OPN0=REGS, ADDR_IDX, WE, MEM16,
                     NI
 
 LD8_IMM:            OPD
@@ -164,7 +165,7 @@ LD8_IMM:            OPD
                     NI
 
 LD8_IDX:            OPD, IDX_EN
-                    ADR_IDX
+                    ADDR_IDX
                     UP_LD8
                     NI
 
@@ -174,7 +175,7 @@ LD16_IMM:           OPD, MEMHI
                     NI
 
 LD16_IDX:           OPD, IDX_EN
-                    ADR_IDX, MEM16
+                    ADDR_IDX, MEM16
                     UP_LD16
                     NI
 
@@ -192,15 +193,18 @@ SBRANCH:            OPD
                     PC=BRANCH8
                     NI
 
-LBRANCH:            OPD, MEM16
+LBRANCH:            OPD, MEMHI
+                    OPD
                     PC=BRANCH16
                     NI
 
-JUMP:               OPD, MEM16
+JUMP:               OPD, MEMHI
+                    OPD
                     PC=JMP
                     NI
 
-JMSR:               OPD, MEM16
+JMSR:               OPD, MEMHI
+                    OPD
                     PSH_PC, PSH_GO
                     WE, WAIT_STACK
                     PC=JMP, MEM16
