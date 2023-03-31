@@ -22,48 +22,27 @@ module jtkcpu_idx(
     input             cen,
 
     input      [15:0] idx_reg,
+    input      [15:0] idx_racc, // a,b,d or dp
+    input      [ 7:0] dp,
     input      [15:0] mdata,
-    input      [ 7:0] a,
-    input      [ 7:0] b,
 
     // Control
-    input             idx_ret,
+    input             idx_8,
+    input             idx_16,
+    input             idx_acc,
     input             idx_ld,
+    input             idx_dp,
 
-    output reg [15:0] addr,
-    output reg        busy,
-    output reg        indirect
-
+    output reg [15:0] addr
 );
 
 reg  [15:0] offset;
-reg         idx_enl;
-wire [ 7:0] postbyte;
-
-assign postbyte = mdata[7:0];
-
-// assign idx_sel = { postbyte[1], postbyte[6:5] };
 
 always @* begin
-    indirect = postbyte[3];
-    use_dp   = postbyte==8'hc4 || postbyte==8'hcc;
-
-    case( { postbyte[7], postbyte[2:0] } )
-        4'b0_000: offset =  1;
-        4'b0_001: offset =  2;
-        4'b0_010: offset = -1;
-        4'b0_011: offset = -2;
-        4'b0_100: offset =  0;
-        4'b0_101: offset =  { {8{b[7]}}, b };
-        4'b0_110: offset =  { {8{a[7]}}, a };
-        4'b1_000: offset =  { {8{mdata[7]}}, mdata[7:0] };
-        4'b1_001: offset =  mdata;
-        4'b1_011: offset =  {a, b};
-        4'b1_100: offset =  { {8{mdata[7]}}, mdata[7:0] };
-        4'b1_101: offset =  mdata;
-        4'b1_111: offset =  0;
-        default: offset =  0;
-    endcase
+    offset = 0;
+    if( idx8    ) offset = { {8{mdata[7]}}, mdata[7:0] };
+    if( idx16   ) offset = mdata;
+    if( idx_acc ) offset = idx_racc;
 end
 
 always @(posedge clk, posedge rst) begin
@@ -71,9 +50,9 @@ always @(posedge clk, posedge rst) begin
         addr <= 0;
         busy <= 0;
     end else if (cen) begin
-        if( idx_ret ) begin
-            addr <= idx_ld ? mdata : idx_reg + offset;
-        end
+        if( idx_ld    ) addr <= idx_reg + offset;
+        if( idx_dp    ) addr <= { dp, mdata[7:0] };
+        if( data2addr ) addr <= mdata;
     end
 end
 

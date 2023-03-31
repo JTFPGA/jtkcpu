@@ -17,12 +17,18 @@
     Date: 3-03-2023 */
 
 module jtkcpu_ucode(
-    input           rst,
-    input           clk,
-    input           cen,
+    input            rst,
+    input            clk,
+    input            cen,
 
-    input     [7:0] op,     // data fetched from memory
-    input     [7:0] mdata,
+    input      [7:0] op,     // data fetched from memory
+    input      [7:0] mdata,
+    // index addressing
+    output reg [2:0] idx_rsel,
+    output reg       idx_ind_rq,
+    output reg       idx_post,
+    output           idx_pre,
+    output           idxw,
     // status inputs
     input           branch,
     input           alu_busy,
@@ -31,7 +37,6 @@ module jtkcpu_ucode(
     input           irq_n,
     input           nmi_n,
     input           firq_n,
-    output    [7:0] idx_code,
     // control outputs from ucode
     output          adr_data,
     output          adr_idx,
@@ -47,10 +52,6 @@ module jtkcpu_ucode(
     output          idx_en,
     output          idx_ld,
     output          idx_ret,
-    output          idx_post1,
-    output          idx_post2,
-    output          idx_pre1,
-    output          idx_pre2,
     output          incx,
     output          incy,
     output          int_en,
@@ -109,15 +110,17 @@ module jtkcpu_ucode(
 
 `include "jtkcpu_ucode.inc"
 
+localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
+
 reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat;
 reg          [3:0] cur_int;
-reg                idxinc, nil;
+reg                idxinc, nil, idxwl, idx_pre;
 
 wire wait_stack, waitalu;
 
-localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
+assign idx_w = set_idxw | idxwl;
 
 always @* begin
     case( {mdata[7],mdata[2:0]} )
@@ -233,8 +236,10 @@ always @(posedge clk) begin
         addr    <= { RESET, OPLEN };  // Reset starts ucode at 0
         cur_int <= 4'b1000;
     end else if( cen && !buserror ) begin
-        nil <= ni;
-        post_idx <= nx_cat;
+        nil       <= ni;
+        post_idx  <= nx_cat;
+        idx_post1 <= 0;
+        idx_post2 <= 0;
 
         if( !mem_busy && !(idx_en && idx_busy)) begin
             addr <= addr + 1; // keep processing an opcode routine
@@ -259,16 +264,18 @@ always @(posedge clk) begin
         end
         // Indexed addressing parsing
         if( jmp_idx ) begin
-            addr <= { idx_cat, OPLEN}
-            idx_post1l <= idx_post1;
-            idx_post2l <= idx_post2;
+            addr       <= {idx_cat, OPLEN};
+            idx_rsel    <= mdata[6:4];
+            idx_ind_rq <= mdata[3];
+            idx_postl  <= set_idx_post;
+            idxwl      <= set_idxw;
         end
         if( idx_ind ) begin
             addr <= { IDX_IND, OPLEN}
         end
         if( idx_ret ) begin
-            idx_post1l <= 0;
-            idx_post2l <= 0;
+            idx_post  <= idx_postl;
+            idx_postl <= 0;
             addr <= { nx_cat, OPLEN };
         end
     end

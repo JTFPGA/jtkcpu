@@ -23,16 +23,21 @@ module jtkcpu_regs(
 
     input        [15:0] pc,
     input        [15:0] mdata,     // postbyte used to select specific registers
-    input        [ 7:0] op,         // op code used to select specific registers
+    input        [ 7:0] op,        // op code used to select specific registers
     input        [ 7:0] psh_sel,
     input               psh_hilon,
     input               psh_ussel,
     input               pul_en,
 
+    // Index addressing
+    input        [ 2:0] idx_rsel,   // register to modify on indexed addressing
+    output       [15:0] idx_reg,
+    input        [15:0] idx_addr,
+    input               idx_post,
+    input               idx_pre,
+
     // Register update
     input        [31:0] alu,
-    input        [15:0] idx_addr,
-    input               idx_inc,
     input               up_a,
     input               up_b,
     input               up_d,
@@ -70,7 +75,7 @@ module jtkcpu_regs(
     output   reg [15:0] mux_reg1,
     output   reg [15:0] nx_u,
     output   reg [15:0] nx_s,
-    output   reg [15:0] idx_reg,
+    output   reg [15:0] idx_rsel,
     output       [15:0] psh_addr,
     output       [15:0] acc,
     output   reg [15:0] x,
@@ -91,17 +96,24 @@ reg         pshdec_u, pshdec_s, inc_pul,
 reg  [ 7:0] dp;
 reg  [15:0] u, s;
 wire [15:0] psh_other;
-wire        idx_incx, idx_incy, idx_incu, idx_incs;
-wire [ 1:0] idx_step;
+wire        idx_upx, idx_upy, idx_upu, idx_ups;
+wire [15:0] idx_step;
+wire        idx_x, idx_y, idx_u, idx_s;
 
 assign acc = { b, a };
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
-assign idx_incx  = idx_inc && mdata[6:5]==0;
-assign idx_incy  = idx_inc && mdata[6:5]==1;
-assign idx_incu  = idx_inc && mdata[6:5]==2;
-assign idx_incs  = idx_inc && mdata[6:5]==3;
-assign idx_step  = mdata[1:0];
+// Indexed increments/decrements
+assign idx_x    = idx_rsel==2,
+       idx_y    = idx_rsel==3,
+       idx_u    = idx_rsel==5,
+       idx_s    = idx_rsel==6;
+assign idx_reg  = idx_x ? x : idx_y ? y : idx_u ? u : idx_s ? s : pc;
+assign idx_upx  = (idx_post || idx_pre) && idx_x,
+       idx_upy  = (idx_post || idx_pre) && idx_y,
+       idx_upu  = (idx_post || idx_pre) && idx_u,
+       idx_ups  = (idx_post || idx_pre) && idx_s;
+assign idx_step = idx_post ? (idxw ? 16'd2 : 16'd1) : (idxw ? -16'd2 : -16'd1);
 
 // exg/tfr mux
 always @* begin
@@ -149,9 +161,9 @@ end
 
 always @* begin
     case ( op )
-        ABX:     mux_reg1 = {8'hFF,  b};
+        ABX:     mux_reg1 = {8'h0,  b};
         LMUL:    mux_reg1 = x;
-        default: mux_reg1 = {8'hFF,  a};
+        default: mux_reg1 = {8'h0,  a};
     endcase
 end
 
@@ -184,10 +196,8 @@ always @* begin
             nx_u[ 7:0] = alu[7:0];
     end
 
-    if( inc_pul &&  psh_ussel )
-        nx_u = u + 16'd1;
-    if( inc_pul && !psh_ussel )
-        nx_s = s + 16'd1;
+    if( inc_pul &&  psh_ussel ) nx_u = u + 16'd1;
+    if( inc_pul && !psh_ussel ) nx_s = s + 16'd1;
 end
 
 // PUSH
@@ -228,24 +238,6 @@ always @* begin
         up_pul_y, up_pul_other, up_pul_pc };
 end
 
-function [15:0] apply_step( input [15:0] rbase );
-    apply_step = ( idx_step!=0 )    ? rbase :
-                  idx_step[1] ? rbase - (16'h1 << idx_step[0]) : rbase;
-endfunction
-
-// indexed idx_reg
-always @* begin
-    case ( mdata[6:5] )
-        2'b00: idx_reg =  apply_step(x);
-        2'b01: idx_reg =  apply_step(y);
-        2'b10: idx_reg =  apply_step(u);
-        2'b11: idx_reg =  apply_step(s);
-    endcase
-    if( mdata[3:2]==2'b11 ) begin
-        idx_reg = pc;
-    end
-end
-
 always @(posedge clk, posedge rst) begin
     if( rst ) begin // CHECK reset values, especially CC
         a  <= 0;
@@ -259,6 +251,10 @@ always @(posedge clk, posedge rst) begin
     end else if(cen) begin
         u <= nx_u;
         s <= nx_s;
+        if( idx_upx ) x <= x + idx_step;
+        if( idx_upy ) y <= y + idx_step;
+        if( idx_upu ) u <= u + idx_step;
+        if( idx_ups ) s <= s + idx_step;
 
         // if( up_alu_a ) a <= alu[7:0]; // pul must let fetched data through ALU
         // if( up_alu_b ) b <= alu[7:0];
@@ -285,9 +281,12 @@ always @(posedge clk, posedge rst) begin
         if( up_pul_y && !psh_hilon ) y[ 7:0] <= alu[7:0];
 
         // inc/dec
-        if( inc_x ) x <= x + 16'd1;
-        if( dec_x ) x <= x - 16'd1;
-        if( inc_y ) y <= y + 16'd1; // no dec_y ?
+        if( inc_x || idx_incx ) x <= x + 16'd1;
+        if( inc_y || idx_incy ) y <= y + 16'd1;
+        if( idx_inc2x ) x <= x + 16'd2;
+        if( idx_inc2y ) y <= y + 16'd2;
+        if( dec_x || idx_decx  ) x <= x - 16'd1;
+        if( dec_x || idx_dec2x ) x <= x - 16'd1;
 
         if( up_cc     ) cc <= alu_cc;
         if( up_pul_cc ) cc <= mdata[7:0];
