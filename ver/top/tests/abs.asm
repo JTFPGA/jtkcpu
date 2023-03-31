@@ -13,36 +13,28 @@
 
 TESTCTRL EQU $1000
 
-        ORG  $F000
-RESET:  LDA   #$FE
-        PSHS A
-        CLRA
-        JSR   SUBRUTINE
-        LDB   #$3C
-        PSHS B
+        ORG $F000
+RESET:  LDA #$55
+        LDB #$81
+        ABSA
+        CMPA #$AA
+        BNE BAD
+        ABSB
+        CMPB #$7E
+        BNE BAD
 
 END:    LDX #$BABE
         LDA #1
         LDX #TESTCTRL
         STA ,X                  ; Finish test, result ok
         BRA END
-
 BAD:    LDX #$DEAD
         LDA #3
         LDX #TESTCTRL
         STA ,X                  ; Finish test, result bad
-        BRA BAD   
+        BRA BAD
 
-SUBRUTINE: 
-        LDX   #$10A0
-        LDA   ,X
-        BEQ   ONE
-        CLR   $2000
-        RTS   
-ONE:     
-        LDA   #1
-        STA   $1000
-        RTS
-
+; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
         FDB   RESET
+

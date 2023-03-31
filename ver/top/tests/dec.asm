@@ -25,13 +25,13 @@ LOOP:   DECA
         BNE BAD
 END:    
         LDY #$BABE
-        LDA #1
+        LDB #1
         LDY #TESTCTRL
         STB ,Y 
         BRA END
 BAD: 	
         LDY #$DEAD
-        LDA #3
+        LDB #3
         LDY #TESTCTRL
         STB ,Y
         BRA BAD

@@ -14,14 +14,15 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$03
-        STA ,X
-        LDB #$03
-        STB ,Y
-        LMUL
-        CMPX ; Add value here!
+RESET:  LDX #1234
+        LDA #$0A
+        LDB #$11
+        MUL
+        CMPD #$0AAA
         BNE BAD
-        CMPY ; Add value here!
+        CLRA
+        CLRB
+        CMPD #$0000
         BNE BAD  
 
 END:    LDX #$BABE
