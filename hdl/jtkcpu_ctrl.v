@@ -55,6 +55,7 @@ module jtkcpu_ctrl(
     // Direct microcode outputs
     output            addr_x,
     output            addr_y,
+    output            idx_adv,
     output            pshdec,
     output            hi_lon,
     output            memhi,
@@ -195,6 +196,7 @@ jtkcpu_ucode u_ucode(
     .idx_acc           ( idx_acc           ),
     .idx_dp            ( idx_dp            ),
     .idx_en            ( idx_en            ),
+    .idx_adv           ( idx_adv           ),
     .data2addr         ( data2addr         ),
 
     .incx              ( incx              ),

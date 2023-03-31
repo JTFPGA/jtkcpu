@@ -47,6 +47,7 @@ module jtkcpu_ucode(
     // control outputs from ucode
     output          adr_data,
     output          adr_idx,
+    output          idx_adv,
     output          adrx,
     output          adry,
     output          back1_unz,
@@ -253,6 +254,7 @@ always @(posedge clk) begin
         idx_post   <= 0;
         idx_ld     <= 0;
         idx_acc    <= 0;
+        idxw       <= 0;
     end else if( cen && !buserror ) begin
         nil       <= ni;
         post_idx  <= nx_cat;

@@ -79,12 +79,14 @@ always @* begin
     rslt_hi = 0;
 
     case (op)
-        STA, STB, LEAX, LEAY, LEAU, LEAS: begin
+        STA,  STB,  STD,
+        STX,  STY,  STU,  STS,
+        LEAX, LEAY, LEAU, LEAS: begin
             rslt  = opnd0;
             v_out = 0;      // TO DO: do STA/B modify any flag?
         end
         LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
-        LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,STD,STX,STY,STU,STS,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
+        LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
             rslt  = opnd1;
             v_out = 0;
         end

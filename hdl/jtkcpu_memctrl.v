@@ -28,6 +28,7 @@ module jtkcpu_memctrl(
     input      [15:0] pc,
     // input      [ 7:0] dp,
     input      [15:0] idx_addr,
+    input             idx_adv,
     input      [15:0] psh_addr,
     input      [15:0] regs_x,
     input      [15:0] regs_y,
@@ -88,7 +89,7 @@ always @(posedge clk, posedge rst) begin
         // signals active for a single clock cycle:
         up_pc  <= 0;
         we     <= 0;
-        dout   <= alu_dout[7:0];
+        dout   <= memhi ? alu_dout[15:8] : alu_dout[7:0];
         if( up_lines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
@@ -112,8 +113,7 @@ always @(posedge clk, posedge rst) begin
                 if( addry  ) begin is_op <= 0; addr <= regs_y;   end
                 if( idx_en ) begin
                     is_op <= 0;
-                    addr  <= idx_addr;
-
+                    addr  <= idx_addr + { 15'd0, idx_adv };
                 end
                 if( mem16 && !busy ) begin
                     busy <= 1;

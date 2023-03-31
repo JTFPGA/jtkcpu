@@ -37,7 +37,7 @@ IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
                     OPD
                     IDX_16, IDX_IND
 IDX_IND:            IDX_EN, MEMHI              # 6 - ,R
-                    IDX_EN, ADDR_PLUS1
+                    IDX_EN, IDX_ADV
                     DATA2ADDR, IDX_RET
 IDX_EXT:            OPD, MEMHI                  # 7 Extended
                     OPD
@@ -72,7 +72,7 @@ CMP16:              OPD, MEMHI
                     NI
 
 CMP16_IDX:          IDX_EN, MEMHI
-                    IDX_EN, ADDR_PLUS1
+                    IDX_EN, IDX_ADV
                     OPN0=REGS, UP_CC
                     NI
 
@@ -90,7 +90,7 @@ SINGLE_ALU_IDX:     IDX_EN
                     NI
 
 SINGLE_ALU_IDX16:   IDX_EN, MEMHI
-                    IDX_EN, ADDR_PLUS1
+                    IDX_EN, IDX_ADV
                     OPN0=REGS, UP_CC, UP_LD16
                     NI
 
@@ -165,7 +165,8 @@ BSETD:              OPN0=A, WE, ADRX, INCX,
 STORE8:             OPN0=REGS, IDX_EN, WE,
                     NI
 
-STORE16:            OPN0=REGS, IDX_EN, WE, MEM16,
+STORE16:            OPN0=REGS, IDX_EN, WE, MEMHI
+                    OPN0=REGS, IDX_EN, WE, IDX_ADV
                     NI
 
 # LD8_IMM:            OPD
