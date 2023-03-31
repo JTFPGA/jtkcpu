@@ -79,7 +79,7 @@ always @* begin
     rslt_hi = 0;
 
     case (op)
-        STA, STB: begin
+        STA, STB, LEAX, LEAY, LEAU, LEAS: begin
             rslt  = opnd0;
             v_out = 0;      // TO DO: do STA/B modify any flag?
         end

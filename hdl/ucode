@@ -177,7 +177,7 @@ LD16_IDX:           IDX_EN, MEMHI
                     UP_LD16
                     NI
 
-LEA:                UP_LEA
+LEA:                UP_LEA, UP_CC
                     NI
 
 ############### MISC OPERATIONS ##################

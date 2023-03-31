@@ -183,8 +183,12 @@ always @* begin
                                                             nx_cat = SINGLE_ALU_IDX;
                                                             end
 
-        LDU_IDX, LDX_IDX, LEAU, LEAX, ADDD_IDX, LDD_IDX,
-        LDS_IDX, LDY_IDX, LEAS, LEAY, SUBD_IDX:       begin opcat  = PARSE_IDX;
+        LEAU, LEAX, LEAS, LEAY:                       begin opcat  = PARSE_IDX;
+                                                            nx_cat = LEA;
+                                                            end
+
+        LDU_IDX, LDX_IDX, LDD_IDX, ADDD_IDX,
+        LDS_IDX, LDY_IDX, SUBD_IDX:                   begin opcat  = PARSE_IDX;
                                                             nx_cat = SINGLE_ALU_IDX16;
                                                             end
 

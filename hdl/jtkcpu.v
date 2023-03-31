@@ -274,6 +274,7 @@ jtkcpu_idx u_idx(
     .idx_16       ( idx_16       ),
     .idx_acc      ( idx_acc      ),
     .idx_dp       ( idx_dp       ),
+    .data2addr    ( data2addr    ),
 
     .addr         ( idx_addr     )
 );

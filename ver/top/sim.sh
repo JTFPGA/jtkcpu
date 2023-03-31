@@ -19,8 +19,16 @@ if [ ! -e "tests/$TEST".asm ]; then
     exit 1
 fi
 
-${ASPATH}asl -cpu 052001 tests/$TEST.asm -l > asl.log || (cat asl.log; exit 1)
-${ASPATH}p2bin tests/$TEST.p >> asl.log || ( cat asl.log; exit 1)
+if ! ${ASPATH}asl -cpu 052001 tests/$TEST.asm -l > asl.log; then
+    grep -A 2 error: asl.log
+    exit 1
+fi
+
+if ! ${ASPATH}p2bin tests/$TEST.p >> asl.log; then
+    cat asl.log;
+    exit 1
+fi
+
 mv tests/$TEST.bin test.bin
 rm -f tests/$TEST.p
 

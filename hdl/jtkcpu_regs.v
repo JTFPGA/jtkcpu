@@ -155,6 +155,7 @@ always @* begin
         CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 = y;
         CMPU_IMM, CMPU_IDX, STU:       mux_reg0 = u;
         CMPS_IMM, CMPS_IDX, STS:       mux_reg0 = s;
+        LEAX, LEAY, LEAU, LEAS:        mux_reg0 = idx_addr;
         ANDCC, ORCC: mux_reg0 = {a, cc};
 
         default : mux_reg0 = {a, a};
@@ -181,8 +182,8 @@ always @* begin
     end
     nx_u = u;
     nx_s = s;
-    if( up_s  ) nx_s = up_lea ? idx_addr : mdata;
-    if( up_u  ) nx_u = up_lea ? idx_addr : mdata;
+    if( up_s  ) nx_s = up_lea && op[1:0]==2 ? idx_addr : mdata;
+    if( up_u  ) nx_u = up_lea && op[1:0]==3 ? idx_addr : mdata;
     if( pshdec_u | dec_u ) nx_u = u - 16'd1;
     if( pshdec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hilon ) begin
@@ -274,8 +275,8 @@ always @(posedge clk, posedge rst) begin
         // if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
         // if( up_b  || up_pul_b  ) b <= mdata[7:0];
         if( dec_b ) b <= b - 8'd1;
-        if( up_x  ) x  <= up_lmul ? alu[15:0]  : up_lea ? idx_addr : mdata;
-        if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea ? idx_addr : mdata;
+        if( up_x  ) x  <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
+        if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hilon ) x[15:8] <= alu[15:8];
         if( up_pul_x && !psh_hilon ) x[ 7:0] <= alu[7:0];
