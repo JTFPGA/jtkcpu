@@ -120,11 +120,10 @@ reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
-reg                idx_postl, nil, idxwl, idx_ind_rq;
+reg                idx_postl, nil, idx_ind_rq;
 wire               idx_ret, idx_ind, idx_jmp;
 
 wire wait_stack, waitalu;
-assign idx_w = set_idxw | idxwl;
 
 always @* begin
     case( {mdata[7],mdata[2:0]} )
@@ -248,7 +247,6 @@ always @(posedge clk) begin
         idx_asel   <= 0;
         idx_ind_rq <= 0;
         idx_postl  <= 0;
-        idxwl      <= 0;
         nil        <= 0;
         post_idx   <= 0;
         idx_post   <= 0;
@@ -284,17 +282,16 @@ always @(posedge clk) begin
         end
         // Indexed addressing parsing
         if( set_idx_post ) idx_postl <= 1;
+        if( set_idxw     ) idxw <= 1;
         idx_acc <= set_idx_acc;
         if( idx_jmp ) begin
             addr       <= {idx_cat, OPLEN};
             idx_rsel   <= mdata[6:4];
             idx_asel   <= mdata[1:0];
             idx_ind_rq <= mdata[3];
-            idxwl      <= set_idxw;
         end
         if( idx_ind ) begin
             idx_ld    <= !data2addr && !idx_dp && !idx_8 && !idx_16;
-            idxw      <= set_idxw;
             addr      <= idx_ind_rq ? {IDX_IND, OPLEN} : {nx_cat, OPLEN};
             idx_post  <= idx_postl;
             idx_postl <= 0;
