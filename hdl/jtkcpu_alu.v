@@ -218,7 +218,7 @@ always @* begin
         end
         MUL: begin
             rslt  = opnd0[15:8]*opnd0[7:0];
-            c_out = rslt[15];
+            c_out = rslt[7];
         end
         LMUL: begin
             { rslt_hi, rslt }  = opnd0*opnd1;

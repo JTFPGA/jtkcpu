@@ -18,14 +18,30 @@ RESET:  LDX #1234
         LDA #$0A
         LDB #$1D
         MUL
+        BCS BAD         ; Test C flag
+        BEQ BAD         ; Test Z flag
+
         CMPB #$22
         BNE BAD
         CMPA #$01
         BNE BAD
+
+        LDA #$0F
+        LDB #$10
+        MUL
+        BCC BAD         ; Test C flag
+        BEQ BAD         ; Test Z flag
+        CMPD #$F0
+        BNE BAD
+
+        CLRA            ; Test Z flag
+        MUL
+        BNE BAD
+
         CLRA
         CLRB
         CMPD #$0000
-        BNE BAD  
+        BNE BAD
 
 END:    LDX #$BABE
         LDA #1
