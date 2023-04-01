@@ -15,34 +15,34 @@ TESTCTRL EQU $1000
 DATAW    EQU $0100
 
         ORG $F000
-RESET:  LEAX DATAR
-        LDD  ,X++
+RESET:  LEAU DATAR
+        LDD  ,U++
         CMPD #$CAFE
         BNE  BAD
 
-        LDD  ,X++
+        LDD  ,U++
         CMPD #$BEEF
         BNE  BAD
 
-        LDD  ,X++
+        LDD  ,U++
         CMPD #$DED0
         BNE  BAD
 
         LDD  #$5555
 
-        LDD  ,--X
+        LDD  ,--U
         CMPD #$DED0
         BNE  BAD
 
-        LDD  ,--X
+        LDD  ,--U
         CMPD #$BEEF
         BNE  BAD
 
-        LDD  ,--X
+        LDD  ,--U
         CMPD #$CAFE
         BNE  BAD
 
-        CMPX #DATAR
+        CMPU #DATAR
         BNE  BAD
 
 END:    LDU #$BABE
