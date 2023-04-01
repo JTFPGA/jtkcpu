@@ -207,6 +207,13 @@ SBSR:               OPD
                     PC=BRANCH8
                     NI
 
+BSRL:               OPD, MEMHI
+                    OPD
+                    PSH_PC, PSH_GO
+                    NOP
+                    PC=BRANCH16
+                    NI
+
 LBRANCH:            OPD, MEMHI
                     OPD
                     PC=BRANCH16

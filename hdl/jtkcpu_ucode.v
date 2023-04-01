@@ -203,9 +203,10 @@ always @* begin
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW,
         INCW, DECW, TSTW:                                   opcat = WMEM_ALU;
         BSR:                                                opcat = SBSR;
+        LBSR:                                               opcat = BSRL;
         BRA, BRN, BHI, BLS, BCC, BCS, BNE,
         BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:        opcat = SBRANCH;
-        LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, LBLE,
+        LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, LBLE,
         LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT:     opcat = LBRANCH;
 
         DECX_JNZ:       opcat = LOOPX;
