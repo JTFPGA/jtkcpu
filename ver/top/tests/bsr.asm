@@ -14,7 +14,9 @@
 TESTCTRL EQU $1000
 
         ORG  $F000
-RESET:  CLRA
+RESET:
+        LDS  #$1000
+        CLRA
         BSR   PROC
         CMPA  #5
         BNE   BAD
