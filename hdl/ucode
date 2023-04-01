@@ -245,6 +245,8 @@ PSH:                OPD
 
 PUL:                OPD
                     PUL_GO
+                    NOP
+                    NOP
                     NI
 
 ########### INTERRUPTS ####################

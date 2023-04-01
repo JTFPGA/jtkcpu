@@ -35,6 +35,7 @@ module jtkcpu_memctrl(
     // Stack
     input      [15:0] psh_addr,
     input             psh_dec,
+    input             stack_busy,
     input      [ 7:0] psh_mux,
     // memory interface
     input      [ 7:0] din,
@@ -76,7 +77,7 @@ localparam FIRQ = 16'hFFF6,
 reg  is_int, hold;
 wire mem_en;
 
-assign mem_en = ni | opd | psh_dec| addrx | addry | idx_en;
+assign mem_en = ni | opd | stack_busy | addrx | addry | idx_en;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
@@ -110,11 +111,17 @@ always @(posedge clk, posedge rst) begin
             end else if( mem_en ) begin
                 addr <= pc;
                 is_op <= 1;
-                if( opd    ) begin is_op <= 0; end
-                if( psh_dec ) begin is_op <= 0; addr <= psh_addr - (psh_dec ? 16'd1 : 16'd0); end
-                if( addrx  ) begin is_op <= 0; addr <= regs_x;   end
-                if( addry  ) begin is_op <= 0; addr <= regs_y;   end
-                if( idx_en ) begin
+                if( opd        ) begin is_op <= 0; end
+                if( psh_dec    ) begin
+                    is_op <= 0;
+                    addr <= psh_addr - 16'd1;
+                end else if( stack_busy ) begin
+                    is_op <= 0;
+                    addr <= psh_addr;
+                end
+                if( addrx      ) begin is_op <= 0; addr <= regs_x;   end
+                if( addry      ) begin is_op <= 0; addr <= regs_y;   end
+                if( idx_en     ) begin
                     is_op <= 0;
                     addr  <= idx_addr + { 15'd0, idx_adv };
                 end

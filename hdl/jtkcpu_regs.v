@@ -31,6 +31,7 @@ module jtkcpu_regs(
     input               psh_ussel,
     input               pul_en,
     input               psh_dec,
+    input               stack_busy,
 
     // Index addressing
     input        [ 2:0] idx_rsel,   // register to modify
@@ -175,6 +176,8 @@ end
 
 // U/S next value
 always @* begin
+    inc_pul = psh_sel!=0 && stack_busy;
+
     psh_dec_u = 0;
     psh_dec_s = 0;
     if ( psh_dec && psh_mux!=0 ) begin
@@ -221,27 +224,36 @@ always @* begin
 end
 
 // PULL
-always @* begin
-    up_pul_cc    = 0; // output
-    up_pul_a     = 0; // define all as regs
-    up_pul_b     = 0;
-    up_pul_dp    = 0;
-    up_pul_x     = 0;
-    up_pul_y     = 0;
-    up_pul_other = 0;
-    up_pul_pc    = 0; // output
-    casez( psh_sel )
-        8'b????_???1: up_pul_cc    = pul_en;
-        8'b????_??10: up_pul_a     = pul_en;
-        8'b????_?100: up_pul_b     = pul_en;
-        8'b????_1000: up_pul_dp    = pul_en;
-        8'b???1_0000: up_pul_x     = pul_en;
-        8'b??10_0000: up_pul_y     = pul_en;
-        8'b?100_0000: up_pul_other = pul_en;
-        default:      up_pul_pc    = pul_en;
-    endcase
-    inc_pul = |{ up_pul_cc, up_pul_a, up_pul_b, up_pul_dp, up_pul_x,
-        up_pul_y, up_pul_other, up_pul_pc };
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        up_pul_cc    <= 0; // output
+        up_pul_a     <= 0; // define all as regs
+        up_pul_b     <= 0;
+        up_pul_dp    <= 0;
+        up_pul_x     <= 0;
+        up_pul_y     <= 0;
+        up_pul_other <= 0;
+        up_pul_pc    <= 0; // output
+    end else if( cen ) begin
+        up_pul_cc    <= 0; // output
+        up_pul_a     <= 0; // define all as regs
+        up_pul_b     <= 0;
+        up_pul_dp    <= 0;
+        up_pul_x     <= 0;
+        up_pul_y     <= 0;
+        up_pul_other <= 0;
+        up_pul_pc    <= 0; // output
+        casez( psh_sel )
+            8'b????_???1: up_pul_cc    <= pul_en;
+            8'b????_??10: up_pul_a     <= pul_en;
+            8'b????_?100: up_pul_b     <= pul_en;
+            8'b????_1000: up_pul_dp    <= pul_en;
+            8'b???1_0000: up_pul_x     <= pul_en;
+            8'b??10_0000: up_pul_y     <= pul_en;
+            8'b?100_0000: up_pul_other <= pul_en;
+            default:      up_pul_pc    <= pul_en;
+        endcase
+    end
 end
 
 always @(posedge clk, posedge rst) begin
@@ -262,11 +274,10 @@ always @(posedge clk, posedge rst) begin
         if( idx_upu ) u <= u + idx_step;
         if( idx_ups ) s <= s + idx_step;
 
-        // if( up_alu_a ) a <= alu[7:0]; // pul must let fetched data through ALU
-        // if( up_alu_b ) b <= alu[7:0];
-
-        if( up_a ) a <= up_pul_a ? mdata[7:0] : alu[7:0];
-        if( up_b ) b <= up_pul_b ? mdata[7:0] : alu[7:0];
+        if( up_a     ) a <= alu[7:0];
+        if( up_b     ) b <= alu[7:0];
+        if( up_pul_a ) a <= mdata[7:0];
+        if( up_pul_b ) b <= mdata[7:0];
 
         if( up_d ) begin
             a <= alu[15:8];
@@ -274,9 +285,7 @@ always @(posedge clk, posedge rst) begin
         end
 
         if( up_pul_dp ) dp <= alu[7:0];
-        // Update from memory
-        // if( up_a  || up_pul_a  ) a <= mdata[7:0]; // pul must let fetched data through ALU
-        // if( up_b  || up_pul_b  ) b <= mdata[7:0];
+
         if( dec_b ) b <= b - 8'd1;
         if( up_x  ) x  <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
         if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;

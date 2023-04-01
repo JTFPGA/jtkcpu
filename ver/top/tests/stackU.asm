@@ -11,33 +11,36 @@
 ; 6 -> set to trigger FIRQ. Clear manually
 ; 7 -> set to trigger NMI.  Clear manually
 
+RAMEND   EQU $1000
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA   #03
-	LDB   #02
+RESET:  LDU #RAMEND
+	LDA #$FE
+	LDB #$3C
 	PSHU A
 	PSHU B
+
 	CLRA
 	CLRB
 	PULU A
-        CMPA #$02 
-        BNE BAD
 	PULU B
-	CMPB #$03
+        CMPA #$3C
+        BNE BAD
+	CMPB #$FE
 	BNE BAD
 
 END:    LDX #$BABE
-	LDA #1 
-	LDX #TESTCTRL 
+	LDA #1
+	LDX #TESTCTRL
 	STA ,X
         BRA END
 
 BAD: 	LDX #$DEAD
 	LDA #3
-	LDX #TESTCTRL 
+	LDX #TESTCTRL
 	STA ,X
  	BRA BAD
 
- 	DC.B  [$FFFE-*]0
+        DC.B  [$FFFE-*]0
         FDB   RESET

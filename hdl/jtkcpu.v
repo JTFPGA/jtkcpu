@@ -99,15 +99,18 @@ jtkcpu_ctrl u_ctrl(
     .firq_n       ( firq_n       ),
     .nmi_n        ( nmi_n        ),
 
+    // Stack
+    .psh_dec      ( psh_dec      ),
+    .stack_busy   ( stack_busy   ),
+    .psh_sel      ( psh_sel      ),
+    .pul_en       ( pul_en       ),
+
     .addr_x       ( addr_x       ),
     .addr_y       ( addr_y       ),
-    .psh_dec       ( psh_dec       ),
     .hihalf       ( hihalf       ),
     .memhi        ( memhi        ),
     .ni           ( ni           ),
     .opd          ( opd          ),
-    .psh_sel      ( psh_sel      ),
-    .pul_en       ( pul_en       ),
     .up_lea       ( up_lea       ),
     .up_lines     ( up_lines     ),
     .up_lmul      ( up_lmul      ),
@@ -158,6 +161,7 @@ jtkcpu_memctrl u_memctrl(
     .psh_addr     ( psh_addr     ),
     .psh_dec      ( psh_dec      ),
     .psh_mux      ( psh_mux      ),
+    .stack_busy   ( stack_busy   ),
     // Effective address
     .addr         ( addr[15:0]   ),
     .lines        ( addr[23:16]  ),
@@ -209,11 +213,13 @@ jtkcpu_regs u_regs(
     .cc           ( cc           ),
     .mdata        ( mdata        ),
     .op           ( op           ),
+    .alu          ( rslt         ),
+
     .psh_sel      ( psh_sel      ),
-    .psh_hihalf    ( hihalf       ),
+    .psh_hihalf   ( hihalf       ),
     .psh_ussel    ( us_sel       ),
     .pul_en       ( pul_en       ),
-    .alu          ( rslt         ),
+    .stack_busy   ( stack_busy   ),
 
     // Indexed addressing
     .idx_rsel     ( idx_rsel     ),   // register to modify
@@ -234,8 +240,6 @@ jtkcpu_regs u_regs(
     .up_s         ( up_s         ),
     .up_lmul      ( up_lmul      ),
     .up_lea       ( up_lea       ),
-    // .up_alu_a     ( up_alu_a     ),
-    // .up_alu_b     ( up_alu_b     ),
     .up_cc        ( up_cc        ),
     .alu_cc       ( cc_out       ),
     .set_e        ( set_e        ),

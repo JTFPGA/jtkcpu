@@ -53,6 +53,11 @@ module jtkcpu_ctrl(
     input             alu_busy,
     input             mem_busy,
 
+    // stack
+    output     [ 7:0] psh_sel,
+    output            pul_en,
+    output            stack_busy,
+    output            us_sel,
     // Direct microcode outputs
     output            addr_x,
     output            addr_y,
@@ -61,12 +66,9 @@ module jtkcpu_ctrl(
     output            hihalf,
     output            memhi,
     output            opd,
-    output     [ 7:0] psh_sel,
-    output            pul_en,
     output            up_lea,
     output            up_lines,
     output            up_lmul,
-    output            us_sel,
     output            wrq,
     output            decb,
     output            decu,
@@ -106,7 +108,7 @@ module jtkcpu_ctrl(
 // module should be here as wires. Watchout for buses
 wire branch;
 wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
-     int_en, stack_busy,
+     int_en,
      up_ld16, up_ld8, up_lda, up_ldb, up_ab,
      rti_cc, rti_other,
      pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
