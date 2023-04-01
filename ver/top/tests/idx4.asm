@@ -16,11 +16,11 @@ DATAW    EQU $0100
 
         ORG $F000
 RESET:  LDD #DATAR
-        LEAX DATAW
-        STD  ,X
-        LEAX 100,X
+        LEAS DATAW
+        STD  ,S
+        LEAS 100,S
         LDD  #-100
-        LDD  [D,X]
+        LDD  [D,S]
         CMPD #$CAFE
         BNE  BAD
 

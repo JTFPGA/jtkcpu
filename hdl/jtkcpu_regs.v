@@ -182,8 +182,8 @@ always @* begin
     end
     nx_u = u;
     nx_s = s;
-    if( up_s  ) nx_s = up_lea && op[1:0]==2 ? idx_addr : mdata;
-    if( up_u  ) nx_u = up_lea && op[1:0]==3 ? idx_addr : mdata;
+    if( up_s  ) nx_s = up_lea && op[1:0]==3 ? idx_addr : mdata;
+    if( up_u  ) nx_u = up_lea && op[1:0]==2 ? idx_addr : mdata;
     if( pshdec_u | dec_u ) nx_u = u - 16'd1;
     if( pshdec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hilon ) begin
