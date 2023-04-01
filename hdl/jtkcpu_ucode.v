@@ -164,7 +164,9 @@ always @* begin
         ABX, SEX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:       opcat = SINGLE_ALU_INH16;
 
         CLR,  INC,  NEG,  COM,  TST,  DEC,
-        LSR,  ROR,  ASR,  ASL,  ROL:                        opcat = MEM_ALU_IDX;
+        LSR,  ROR,  ASR,  ASL,  ROL:                  begin opcat  = PARSE_IDX;
+                                                            nx_cat = MEM_ALU_IDX;
+                                                            end
 
         CMPA_IMM, CMPB_IMM, ANDCC, ORCC:                    opcat = CMP8;
         CMPD_IMM, CMPX_IMM, CMPY_IMM, CMPU_IMM,CMPS_IMM:    opcat = CMP16;

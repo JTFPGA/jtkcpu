@@ -92,6 +92,7 @@ module jtkcpu_ctrl(
     output            up_y,
     output            up_u,
     output            up_s,
+    output reg        opnd0_mem,
 
     output reg [15:0] pc
 
@@ -161,6 +162,15 @@ always @(posedge clk) begin
         // if( up_pul_pc && !hihalf ) pc[ 7:0] <= alu[7:0];
 
     end
+end
+
+always @(posedge clk) if(cen) begin
+    case( op )
+        CLR, INC, NEG, COM, TST, DEC,
+        LSR, ROR, ASR, ASL, ROL:
+                 opnd0_mem <= 1;
+        default: opnd0_mem <= 0;
+    endcase
 end
 
 jtkcpu_ucode u_ucode(

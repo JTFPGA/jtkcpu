@@ -25,6 +25,7 @@ module jtkcpu_regs(
     input        [15:0] mdata,     // postbyte used to select specific registers
     input        [ 7:0] op,        // op code used to select specific registers
 
+    input               opnd0_mem,
     // Stack
     input        [ 7:0] psh_sel,
     input               psh_hihalf,
@@ -164,6 +165,7 @@ always @* begin
 
         default : mux_reg0 = {a, a};
     endcase
+    if( opnd0_mem ) mux_reg0 = mdata;
 end
 
 always @* begin

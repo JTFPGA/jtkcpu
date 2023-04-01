@@ -99,7 +99,7 @@ MULTI_ALU:          OPD
                     NI
 
 MEM_ALU_IDX:        IDX_EN
-                    OPN0=MEM, WE
+                    IDX_EN, WE
                     NI
 
 MULTI_ALU_INH:      OPD

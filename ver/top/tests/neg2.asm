@@ -15,18 +15,14 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:
-        CLRB
-        CMPB #$00
-        BNE BAD
-
-        LDA #$AA
         LDB #$55
-        CMPD #$AA55
-        BNE BAD
-        CLRA
-        CMPA #$00
-        BNE BAD
+        STB ,X
+        NEG ,X
+        BMI BAD
 
+        LDA #-$55
+        CMPA ,X
+        BNE BAD
 
 END:    LDX #$BABE
         LDA #1
@@ -39,7 +35,5 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
         FDB   RESET
-

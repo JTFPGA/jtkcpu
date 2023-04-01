@@ -51,7 +51,7 @@ wire        hihalf;
 wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
 wire        branch, memhi;
-wire        pul_en, psh_dec, us_sel,
+wire        pul_en, psh_dec, us_sel, opnd0_mem,
             wrq, ni, opd, addr_x, addr_y, up_lines, up_lea, up_lmul,
             inc_x, inc_y, dec_b, dec_u, dec_x,
             clr_e, set_e, set_f, set_i,
@@ -76,6 +76,7 @@ jtkcpu_ctrl u_ctrl(
     .halt         ( halt         ),
     .up_pc        ( up_pc        ),
 
+    .opnd0_mem    ( opnd0_mem    ),
     // Indexed addressing
     .idx_addr     ( idx_addr     ),
     .idx_rsel     ( idx_rsel     ),   // register to modify
@@ -206,6 +207,7 @@ jtkcpu_regs u_regs(
     .clk          ( clk          ),
     .cen          ( cen          ),
 
+    .opnd0_mem    ( opnd0_mem    ),
     .pc           ( pc           ),
     .dp           ( dp           ),
     .x            ( regs_x       ),
