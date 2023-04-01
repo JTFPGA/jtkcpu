@@ -14,12 +14,10 @@
 TESTCTRL EQU $1000
 
         ORG  $F000
-RESET:  LDA   #$FE
-        PSHS A
-        CLRA
-        JSR   SUBRUTINE
-        LDB   #$3C
-        PSHS B
+RESET:  CLRA
+        BSR   PROC
+        CMPA  #5
+        BNE   BAD
 
 END:    LDX #$BABE
         LDA #1
@@ -31,15 +29,13 @@ BAD:    LDX #$DEAD
         LDA #3
         LDX #TESTCTRL
         STA ,X                  ; Finish test, result bad
-        BRA BAD   
+        BRA BAD
 
-SUBRUTINE: 
-        LDX   #$10A0
-        LDA   ,X
-        BEQ   ONE
-        CLR   $2000
-        RTS   
-ONE:     
+PROC:
+        LDA #5
+        RTS
+        BRA BAD
+ONE:
         LDA   #1
         STA   $1000
         RTS

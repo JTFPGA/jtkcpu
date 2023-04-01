@@ -15,11 +15,21 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:  LDA #$88
-        NEGA 
+        NEGA
         BMI BAD
+        BPL CONT
+        BRA BAD
+CONT:
         LDB #$55
         NEGB
         BPL BAD
+        BMI CONT2
+        BRA BAD
+
+CONT2:  CLRA
+        NEGA
+        BEQ END
+        BRA BAD
 
 END:    LDX #$BABE
         LDA #1

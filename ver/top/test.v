@@ -5,6 +5,8 @@
 
 module test;
 
+parameter SIMID="test";
+
 reg         rst, clk, halt=0,
             nmi=0, irq=0, firq=0, dtack=0;
 wire        cen, cen2;
@@ -31,18 +33,20 @@ initial begin
     #30
     rst = 0;
     #100_000
-    $display("Finish after timeout");
+    $display("Finished after timeout");
     $display("FAIL");
     $finish;
 end
 
 initial begin
-    f = $fopen("test.bin","rb");
+    f = $fopen( {SIMID,".bin"} ,"rb");
     fcnt=$fread(rom,f);
     $fclose(f);
-    $dumpfile("test.lxt");
+`ifndef NODUMP
+    $dumpfile( { "test.lxt"} );
     $dumpvars;
     $dumpon;
+`endif
 end
 
 always @(posedge clk) begin

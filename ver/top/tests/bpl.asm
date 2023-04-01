@@ -14,14 +14,21 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #Table
-        LDB #05
-LOOP    DECB
-        LDA ,X+
-        BPL LOOP        
-        STA ,Y+
-        BNE LOOP
-        CMPB #00
+RESET:  LDX #TABLE
+
+        ; Counts the number of negative numbers in TABLE
+        ; The table end is marked with a zero
+        CLRB
+LOOP    LDA ,X+
+        BEQ LOOPEND
+        BPL LOOP
+        INCB
+        BRA LOOP
+
+LOOPEND:
+
+        ; Check that the count is right
+        CMPB #4
         BNE BAD
 
 END:    LDX #$BABE
@@ -35,7 +42,7 @@ BAD:    LDX #$DEAD
         STA ,X                  ; Finish test, result bad
         BRA BAD
 
-Table  FCB 03,02,-01,24,100
+TABLE  FCB 3,2,6,-1,24,100,-23,-54,-2,0
 
 ; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
