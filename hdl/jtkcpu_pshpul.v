@@ -32,9 +32,9 @@ module jtkcpu_pshpul(
     input               psh_go,
     input               psh_pc,
     input        [ 7:0] psh_bit,
-    output   reg        hi_lon,
+    output   reg        hihalf,
     output   reg        pul_en,
-    output   reg        pshdec,
+    output              psh_dec,
 
     output   reg [ 7:0] psh_sel,
     output              busy,
@@ -45,36 +45,38 @@ module jtkcpu_pshpul(
 `include "jtkcpu.inc"
 
 wire [7:0] postbyte;
+reg        dec_en;
 
-assign busy = psh_sel!=0;
-assign postbyte = rti_cc    ? 8'h01 : 
+assign busy     = psh_sel!=0;
+assign psh_dec  = dec_en & busy;
+assign postbyte = rti_cc    ? 8'h01 :
                   psh_pc    ? 8'h80 :
                   rti_other ? ( cc[CC_E] ? 8'hFE : 8'h80 ) : // pull all but CC or only PC
                   psh_all   ? ( cc[CC_E] ? 8'hFF : 8'h81 ) : postdata[7:0];
 
-always @(posedge clk or posedge rst) begin 
+always @(posedge clk or posedge rst) begin
     if( rst ) begin
         psh_sel <= 0;
-        hi_lon  <= 0;
+        hihalf  <= 0;
         us_sel  <= 0;
         pul_en  <= 0;
-        pshdec  <= 0;
+        dec_en  <= 0;
     end else if( cen ) begin
         if( !busy ) begin
             pul_en <= 0;
-            pshdec <= 0;
+            dec_en <= 0;
             if( psh_go || pul_go ) begin
                 psh_sel <= postbyte;
                 us_sel  <= op[0];
-                hi_lon  <= 1;
-                pul_en  <= 1;
-                pshdec  <= psh_go;
+                hihalf  <= 0;
+                pul_en  <= pul_go;
+                dec_en  <= psh_go;
             end
         end else begin
-            if( psh_bit[7:4]!=0 && hi_lon ) begin
-                hi_lon <= 0;
+            if( psh_bit[7:4]!=0 && !hihalf ) begin
+                hihalf <= 1;
             end else begin
-                hi_lon <= 1;
+                hihalf <= 0;
                 psh_sel <= psh_sel & ~psh_bit;
             end
         end

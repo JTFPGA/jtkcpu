@@ -18,7 +18,7 @@ RESET:
         LDS  #$1000
         CLRA
         BSR   PROC
-        CMPA  #5
+RTSA:
         BNE   BAD
 
 END:    LDX #$BABE
@@ -34,8 +34,10 @@ BAD:    LDX #$DEAD
         BRA BAD
 
 PROC:
-        LDA #5
-        RTS
+        LDD ,S
+        CMPD #RTSA
+        BNE BAD
+        BEQ END
         BRA BAD
 ONE:
         LDA   #1

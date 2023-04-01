@@ -56,8 +56,8 @@ module jtkcpu_ctrl(
     output            addr_x,
     output            addr_y,
     output            idx_adv,
-    output            pshdec,
-    output            hi_lon,
+    output            psh_dec,
+    output            hihalf,
     output            memhi,
     output            opd,
     output     [ 7:0] psh_sel,
@@ -105,7 +105,7 @@ module jtkcpu_ctrl(
 // module should be here as wires. Watchout for buses
 wire branch;
 wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
-     int_en, psh_busy,
+     int_en, stack_busy,
      up_ld16, up_ld8, up_lda, up_ldb, up_ab,
      rti_cc, rti_other,
      set_pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
@@ -139,19 +139,22 @@ assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
 assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 assign pc_inc1 = idx_post && idx_rsel==7;
 
-wire short_branch = set_pc_branch8  & branch;
-wire long_branch  = set_pc_branch16 & branch | set_pc_jmp;
+wire sbranch = set_pc_branch8  & branch;
+wire lbranch  = set_pc_branch16 & branch | set_pc_jmp;
+reg  bdone;
 
 always @(posedge clk) begin
     if( rst ) begin
-        pc <= 0;
+        pc    <= 0;
+        bdone <= 0;
     end else if(cen) begin
         pc <= ( ni | opd | pc_inc1 ) ? pc+16'd1 :
-              short_branch ? { {8{mdata[7]}}, mdata[7:0]}+pc :
-              long_branch  ? mdata+pc :
+              sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
+              lbranch && !bdone ? mdata+pc :
               up_pc        ? mdata    : pc;
-        // if( up_pul_pc &&  hi_lon ) pc[15:8] <= alu[15:8];
-        // if( up_pul_pc && !hi_lon ) pc[ 7:0] <= alu[7:0];
+        bdone <= sbranch | lbranch;
+        // if( up_pul_pc &&  hihalf ) pc[15:8] <= alu[15:8];
+        // if( up_pul_pc && !hihalf ) pc[ 7:0] <= alu[7:0];
 
     end
 end
@@ -164,9 +167,11 @@ jtkcpu_ucode u_ucode(
     .op                ( op                ),
     .mdata             ( mdata             ),
 
-    .branch            ( branch            ),
     .alu_busy          ( alu_busy          ),
     .mem_busy          ( mem_busy          ),
+    .stack_busy        ( stack_busy        ),
+
+    .branch            ( branch            ),
     .irq_n             ( irq_n             ),
     .nmi_n             ( nmi_n             ),
     .firq_n            ( firq_n            ),
@@ -261,11 +266,11 @@ jtkcpu_pshpul u_pshpul(
     .psh_go     ( psh_go     ),
     .psh_pc     ( psh_pc     ),
     .psh_bit    ( psh_bit    ),
-    .hi_lon     ( hi_lon     ),
+    .hihalf     ( hihalf     ),
     .pul_en     ( pul_en     ),
-    .pshdec     ( pshdec     ),
+    .psh_dec    ( psh_dec    ),
     .psh_sel    ( psh_sel    ),
-    .busy       ( psh_busy   ),
+    .busy       ( stack_busy ),
     .us_sel     ( us_sel     )
 );
 

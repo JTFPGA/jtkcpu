@@ -38,9 +38,10 @@ module jtkcpu_ucode(
     output           idx_en,
     output           data2addr,
     // status inputs
-    input           branch,
     input           alu_busy,
     input           mem_busy,
+    input           stack_busy,
+    input           branch,
     input           irq_n,
     input           nmi_n,
     input           firq_n,
@@ -123,7 +124,7 @@ reg          [3:0] cur_int;
 reg                idx_postl, nil, idx_ind_rq;
 wire               idx_ret, idx_ind, idx_jmp;
 
-wire wait_stack, waitalu;
+wire waitalu;
 
 always @* begin
     case( {mdata[7],mdata[2:0]} )
@@ -201,7 +202,8 @@ always @* begin
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW,
         INCW, DECW, TSTW:                                   opcat = WMEM_ALU;
-        BSR, BRA, BRN, BHI, BLS, BCC, BCS, BNE,
+        BSR:                                                opcat = SBSR;
+        BRA, BRN, BHI, BLS, BCC, BCS, BNE,
         BEQ, BVC, BVS, BPL, BMI, BGE, BLT, BGT, BLE:        opcat = SBRANCH;
         LBSR, LBRA, LBRN, LBHI, LBLS, LBCC, LBCS, LBNE, LBLE,
         LBEQ, LBVC, LBVS, LBPL, LBMI, LBGE, LBLT, LBGT:     opcat = LBRANCH;
@@ -259,7 +261,7 @@ always @(posedge clk) begin
         idx_post  <= 0;
         idx_ld    <= 0;
 
-        if( !mem_busy ) begin
+        if( !mem_busy && !stack_busy ) begin
             addr <= addr + 1; // keep processing an opcode routine
             if( skip_noind && !op[4] ) begin
                 addr <= addr + 2;

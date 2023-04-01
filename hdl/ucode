@@ -201,6 +201,12 @@ SBRANCH:            OPD
                     PC=BRANCH8
                     NI
 
+SBSR:               OPD
+                    PSH_PC, PSH_GO
+                    NOP
+                    PC=BRANCH8
+                    NI
+
 LBRANCH:            OPD, MEMHI
                     OPD
                     PC=BRANCH16
@@ -214,29 +220,26 @@ JUMP:               OPD, MEMHI
 JMSR:               OPD, MEMHI
                     OPD
                     PSH_PC, PSH_GO
-                    WE, WAIT_STACK
+                    NOP
                     PC=JMP, MEM16
                     NI
 
 RTIT:               RTI_CC, PUL_GO
-                    WAIT_STACK
                     RTI_OTHER, PUL_GO
-                    WAIT_STACK
+                    NOP
                     NI
 
 RTSR:               PUL_PC
-                    WAIT_STACK
+                    NOP
                     NI
 
 ############### STACK ##################
 PSH:                OPD
                     PSH_GO
-                    WE, WAIT_STACK
                     NI
 
 PUL:                OPD
                     PUL_GO
-                    WAIT_STACK
                     NI
 
 ########### INTERRUPTS ####################

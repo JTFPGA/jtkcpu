@@ -47,11 +47,11 @@ wire [ 7:0] psh_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
 wire        alu_busy, mem_busy;
-wire        hi_lon;
+wire        hihalf;
 wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
 wire        branch, memhi;
-wire        pul_en, pshdec, us_sel,
+wire        pul_en, psh_dec, us_sel,
             wrq, ni, opd, addr_x, addr_y, up_lines, up_lea, up_lmul,
             inc_x, inc_y, dec_b, dec_u, dec_x,
             clr_e, set_e, set_f, set_i,
@@ -100,8 +100,8 @@ jtkcpu_ctrl u_ctrl(
 
     .addr_x       ( addr_x       ),
     .addr_y       ( addr_y       ),
-    .pshdec       ( pshdec       ),
-    .hi_lon       ( hi_lon       ),
+    .psh_dec       ( psh_dec       ),
+    .hihalf       ( hihalf       ),
     .memhi        ( memhi        ),
     .ni           ( ni           ),
     .opd          ( opd          ),
@@ -149,11 +149,14 @@ jtkcpu_memctrl u_memctrl(
     .idx_adv      ( idx_adv      ),
 
     .pc           ( pc           ),
-    .psh_addr     ( psh_addr     ),
     .regs_x       ( regs_x       ),
     .regs_y       ( regs_y       ),
     .din          ( din          ),
     .dout         ( dout         ),
+    // Stack
+    .psh_addr     ( psh_addr     ),
+    .psh_dec      ( psh_dec      ),
+    .psh_mux      ( psh_mux      ),
     // Effective address
     .addr         ( addr[15:0]   ),
     .lines        ( addr[23:16]  ),
@@ -169,7 +172,6 @@ jtkcpu_memctrl u_memctrl(
     .ni           ( ni           ),
     .halt         ( halt         ),
     .up_lines     ( up_lines     ),
-    .psh_en       ( pshdec       ),
     .addrx        ( addr_x       ),
     .addry        ( addr_y       ),
     .opd          ( opd          ),
@@ -207,7 +209,7 @@ jtkcpu_regs u_regs(
     .mdata        ( mdata        ),
     .op           ( op           ),
     .psh_sel      ( psh_sel      ),
-    .psh_hilon    ( hi_lon       ),
+    .psh_hihalf    ( hihalf       ),
     .psh_ussel    ( us_sel       ),
     .pul_en       ( pul_en       ),
     .alu          ( rslt         ),
@@ -246,7 +248,7 @@ jtkcpu_regs u_regs(
     .dec_x        ( dec_x        ),
     .dec_b        ( dec_b        ),
     .dec_u        ( dec_u        ),
-    .pshdec       ( pshdec       ),
+    .psh_dec      ( psh_dec      ),
 
     .mux          ( mux          ),
     .d_mux        ( d_mux        ),

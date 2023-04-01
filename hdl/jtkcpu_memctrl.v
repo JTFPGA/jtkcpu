@@ -29,10 +29,13 @@ module jtkcpu_memctrl(
     // input      [ 7:0] dp,
     input      [15:0] idx_addr,
     input             idx_adv,
-    input      [15:0] psh_addr,
     input      [15:0] regs_x,
     input      [15:0] regs_y,
 
+    // Stack
+    input      [15:0] psh_addr,
+    input             psh_dec,
+    input      [ 7:0] psh_mux,
     // memory interface
     input      [ 7:0] din,
     output reg [ 7:0] dout,
@@ -53,7 +56,6 @@ module jtkcpu_memctrl(
     input             halt,   // hold the current address
     input             up_lines,
     input             idx_en,
-    input             psh_en,
     input             addrx,
     input             addry,
     input             ni,
@@ -71,10 +73,10 @@ localparam FIRQ = 16'hFFF6,
            NMI  = 16'hFFFC,
            RST  = 16'hFFFE;
 
-reg  is_int;
+reg  is_int, hold;
 wire mem_en;
 
-assign mem_en = ni | opd | psh_en| addrx | addry | idx_en;
+assign mem_en = ni | opd | psh_dec| addrx | addry | idx_en;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
@@ -89,7 +91,8 @@ always @(posedge clk, posedge rst) begin
         // signals active for a single clock cycle:
         up_pc  <= 0;
         we     <= 0;
-        dout   <= memhi ? alu_dout[15:8] : alu_dout[7:0];
+        dout   <= psh_dec ? psh_mux : memhi ? alu_dout[15:8] : alu_dout[7:0];
+        hold   <= psh_dec;
         if( up_lines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
@@ -108,7 +111,7 @@ always @(posedge clk, posedge rst) begin
                 addr <= pc;
                 is_op <= 1;
                 if( opd    ) begin is_op <= 0; end
-                if( psh_en ) begin is_op <= 0; addr <= psh_addr; end
+                if( psh_dec ) begin is_op <= 0; addr <= psh_addr - (psh_dec ? 16'd1 : 16'd0); end
                 if( addrx  ) begin is_op <= 0; addr <= regs_x;   end
                 if( addry  ) begin is_op <= 0; addr <= regs_y;   end
                 if( idx_en ) begin
@@ -119,7 +122,7 @@ always @(posedge clk, posedge rst) begin
                     busy <= 1;
                     dout <= alu_dout[15:8];
                 end
-                if( wrq && cen ) we <= 1;
+                if( (wrq || psh_dec) && cen ) we <= 1;
             end
             // interrupt vectors
             if( intvec!=0 ) begin
@@ -138,7 +141,7 @@ always @(posedge clk, posedge rst) begin
             if( is_op ) op <= din;
             if(memhi) begin
                 data[15:8] <= din;
-            end else begin
+            end else if(!hold) begin
                 data[ 7:0] <= din; // get the lower half/regular 1-byte access
             end
         end
