@@ -219,16 +219,12 @@ LBRANCH:            OPD, MEMHI
                     PC=BRANCH16
                     NI
 
-JUMP:               OPD, MEMHI
-                    OPD
-                    PC=JMP
+JUMP:               PC_JMP
                     NI
 
-JMSR:               OPD, MEMHI
-                    OPD
-                    PSH_PC, PSH_GO
+JMSR:               PSH_PC, PSH_GO
                     NOP
-                    PC=JMP, MEM16
+                    PC_JMP
                     NI
 
 RTIT:               RTI_CC, PUL_GO

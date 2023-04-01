@@ -32,8 +32,9 @@ module jtkcpu_ctrl(
     input             up_pul_pc,
 
     // indexed addressing
-    output     [2:0] idx_rsel,
-    output     [1:0] idx_asel,
+    input     [15:0] idx_addr,
+    output    [ 2:0] idx_rsel,
+    output    [ 1:0] idx_asel,
     output           idx_post,
     output           idx_pre,
     output           idxw,
@@ -108,7 +109,7 @@ wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
      int_en, stack_busy,
      up_ld16, up_ld8, up_lda, up_ldb, up_ab,
      rti_cc, rti_other,
-     set_pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
+     pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
      buserror,
 
      addr_data,
@@ -140,7 +141,7 @@ assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 assign pc_inc1 = idx_post && idx_rsel==7;
 
 wire sbranch = set_pc_branch8  & branch;
-wire lbranch  = set_pc_branch16 & branch | set_pc_jmp;
+wire lbranch  = set_pc_branch16 & branch ;
 reg  bdone;
 
 always @(posedge clk) begin
@@ -151,6 +152,7 @@ always @(posedge clk) begin
         pc <= ( ni | opd | pc_inc1 ) ? pc+16'd1 :
               sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
               lbranch && !bdone ? mdata+pc :
+              pc_jmp       ? idx_addr :
               up_pc        ? mdata    : pc;
         bdone <= sbranch | lbranch;
         // if( up_pul_pc &&  hihalf ) pc[15:8] <= alu[15:8];
@@ -228,7 +230,7 @@ jtkcpu_ucode u_ucode(
     .set_pc_bnz_branch ( set_pc_bnz_branch ),
     .set_pc_branch16   ( set_pc_branch16   ),
     .set_pc_branch8    ( set_pc_branch8    ),
-    .set_pc_jmp        ( set_pc_jmp        ),
+    .pc_jmp            ( pc_jmp            ),
     .set_pc_xnz_branch ( set_pc_xnz_branch ),
     .up_cc             ( up_cc             ),
     .skip_noind        ( skip_noind        ),

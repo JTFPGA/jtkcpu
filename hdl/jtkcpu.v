@@ -77,6 +77,7 @@ jtkcpu_ctrl u_ctrl(
     .up_pc        ( up_pc        ),
 
     // Indexed addressing
+    .idx_addr     ( idx_addr     ),
     .idx_rsel     ( idx_rsel     ),   // register to modify
     .idx_asel     ( idx_asel     ),   // accumulator used
     .idx_post     ( idx_post     ),

@@ -16,8 +16,15 @@ DATAW    EQU $0100
 
         ORG $F000
 RESET:  NOP
-        JMP END
+        JMP NEAR
+        BRA BAD
         DC.B    [$23]0
+        BRA BAD
+NEAR:
+        LEAX END
+        LEAX -10,X
+        LDA #10
+        JMP A,X
         BRA BAD
 
 END:    LDU #$BABE

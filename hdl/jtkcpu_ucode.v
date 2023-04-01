@@ -82,7 +82,7 @@ module jtkcpu_ucode(
     output          set_pc_bnz_branch,
     output          set_pc_branch16,
     output          set_pc_branch8,
-    output          set_pc_jmp,
+    output          pc_jmp,
     output          set_pc_xnz_branch,
     output          up_cc,
     output          skip_noind,
@@ -193,6 +193,12 @@ always @* begin
         LDS_IDX, LDY_IDX, SUBD_IDX:                   begin opcat  = PARSE_IDX;
                                                             nx_cat = SINGLE_ALU_IDX16;
                                                             end
+        JMP:                                          begin opcat  = PARSE_IDX;
+                                                            nx_cat = JUMP;
+                                                            end
+        JSR:                                          begin opcat  = PARSE_IDX;
+                                                            nx_cat = JMSR;
+                                                            end
 
         // FIX MULTI_ALU_INH
         MUL, LMUL:                                          opcat = MULTIPLY;
@@ -217,8 +223,6 @@ always @* begin
         BSETD_X_U:      opcat = BSETD;
         RTI:            opcat = RTIT;
         RTS:            opcat = RTSR;
-        JMP:            opcat = JUMP;
-        JSR:            opcat = JMSR;
         PUSHU, PUSHS:   opcat = PSH;
         PULLU, PULLS:   opcat = PUL;
         NOP:            opcat = NOPE;
