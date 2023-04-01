@@ -15,8 +15,16 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:  LDB #$A1
-        SEX        
+        SEX
+        BPL BAD
+        CMPD #$FFA1
+        BNE BAD
+
+        LDB #$7F
+        SEX
         BMI BAD
+        CMPD #$7F
+        BNE BAD
 
 END:    LDX #$BABE
         LDA #1

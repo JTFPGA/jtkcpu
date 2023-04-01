@@ -156,6 +156,7 @@ always @* begin
         CMPU_IMM, CMPU_IDX, STU:       mux_reg0 = u;
         CMPS_IMM, CMPS_IDX, STS:       mux_reg0 = s;
         LEAX, LEAY, LEAU, LEAS:        mux_reg0 = idx_addr;
+        SEX: mux_reg0 = { a, b };
         ANDCC, ORCC: mux_reg0 = {a, cc};
 
         default : mux_reg0 = {a, a};
