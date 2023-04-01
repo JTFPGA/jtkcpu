@@ -24,11 +24,11 @@ LOOP:                   ; Copy data in reversed order
         DECB
         BPL LOOP
 
-        LEAX DATAR
-        LEAY DATAW
+        LEAS DATAR
+        LEAU DATAW
         LDA #15         ; check that the copy was correct
-CHECK:  LDB  A,X
-        CMPB ,Y+
+CHECK:  LDB  A,S
+        CMPB ,U+
         BNE BAD
         DECA
         BPL CHECK
