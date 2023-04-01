@@ -239,6 +239,8 @@ RTSR:               PUL_PC
 ############### STACK ##################
 PSH:                OPD
                     PSH_GO
+                    NOP
+                    NOP
                     NI
 
 PUL:                OPD

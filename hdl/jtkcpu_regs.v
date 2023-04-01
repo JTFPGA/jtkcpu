@@ -209,14 +209,14 @@ end
 // PUSH
 always @* begin
     casez( psh_sel )
-        8'b????_???1: begin psh_mux = cc; psh_bit = 8'h1; end
-        8'b????_??10: begin psh_mux =  a; psh_bit = 8'h2; end
-        8'b????_?100: begin psh_mux =  b; psh_bit = 8'h4; end
-        8'b????_1000: begin psh_mux = dp; psh_bit = 8'h8; end
-        8'b???1_0000: begin psh_mux = psh_hihalf ? x[15:8] : x[7:0]; psh_bit = 8'h10; end
-        8'b??10_0000: begin psh_mux = psh_hihalf ? y[15:8] : y[7:0]; psh_bit = 8'h20; end
-        8'b?100_0000: begin psh_mux = psh_hihalf ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
-        default:      begin psh_mux = psh_hihalf ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
+        8'b1???_????: begin psh_mux = psh_hihalf ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
+        8'b01??_????: begin psh_mux = psh_hihalf ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
+        8'b001?_????: begin psh_mux = psh_hihalf ? y[15:8] : y[7:0]; psh_bit = 8'h20; end
+        8'b0001_????: begin psh_mux = psh_hihalf ? x[15:8] : x[7:0]; psh_bit = 8'h10; end
+        8'b0000_1???: begin psh_mux = dp; psh_bit = 8'h8; end
+        8'b0000_01??: begin psh_mux =  b; psh_bit = 8'h4; end
+        8'b0000_001?: begin psh_mux =  a; psh_bit = 8'h2; end
+        8'b0000_0001: begin psh_mux = cc; psh_bit = 8'h1; end
     endcase
 end
 
