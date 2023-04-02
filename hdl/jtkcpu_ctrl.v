@@ -124,7 +124,7 @@ wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
      set_opn0_b,
      set_opn0_mem,
      set_opn0_regs,
-     set_pc_bnz_branch,
+     branch_bnz,
      set_pc_xnz_branch,
      up_data;
 
@@ -141,8 +141,8 @@ assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
 assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 assign pc_inc1 = idx_post && idx_rsel==7;
 
-wire sbranch = set_pc_branch8  & branch;
-wire lbranch  = set_pc_branch16 & branch ;
+wire sbranch = (set_pc_branch8  & branch) | ( branch_bnz & ~cc[CC_Z]);
+wire lbranch = (set_pc_branch16 & branch);
 reg  bdone;
 
 always @(posedge clk) begin
@@ -238,7 +238,7 @@ jtkcpu_ucode u_ucode(
     .set_opn0_b        ( set_opn0_b        ),
     .set_opn0_mem      ( set_opn0_mem      ),
     .set_opn0_regs     ( set_opn0_regs     ),
-    .set_pc_bnz_branch ( set_pc_bnz_branch ),
+    .branch_bnz        ( branch_bnz        ),
     .set_pc_branch16   ( set_pc_branch16   ),
     .set_pc_branch8    ( set_pc_branch8    ),
     .pc_jmp            ( pc_jmp            ),

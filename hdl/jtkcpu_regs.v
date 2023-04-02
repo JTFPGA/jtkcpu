@@ -167,6 +167,7 @@ always @* begin
         default : mux_reg0 = {a, a};
     endcase
     if( opnd0_mem ) mux_reg0 = mdata;
+    if( dec_b     ) mux_reg0 = { a, b };
 end
 
 always @* begin
@@ -291,10 +292,10 @@ always @(posedge clk, posedge rst) begin
         if( idx_upu ) u <= u + idx_step;
         if( idx_ups ) s <= s + idx_step;
 
-        if( up_a     ) a <= alu[7:0];
-        if( up_b     ) b <= alu[7:0];
-        if( up_pul_a ) a <= mdata[7:0];
-        if( up_pul_b ) b <= mdata[7:0];
+        if( up_a         ) a <= alu[7:0];
+        if( up_b | dec_b ) b <= alu[7:0];
+        if( up_pul_a     ) a <= mdata[7:0];
+        if( up_pul_b     ) b <= mdata[7:0];
 
         if( up_d ) begin
             a <= alu[15:8];
@@ -303,7 +304,6 @@ always @(posedge clk, posedge rst) begin
 
         if( up_pul_dp ) dp <= alu[7:0];
 
-        if( dec_b ) b <= b - 8'd1;
         if( up_x  ) x  <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
         if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;
         // 16-bit registers from memory (PULL)

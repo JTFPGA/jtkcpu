@@ -136,8 +136,9 @@ LOOPX:              OPD, DECX       # CHECK THAT DECX GOES FIRST
                     PC_XNZ=BRANCH
                     NI
 
-LOOPB:              OPD, DECB
-                    PC_BNZ=BRANCH,
+LOOPB:              OPD
+                    OPN0=B, DECB, UP_CC
+                    BRANCH_BNZ,
                     NI
 
 ######### STRING OPERATIONS ##############

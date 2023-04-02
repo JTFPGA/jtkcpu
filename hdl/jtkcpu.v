@@ -195,6 +195,9 @@ jtkcpu_alu u_alu(
     .cc_in        ( cc           ),
     .cc_out       ( cc_out       ),
     .busy         ( alu_busy     ),
+    // Special instructions
+    .dec8         ( dec_b        ),
+    .dec16        ( 1'b0         ),
 
     .rslt         ( rslt[15:0]   ),
     .rslt_hi      ( rslt[31:16]  )

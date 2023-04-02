@@ -27,6 +27,10 @@ module jtkcpu_alu(
     input      [ 7:0] cc_in,
     output     [ 7:0] cc_out,
 
+    // Special OPs
+    input             dec8,
+    input             dec16,
+
     output            busy,
 
     output reg [15:0] rslt,
@@ -51,7 +55,8 @@ always @(posedge clk) begin
              op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
              op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
              op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
-             op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW;
+             op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW ||
+             dec16;
 end
 
 jtkcpu_div u_div(
@@ -239,6 +244,11 @@ always @* begin
         default:
             rslt = opnd0;
     endcase
+
+    if( dec8 || dec16 ) begin
+        rslt  = opnd0 - 1'b1;
+        v_out = (opnd0[msb] & ~rslt[msb]); // overflow calculated for signed integers
+    end
 
     if ( op!=LEAU && op!=LEAS && op!=ABX && op!=ABSA && op!=ABSB && op!=ABSD && op!=ANDCC && op!=ORCC )
         z_out = alu16 ? rslt==0 : rslt[7:0]==0;
