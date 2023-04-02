@@ -245,7 +245,7 @@ always @* begin
             rslt = opnd0;
     endcase
 
-    if( dec8 || dec16 ) begin
+    if( dec8 || dec16 ) begin // this should be moved with the DEC above
         rslt  = opnd0 - 1'b1;
         v_out = (opnd0[msb] & ~rslt[msb]); // overflow calculated for signed integers
     end

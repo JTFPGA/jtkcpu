@@ -57,10 +57,9 @@ module jtkcpu_regs(
     input               up_y,
     input               up_u,
     input               up_s,
+    input               up_move,
     input               up_lmul,
     input               up_lea,
-    // input               up_alu_a,
-    // input               up_alu_b,
 
     // Flags from ALU
     input               up_cc,
@@ -74,11 +73,8 @@ module jtkcpu_regs(
     //input               clr_f,
 
     // Direct increment/decrement
-    input               inc_x,
-    input               inc_y,
     input               dec_x,
     input               dec_b,
-    input               dec_u,
 
     output   reg [15:0] mux,
     output   reg [15:0] d_mux,
@@ -168,6 +164,7 @@ always @* begin
     endcase
     if( opnd0_mem ) mux_reg0 = mdata;
     if( dec_b     ) mux_reg0 = { a, b };
+    if( dec_x     ) mux_reg0 = x;
 end
 
 always @* begin
@@ -194,7 +191,7 @@ always @* begin
     nx_s = s;
     if( up_s  ) nx_s = up_lea && op[1:0]==3 ? idx_addr : mdata;
     if( up_u  ) nx_u = up_lea && op[1:0]==2 ? idx_addr : mdata;
-    if( psh_dec_u | dec_u ) nx_u = u - 16'd1;
+    if( psh_dec_u | up_move  ) nx_u = u - 16'd1;
     if( psh_dec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hihalf ) begin
         if( psh_ussel )
@@ -304,8 +301,9 @@ always @(posedge clk, posedge rst) begin
 
         if( up_pul_dp ) dp <= alu[7:0];
 
-        if( up_x  ) x  <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
-        if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;
+        if( up_x  ) x <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
+        if( dec_x ) x <= alu[15:0];
+        if( up_y  ) y <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hihalf ) x[15:8] <= mdata[7:0];
         if( up_pul_x && !psh_hihalf ) x[ 7:0] <= mdata[7:0];
@@ -313,9 +311,8 @@ always @(posedge clk, posedge rst) begin
         if( up_pul_y && !psh_hihalf ) y[ 7:0] <= mdata[7:0];
 
         // inc/dec
-        if( inc_x ) x <= x + 16'd1;
-        if( inc_y ) y <= y + 16'd1;
-        if( dec_x ) x <= x - 16'd1;
+        if( up_move ) x <= x + 16'd1;
+        if( up_move ) y <= y + 16'd1;
 
         if( up_cc     ) cc <= alu_cc;
         if( up_pul_cc ) cc <= mdata[7:0];

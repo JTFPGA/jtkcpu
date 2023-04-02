@@ -132,8 +132,9 @@ LMULTIPLY:          NOP     # 20+ cycles in original
                     NI
 
 ######### DECREMENT AND LOOP ##############
-LOOPX:              OPD, DECX       # CHECK THAT DECX GOES FIRST
-                    PC_XNZ=BRANCH
+LOOPX:              OPD,
+                    OPN0=X, DECX, UP_CC
+                    BRANCH_BNZ,
                     NI
 
 LOOPB:              OPD
@@ -142,23 +143,26 @@ LOOPB:              OPD
                     NI
 
 ######### STRING OPERATIONS ##############
-MOVE:               OPD, ADRY
-                    OPN0=MEM, WE, ADRX, DECU, INCY,
-                    INCX, NI
-
-BMOVE:              OPD, ADRY,
-                    OPN0=MEM, WE, ADRX, DECU, INCY,
-                    INCX, BACK2_UNZ
+MOVE:               ADDRY
+                    WE,  ADDRX, UP_MOVE     # Y+, X+, U-
                     NI
 
-BSETA:              OPN0=A, WE, ADRX, DECU,
-                    INCX, BACK1_UNZ
-                    NI
+BMOVE:              NIUZ
+                    NOP
+                    ADDRY
+                    WE, UP_MOVE             # Y+, X+, U-
+                    UC_LOOP
 
-BSETD:              OPN0=A, WE, ADRX, INCX,
-                    OPN0=B, WE, ADRX, INCX, DECU
-                    BACK2_UNZ
-                    NI
+BSETA:              NIUZ
+                    NOP
+                    OPN0=A, ADDRX, WE, UP_BSET     # X+, U-
+                    UC_LOOP
+
+BSETD:              NIUZ
+                    NOP
+                    OPN0=B, WE, ADDRX
+                    OPN0=A, WE, ADDRX, UP_BSET
+                    UC_LOOP
 
 ############### LOAD/STORE OPERATIONS ############
 STORE8:             OPN0=REGS, IDX_EN, WE,

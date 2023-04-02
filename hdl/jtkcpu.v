@@ -52,9 +52,9 @@ wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
 wire        branch, memhi;
 wire        pul_en, psh_dec, us_sel, opnd0_mem,
-            wrq, ni, opd, addr_x, addr_y, up_lines, up_lea, up_lmul,
-            inc_x, inc_y, dec_b, dec_u, dec_x,
-            clr_e, set_e, set_f, set_i,
+            wrq, ni, opd, addrx, addry, up_lines, up_lea, up_lmul,
+            dec_b, dec_x,
+            clr_e, set_e, set_f, set_i, up_move,
             up_pul_pc;
 // Indexed addressing
 wire [15:0] idx_addr, idx_reg, idx_racc;
@@ -106,8 +106,9 @@ jtkcpu_ctrl u_ctrl(
     .psh_sel      ( psh_sel      ),
     .pul_en       ( pul_en       ),
 
-    .addr_x       ( addr_x       ),
-    .addr_y       ( addr_y       ),
+    .addrx        ( addrx        ),
+    .addry        ( addry        ),
+    .up_move      ( up_move      ),
     .hihalf       ( hihalf       ),
     .memhi        ( memhi        ),
     .ni           ( ni           ),
@@ -117,11 +118,8 @@ jtkcpu_ctrl u_ctrl(
     .up_lmul      ( up_lmul      ),
     .us_sel       ( us_sel       ),
     .wrq          ( wrq          ),
-    .incx         ( inc_x        ),
-    .incy         ( inc_y        ),
     .decx         ( dec_x        ),
     .decb         ( dec_b        ),
-    .decu         ( dec_u        ),
     .set_e        ( set_e        ),
     .set_i        ( set_i        ),
     .set_f        ( set_f        ),
@@ -156,6 +154,7 @@ jtkcpu_memctrl u_memctrl(
     .regs_y       ( regs_y       ),
     .din          ( din          ),
     .dout         ( dout         ),
+    .up_move      ( up_move      ),
     // Stack
     .psh_addr     ( psh_addr     ),
     .psh_dec      ( psh_dec      ),
@@ -176,8 +175,8 @@ jtkcpu_memctrl u_memctrl(
     .ni           ( ni           ),
     .halt         ( halt         ),
     .up_lines     ( up_lines     ),
-    .addrx        ( addr_x       ),
-    .addry        ( addr_y       ),
+    .addrx        ( addrx        ),
+    .addry        ( addry        ),
     .opd          ( opd          ),
     .intvec       ( intvec       ),
     .alu_dout     ( rslt[15:0]   ),
@@ -197,7 +196,7 @@ jtkcpu_alu u_alu(
     .busy         ( alu_busy     ),
     // Special instructions
     .dec8         ( dec_b        ),
-    .dec16        ( 1'b0         ),
+    .dec16        ( dec_x        ),
 
     .rslt         ( rslt[15:0]   ),
     .rslt_hi      ( rslt[31:16]  )
@@ -217,6 +216,7 @@ jtkcpu_regs u_regs(
     .mdata        ( mdata        ),
     .op           ( op           ),
     .alu          ( rslt         ),
+    .up_move      ( up_move      ),
 
     .psh_sel      ( psh_sel      ),
     .psh_hihalf   ( hihalf       ),
@@ -251,11 +251,8 @@ jtkcpu_regs u_regs(
     .clr_e        ( clr_e        ),
     // .clr_i        ( clr_i        ),
     // .clr_f        ( clr_f        ),
-    .inc_x        ( inc_x        ),
-    .inc_y        ( inc_y        ),
     .dec_x        ( dec_x        ),
     .dec_b        ( dec_b        ),
-    .dec_u        ( dec_u        ),
     .psh_dec      ( psh_dec      ),
 
     .mux          ( mux          ),

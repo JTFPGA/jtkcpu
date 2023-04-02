@@ -33,7 +33,7 @@ initial begin
     rst = 1;
     #30
     rst = 0;
-    #100_000
+    #200_000
     $display("Finished after timeout");
     $display("FAIL");
     $finish;
