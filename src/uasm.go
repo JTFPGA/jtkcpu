@@ -105,7 +105,7 @@ func asm( f io.Reader, all elements ) (rom []int64) {
 			line = halves[1]
 		} else {
 			subidx++
-			if subidx>=MAX_ROUTINE {
+			if subidx>=(MAX_ROUTINE-1) {
 				fmt.Printf("Subroutine overflow at line %d while parsing %s\n",linecnt, cur_catname)
 				os.Exit(1)
 			}

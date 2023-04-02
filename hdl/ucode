@@ -119,13 +119,11 @@ MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
                     NOP
                     NOP
                     NOP
-                    NOP
                     NOP     # 6th clock tick
                     UP_CC, UP_AB
                     NI
 
 LMULTIPLY:          NOP     # 20+ cycles in original
-                    NOP
                     NOP
                     NOP
                     NOP
@@ -259,25 +257,26 @@ RESET:              INT_EN, I=1, F=1
                     NI
                     NOP
 
+# Do not make FIRQ, IRQ or NMI ucode longer than 6 instructions
+# or it will fail
 FIRQ:               PSH_CC, PSH_GO
                     E=0, F=1, I=1
-                    NOP
                     NOP
                     INT_EN
                     NOP
                     NI
 
-IRQ:                PSH_ALL
-                    E=1, I=1, INT_EN
+IRQ:                PSH_ALL, PSH_GO
+                    E=1, I=1
                     NOP
-                    NOP
+                    INT_EN
                     NOP
                     NI
 
-NMI:                PSH_ALL
-                    E=1, I=1, F=1, INT_EN
+NMI:                PSH_ALL, PSH_GO
+                    E=1, I=1, F=1
                     NOP
-                    NOP
+                    INT_EN
                     NOP
                     NI
 
