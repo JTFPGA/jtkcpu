@@ -272,6 +272,7 @@ always @(posedge clk) begin
         idxw       <= 0;
         nmin_l     <= 0;
         do_nmi     <= 0;
+        niuzl      <= 0;
     end else if( cen && !buserror ) begin
         nil       <= ni | niuzl;
         niuzl     <= niuz & uz;
@@ -281,7 +282,7 @@ always @(posedge clk) begin
         nmin_l    <= nmi_n;
 
         if( !nmi_n && nmin_l ) do_nmi <= 1; // NMI is edge triggered
-        if( !mem_busy && !stack_busy && !niuz ) begin
+        if( !mem_busy && !stack_busy && !niuz && !niuzl ) begin
             addr <= addr + 1'd1; // keep processing an opcode routine
         end
         if( nil ) begin
