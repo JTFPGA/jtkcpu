@@ -95,7 +95,7 @@ SINGLE_ALU_IDX16:   IDX_EN, MEMHI
                     NI
 
 MULTI_ALU:          OPD
-                    OPN0=REGS, WAITALU, UP_CC
+                    OPN0=REGS, UP_CC
                     NI
 
 MEM_ALU_IDX:        IDX_EN
@@ -103,15 +103,15 @@ MEM_ALU_IDX:        IDX_EN
                     NI
 
 MULTI_ALU_INH:      OPD
-                    OPN0=REGS, UP_CC, WAITALU
+                    OPN0=REGS, UP_CC
                     NI
 
 MULTI_ALU_IDX:      IDX_EN
-                    OPN0=REGS, UP_CC, WAITALU
+                    OPN0=REGS, UP_CC
                     NI
 
 WMEM_ALU:           IDX_EN
-                    OPN0=MEM, UP_DATA, WAITALU
+                    OPN0=MEM, UP_DATA
                     IDX_EN, WE
                     NI
 
@@ -166,24 +166,6 @@ STORE8:             OPN0=REGS, IDX_EN, WE,
 STORE16:            OPN0=REGS, IDX_EN, WE, MEMHI
                     OPN0=REGS, IDX_EN, WE, IDX_ADV
                     NI
-
-# LD8_IMM:            OPD
-#                     UP_LD8
-#                     NI
-#
-# LD8_IDX:            IDX_EN
-#                     UP_LD8
-#                     NI
-#
-# LD16_IMM:           OPD, MEMHI
-#                     OPD
-#                     UP_LD16
-#                     NI
-#
-# LD16_IDX:           IDX_EN, MEMHI
-#                     IDX_EN
-#                     UP_LD16
-#                     NI
 
 LEA:                UP_LEA, UP_CC
                     NI

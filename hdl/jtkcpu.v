@@ -46,7 +46,7 @@ wire [ 7:0] op, postbyte;
 wire [ 7:0] stack_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
-wire        alu_busy, mem_busy;
+wire        alu_busy, mem_busy, stack_busy;
 wire        hihalf;
 wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;

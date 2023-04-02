@@ -48,8 +48,6 @@ module jtkcpu_ucode(
     input           nmi_n,
     input           firq_n,
     // control outputs from ucode
-    output          adr_data,
-    output          adr_idx,
     output          idx_adv,
     output          adrx,
     output          adry,
@@ -86,7 +84,6 @@ module jtkcpu_ucode(
     output          pc_jmp,
     output          set_pc_xnz_branch,
     output          up_cc,
-    output          skip_noind,
     output          up_data,
     output          up_ld16,
     output          up_ld8,
@@ -124,7 +121,8 @@ reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
 reg                idx_postl, nil, idx_ind_rq;
 reg                nmin_l, do_nmi;
-wire               idx_ret, idx_ind, idx_jmp;
+wire               idx_ret, idx_ind, idx_jmp,
+                   set_idx_post, set_idx_acc, set_idxw;
 wire               cc_i, cc_f;
 
 assign cc_i = cc[CC_I];
@@ -281,10 +279,7 @@ always @(posedge clk) begin
 
         if( !nmi_n && nmin_l ) do_nmi <= 1; // NMI is edge triggered
         if( !mem_busy && !stack_busy ) begin
-            addr <= addr + 1; // keep processing an opcode routine
-            if( skip_noind && !op[4] ) begin
-                addr <= addr + 2;
-            end
+            addr <= addr + 1'd1; // keep processing an opcode routine
         end
         if( nil ) begin
             if( do_nmi ) begin // pending NMI

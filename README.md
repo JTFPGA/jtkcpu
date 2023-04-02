@@ -38,3 +38,15 @@ Surprise Attack (World ver. K)               | suratk         | surpratk.cpp
 Thunder Cross (set 1)                        | thunderx       | thunderx.cpp
 Typhoon                                      | typhoon        | ajax.cpp
 Vendetta (World, 4 Players, ver. T)          | vendetta       | vendetta.cpp
+
+# Resource Usage
+
+Compiled on a Cyclone III EP3C25 (the FPGA in MiST), resource usage is:
+
+Item            | Usage
+----------------|---------
+Logic Elements  |  2,290
+Memory bits     | 12,800
+Multipliers     |      3
+
+Fmax = 52.39 MHz

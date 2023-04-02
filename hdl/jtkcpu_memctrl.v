@@ -97,7 +97,7 @@ always @(posedge clk, posedge rst) begin
         if( up_lines ) lines <= data[7:0];
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
-            addr <= addr + 1;  // pick up the next byte
+            addr <= addr + 1'd1;  // pick up the next byte
             busy <= 0;
             // Data writes
             dout <= alu_dout[7:0];

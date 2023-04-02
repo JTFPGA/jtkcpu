@@ -126,7 +126,6 @@ wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
      set_opn0_regs,
      set_pc_bnz_branch,
      set_pc_xnz_branch,
-     skip_noind,
      up_data;
 
 // assign up_a = ( up_ld8 & ~(op[0]^is_inh) ) ;
@@ -194,8 +193,6 @@ jtkcpu_ucode u_ucode(
     .firq_n            ( firq_n            ),
     .intvec            ( intvec            ),
 
-    .adr_data          ( addr_data         ),
-    .adr_idx           ( addr_idx          ),
     .adrx              ( addr_x            ),
     .adry              ( addr_y            ),
     .back1_unz         ( back1_unz         ),
@@ -247,7 +244,6 @@ jtkcpu_ucode u_ucode(
     .pc_jmp            ( pc_jmp            ),
     .set_pc_xnz_branch ( set_pc_xnz_branch ),
     .up_cc             ( up_cc             ),
-    .skip_noind        ( skip_noind        ),
     .up_data           ( up_data           ),
     .up_ld16           ( up_ld16           ),
     .up_ld8            ( up_ld8            ),

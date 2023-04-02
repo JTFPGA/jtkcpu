@@ -79,6 +79,7 @@ always @* begin
     i_out   = cc_in[CC_I];
     f_out   = cc_in[CC_F];
     rslt_hi = 0;
+    rslt  = opnd0;  // default value
 
     case (op)
         STA,  STB,  STD,

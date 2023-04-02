@@ -223,7 +223,7 @@ always @* begin
         8'b0000_01??: begin psh_mux =  b; psh_bit = 8'h4; end
         8'b0000_001?: begin psh_mux =  a; psh_bit = 8'h2; end
         8'b0000_0001: begin psh_mux = cc; psh_bit = 8'h1; end
-        default: psh_mux = 0;
+        default:      begin psh_mux = 0;  psh_bit = 8'h0; end
     endcase
     // PULL bit
     casez( psh_sel )
