@@ -43,7 +43,7 @@ wire [15:0] psh_addr;
 wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s;
 wire [ 7:0] cc, cc_out, dp;
 wire [ 7:0] op, postbyte;
-wire [ 7:0] psh_bit, psh_sel, psh_mux;
+wire [ 7:0] stack_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
 wire        alu_busy, mem_busy;
@@ -71,7 +71,7 @@ jtkcpu_ctrl u_ctrl(
 
     .op           ( op           ),
     .mdata        ( mdata        ),
-    .psh_bit      ( psh_bit      ),
+    .psh_bit      ( stack_bit    ),
     .cc           ( cc           ),
     .halt         ( halt         ),
     .up_pc        ( up_pc        ),
@@ -263,7 +263,7 @@ jtkcpu_regs u_regs(
     .nx_s         ( nx_s         ),
     .psh_addr     ( psh_addr     ),
     .psh_mux      ( psh_mux      ),
-    .psh_bit      ( psh_bit      ),
+    .stack_bit    ( stack_bit    ),
     .up_pul_pc    ( up_pul_pc    )
 );
 

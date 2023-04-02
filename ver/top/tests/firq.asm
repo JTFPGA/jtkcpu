@@ -34,6 +34,9 @@ LOOP2:
         CMPB #5
         BNE LOOP2
 
+        CMPS #RAMEND    ; S should be at the top
+        BNE BAD
+
         include finish.inc
 
 FIRQ:   CLRA

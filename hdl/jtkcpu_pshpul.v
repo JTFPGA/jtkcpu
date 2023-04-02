@@ -54,7 +54,7 @@ assign postbyte = rti_cc    ? 8'h01 :
                   psh_pc    ? 8'h80 :
                   psh_cc    ? 8'h81 :
                   rti_other ? ( cc[CC_E] ? 8'hFE : 8'h80 ) : // pull all but CC or only PC
-                  psh_all   ? ( cc[CC_E] ? 8'hFF : 8'h81 ) : postdata[7:0];
+                  psh_all   ? 8'hFF : postdata[7:0];
 
 always @(posedge clk or posedge rst) begin
     if( rst ) begin

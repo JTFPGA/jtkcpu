@@ -33,6 +33,9 @@ module jtkcpu_regs(
     input               pul_en,
     input               psh_dec,
     input               stack_busy,
+    output       [ 7:0] stack_bit,
+    output   reg [ 7:0] psh_mux,
+    output   reg        up_pul_pc,
 
     // Index addressing
     input        [ 2:0] idx_rsel,   // register to modify
@@ -86,10 +89,7 @@ module jtkcpu_regs(
     output       [15:0] psh_addr,
     output   reg [15:0] x,
     output   reg [15:0] y,
-    output   reg [ 7:0] cc,
-    output   reg [ 7:0] psh_mux,
-    output   reg [ 7:0] psh_bit,
-    output   reg        up_pul_pc
+    output   reg [ 7:0] cc
 );
 
 `include "jtkcpu.inc"
@@ -97,7 +97,7 @@ module jtkcpu_regs(
 reg         psh_dec_u, psh_dec_s, inc_pul,
             up_pul_x, up_pul_y, up_pul_other,
             up_pul_a, up_pul_b, up_pul_dp, up_pul_cc;
-reg  [ 7:0] a, b;
+reg  [ 7:0] a, b, psh_bit, pul_bit;
 reg  [15:0] u, s;
 wire [15:0] psh_other;
 wire        idx_upx, idx_upy, idx_upu, idx_ups;
@@ -105,6 +105,7 @@ wire [15:0] idx_step, d;
 wire        idx_x, idx_y, idx_u, idx_s;
 
 assign d   = { a, b };
+assign stack_bit = pul_en ? pul_bit : psh_bit;
 
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
@@ -182,7 +183,7 @@ always @* begin
 
     psh_dec_u = 0;
     psh_dec_s = 0;
-    if ( psh_dec && psh_mux!=0 ) begin
+    if ( psh_dec && psh_sel!=0 ) begin
         if (psh_ussel)
             psh_dec_u = 1;
         else
@@ -196,23 +197,23 @@ always @* begin
     if( psh_dec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hihalf ) begin
         if( psh_ussel )
-            nx_s[15:8] = alu[7:0];
+            nx_s[15:8] = mdata[7:0];
         else
-            nx_u[15:8] = alu[7:0];
+            nx_u[15:8] = mdata[7:0];
     end
     if( up_pul_other && !psh_hihalf ) begin
         if( psh_ussel )
-            nx_s[ 7:0] = alu[7:0];
+            nx_s[ 7:0] = mdata[7:0];
         else
-            nx_u[ 7:0] = alu[7:0];
+            nx_u[ 7:0] = mdata[7:0];
     end
 
     if( !psh_dec && inc_pul &&  psh_ussel ) nx_u = u + 16'd1;
     if( !psh_dec && inc_pul && !psh_ussel ) nx_s = s + 16'd1;
 end
 
-// PUSH
 always @* begin
+    // PUSH
     casez( psh_sel )
         8'b1???_????: begin psh_mux = psh_hihalf ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
         8'b01??_????: begin psh_mux = psh_hihalf ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
@@ -222,6 +223,19 @@ always @* begin
         8'b0000_01??: begin psh_mux =  b; psh_bit = 8'h4; end
         8'b0000_001?: begin psh_mux =  a; psh_bit = 8'h2; end
         8'b0000_0001: begin psh_mux = cc; psh_bit = 8'h1; end
+        default: psh_mux = 0;
+    endcase
+    // PULL bit
+    casez( psh_sel )
+        8'b????_???1: pul_bit = 8'h01;
+        8'b????_??10: pul_bit = 8'h02;
+        8'b????_?100: pul_bit = 8'h04;
+        8'b????_1000: pul_bit = 8'h08;
+        8'b???1_0000: pul_bit = 8'h10;
+        8'b??10_0000: pul_bit = 8'h20;
+        8'b?100_0000: pul_bit = 8'h40;
+        8'b1000_0000: pul_bit = 8'h80;
+        default: pul_bit = 0;
     endcase
 end
 
@@ -253,7 +267,8 @@ always @(posedge clk, posedge rst) begin
             8'b???1_0000: up_pul_x     <= pul_en;
             8'b??10_0000: up_pul_y     <= pul_en;
             8'b?100_0000: up_pul_other <= pul_en;
-            default:      up_pul_pc    <= pul_en;
+            8'b1000_0000: up_pul_pc    <= pul_en;
+            default:;
         endcase
     end
 end
@@ -292,10 +307,10 @@ always @(posedge clk, posedge rst) begin
         if( up_x  ) x  <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
         if( up_y  ) y  <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;
         // 16-bit registers from memory (PULL)
-        if( up_pul_x &&  psh_hihalf ) x[15:8] <= alu[15:8];
-        if( up_pul_x && !psh_hihalf ) x[ 7:0] <= alu[7:0];
-        if( up_pul_y &&  psh_hihalf ) y[15:8] <= alu[15:8];
-        if( up_pul_y && !psh_hihalf ) y[ 7:0] <= alu[7:0];
+        if( up_pul_x &&  psh_hihalf ) x[15:8] <= mdata[7:0];
+        if( up_pul_x && !psh_hihalf ) x[ 7:0] <= mdata[7:0];
+        if( up_pul_y &&  psh_hihalf ) y[15:8] <= mdata[7:0];
+        if( up_pul_y && !psh_hihalf ) y[ 7:0] <= mdata[7:0];
 
         // inc/dec
         if( inc_x ) x <= x + 16'd1;
