@@ -33,24 +33,26 @@ module jtkcpu_alu(
     output reg [15:0] rslt_hi // used only in lmul
 );
 
-reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
-
-assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
-
 `include "jtkcpu.inc"
 
-wire       alu16 = op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
-                   op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
-                   op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
-                   op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
-                   op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW;
-
+reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
+reg alu16;
 wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 
 // Divider
 reg         div_start = 0, div_len = 0, div_sign = 0;
 wire        div_v;
 wire [ 7:0] div_quot, div_rem;
+
+assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
+
+always @(posedge clk) begin
+    alu16 <= op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
+             op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
+             op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
+             op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
+             op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW;
+end
 
 jtkcpu_div u_div(
     .rst  ( rst         ),
