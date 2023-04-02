@@ -160,8 +160,8 @@ BSETA:              NIUZ
 
 BSETD:              NIUZ
                     NOP
+                    WE, ADDRX, INCX, DECU
                     WE, ADDRX, INCX
-                    WE, ADDRX, INCX, MEMHI, DECU
                     UC_LOOP
 
 ############### LOAD/STORE OPERATIONS ############
