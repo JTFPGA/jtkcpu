@@ -38,7 +38,7 @@ module jtkcpu(
 
 wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
-wire [15:0] mdata, mux, d_mux;
+wire [15:0] mdata;
 wire [15:0] psh_addr;
 wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s;
 wire [ 7:0] cc, cc_out, dp;
@@ -49,7 +49,8 @@ wire [ 2:0] idx_sel;
 wire        alu_busy, mem_busy, stack_busy;
 wire        hihalf;
 wire        is_op;
-wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
+wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
+            up_exg, up_tfr;
 wire        branch, memhi;
 wire        pul_en, psh_dec, us_sel, opnd0_mem,
             wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
@@ -76,6 +77,9 @@ jtkcpu_ctrl u_ctrl(
     .halt         ( halt         ),
     .up_pc        ( up_pc        ),
     .uz           ( uz           ),
+
+    .up_tfr       ( up_tfr       ),
+    .up_exg       ( up_exg       ),
 
     .opnd0_mem    ( opnd0_mem    ),
     // Indexed addressing
@@ -224,6 +228,9 @@ jtkcpu_regs u_regs(
     .decu         ( decu         ),
     .incx         ( incx         ),
 
+    .up_exg       ( up_exg       ),
+    .up_tfr       ( up_tfr       ),
+
     .psh_sel      ( psh_sel      ),
     .psh_hihalf   ( hihalf       ),
     .psh_ussel    ( us_sel       ),
@@ -261,8 +268,6 @@ jtkcpu_regs u_regs(
     .dec_b        ( dec_b        ),
     .psh_dec      ( psh_dec      ),
 
-    .mux          ( mux          ),
-    .d_mux        ( d_mux        ),
     .mux_reg0     ( opnd0        ),
     .mux_reg1     ( opnd1        ),
     .nx_u         ( nx_u         ),

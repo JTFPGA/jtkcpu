@@ -66,6 +66,9 @@ module jtkcpu_ctrl(
     output            incx,
     output            decu,
 
+    output            up_tfr,
+    output            up_exg,
+
     output            idx_adv,
     output            psh_dec,
     output            hihalf,
@@ -219,6 +222,9 @@ jtkcpu_ucode u_ucode(
     .idx_en            ( idx_en            ),
     .idx_adv           ( idx_adv           ),
     .data2addr         ( data2addr         ),
+
+    .up_tfr            ( up_tfr            ),
+    .up_exg            ( up_exg            ),
 
     .int_en            ( int_en            ),
     .memhi             ( memhi             ),

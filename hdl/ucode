@@ -182,6 +182,13 @@ SETLNS:             OPD
 SETLNS_IDX:         IDX_EN
                     UP_LINES, NI
 
+EXCHANGE:           OPD
+                    UP_EXG
+                    NI
+
+TRANSFER:           OPD
+                    UP_TFR
+                    NI
 
 NOPE:               NI
 

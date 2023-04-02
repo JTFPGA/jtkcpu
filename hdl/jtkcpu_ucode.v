@@ -54,6 +54,9 @@ module jtkcpu_ucode(
     output          incx,
     output          decu,
 
+    output          up_tfr,
+    output          up_exg,
+
     output          idx_adv,
     output          addrx,
     output          addry,
@@ -244,6 +247,8 @@ always @* begin
         STU, STS:       begin   opcat  = PARSE_IDX;
                                 nx_cat = STORE16;
                         end
+        EXG:                    opcat  = EXCHANGE;
+        TFR:                    opcat  = TRANSFER;
         default:                opcat  = BUSERROR; // stop condition
     endcase
 end

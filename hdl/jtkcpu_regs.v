@@ -36,6 +36,11 @@ module jtkcpu_regs(
     output       [ 7:0] stack_bit,
     output   reg [ 7:0] psh_mux,
     output   reg        up_pul_pc,
+    output       [15:0] psh_addr,
+
+    // Exchange / Transfer
+    input               up_tfr,
+    input               up_exg,
 
     // Index addressing
     input        [ 2:0] idx_rsel,   // register to modify
@@ -79,13 +84,10 @@ module jtkcpu_regs(
     input               dec_x,
     input               dec_b,
 
-    output   reg [15:0] mux,
-    output   reg [15:0] d_mux,
     output   reg [15:0] mux_reg0,
     output   reg [15:0] mux_reg1,
     output   reg [15:0] nx_u,
     output   reg [15:0] nx_s,
-    output       [15:0] psh_addr,
     output   reg [15:0] x,
     output   reg [15:0] y,
     output   reg [ 7:0] cc,
@@ -98,7 +100,7 @@ reg         psh_dec_u, psh_dec_s, inc_pul,
             up_pul_x, up_pul_y, up_pul_other,
             up_pul_a, up_pul_b, up_pul_dp, up_pul_cc;
 reg  [ 7:0] a, b, psh_bit, pul_bit;
-reg  [15:0] u, s;
+reg  [15:0] u, s, stfr, dtfr;
 wire [15:0] psh_other;
 wire        idx_upx, idx_upy, idx_upu, idx_ups;
 wire [15:0] idx_step, d;
@@ -122,26 +124,28 @@ assign idx_upx  = (idx_post || idx_pre) && idx_x,
        idx_ups  = (idx_post || idx_pre) && idx_s;
 assign idx_step = idx_post ? (idxw ? 16'd2 : 16'd1) : (idxw ? -16'd2 : -16'd1);
 
-// exg/tfr mux
+// exg/tfr
 always @* begin
-    case( mdata[7:4] )
-        4'b0000: mux = {8'hFF,  a};
-        4'b0001: mux = {8'hFF,  b};
-        4'b0010: mux = x;
-        4'b0011: mux = y;
-        4'b0100: mux = s;
-        4'b0101: mux = u;
-        default: mux = 0;
+    stfr = u;
+    dtfr = u;
+    case( mdata[6:4] )
+        3'b000:  dtfr[7:0] = a;
+        3'b001:  dtfr[7:0] = b;
+        3'b010:  dtfr = x;
+        3'b011:  dtfr = y;
+        3'b100:  dtfr = s;
+        3'b101:  dtfr = u;
+        default:;
     endcase
 
-    case( mdata[3:0] )
-        4'b0000: d_mux = {8'hFF,  a};
-        4'b0001: d_mux = {8'hFF,  b};
-        4'b0010: d_mux = x;
-        4'b0011: d_mux = y;
-        4'b0100: d_mux = s;
-        4'b0101: d_mux = u;
-        default: d_mux = 0;
+    case( mdata[2:0] )
+        3'b000:  stfr[7:0] = a;
+        3'b001:  stfr[7:0] = b;
+        3'b010:  stfr = x;
+        3'b011:  stfr = y;
+        3'b100:  stfr = s;
+        3'b101:  stfr = u;
+        default:;
     endcase
 end
 
@@ -327,6 +331,29 @@ always @(posedge clk, posedge rst) begin
         if( set_i ) cc[CC_I] <= 1;
         if( set_f ) cc[CC_F] <= 1;
         if( clr_e ) cc[CC_E] <= 0;
+
+        if( up_tfr || up_exg ) begin
+            case(mdata[6:4])
+                0: a <= stfr[7:0];
+                1: b <= stfr[7:0];
+                2: x <= stfr;
+                3: y <= stfr;
+                4: s <= stfr;
+                5: u <= stfr;
+                default:;
+            endcase
+        end
+        if( up_exg ) begin
+            case(mdata[2:0])
+                0: a <= dtfr[7:0];
+                1: b <= dtfr[7:0];
+                2: x <= dtfr;
+                3: y <= dtfr;
+                4: s <= dtfr;
+                5: u <= dtfr;
+                default:;
+            endcase
+        end
         //if( clr_i ) cc[CC_I] <= 0;
         //if( clr_f ) cc[CC_F] <= 0;
     end
