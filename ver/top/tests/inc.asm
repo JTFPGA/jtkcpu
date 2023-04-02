@@ -25,17 +25,7 @@ LOOP:   INCA
         CMPA #$0F
         BEQ BAD
 
-END:    LDY #$BABE
-        LDA #1
-        LDY #TESTCTRL
-        STA ,Y 
-        BRA END
-
-BAD:    LDY #$DEAD
-        LDA #3
-        LDY #TESTCTRL
-        STA ,Y
-        BRA BAD
+        include finish.inc
 
 ; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0

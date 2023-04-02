@@ -22,17 +22,7 @@ RESET:  NOP
         DC.B    [$23]0
         BRA BAD
 
-END:    LDU #$BABE
-        LDA #1
-        LDS #TESTCTRL
-        STA ,S                  ; Finish test, result ok
-        BRA END
-
-BAD:    LDU #$DEAD
-        LDA #3
-        LDS #TESTCTRL
-        STA ,S                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 DATAR:  FDB   END,$1234, $5678, $9ABC, $DEF0
 

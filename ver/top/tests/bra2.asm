@@ -25,17 +25,7 @@ SHORT:  NOP
         DC.B    [$230]0
         BRA BAD
 
-END:    LDU #$BABE
-        LDA #1
-        LDS #TESTCTRL
-        STA ,S                  ; Finish test, result ok
-        BRA END
-
-BAD:    LDU #$DEAD
-        LDA #3
-        LDS #TESTCTRL
-        STA ,S                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 DATAR:  FDB   $1234, $5678, $9ABC, $DEF0
         DC.B  [$300]0

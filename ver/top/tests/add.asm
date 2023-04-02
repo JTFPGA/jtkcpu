@@ -14,7 +14,7 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$05    
+RESET:  LDA #$05
         ADDA #10
         LDB #$64
         CMPA #$0F
@@ -22,16 +22,8 @@ RESET:  LDA #$05
         ADDB #100
         CMPB #$C8
         BNE BAD
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+
+        include finish.inc
 
         DC.B  [$FFFE-*]0
         FDB   RESET

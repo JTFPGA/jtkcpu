@@ -30,17 +30,7 @@ RESET:  LDU #RAMEND
 	CMPB #$FE
 	BNE BAD
 
-END:    LDX #$BABE
-	LDA #1
-	LDX #TESTCTRL
-	STA ,X
-        BRA END
-
-BAD: 	LDX #$DEAD
-	LDA #3
-	LDX #TESTCTRL
-	STA ,X
- 	BRA BAD
+        include finish.inc
 
         DC.B  [$FFFE-*]0
         FDB   RESET

@@ -21,17 +21,7 @@ RESET:  LEAX DATAR
         CMPD DATAR-*,PC
         BNE BAD
 
-END:    LDU #$BABE
-        LDA #1
-        LDS #TESTCTRL
-        STA ,S                  ; Finish test, result ok
-        BRA END
-
-BAD:    LDU #$DEAD
-        LDA #3
-        LDS #TESTCTRL
-        STA ,S                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 DATAR:  FDB   $CAFE, $BEEF, $DED0
 

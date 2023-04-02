@@ -23,18 +23,8 @@ LOOP:   DECA
         BNE LOOP
         CMPA #00
         BNE BAD
-END:    
-        LDY #$BABE
-        LDB #1
-        LDY #TESTCTRL
-        STB ,Y 
-        BRA END
-BAD: 	
-        LDY #$DEAD
-        LDB #3
-        LDY #TESTCTRL
-        STB ,Y
-        BRA BAD
+
+        include finish.inc
 
         DC.B  [$FFFE-*]0
         FDB   RESET

@@ -28,16 +28,7 @@ RESET:  LDA #$55
         ABSA
         BNE BAD
 
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 ; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0

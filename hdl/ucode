@@ -228,6 +228,7 @@ JMSR:               PSH_PC, PSH_GO
                     NI
 
 RTIT:               RTI_CC, PUL_GO
+                    NOP
                     RTI_OTHER, PUL_GO
                     NOP
                     NI
@@ -251,18 +252,18 @@ PUL:                OPD
                     NI
 
 ########### INTERRUPTS ####################
-RESET:              INT_EN
+RESET:              INT_EN, I=1, F=1
                     NOP
                     NOP
                     NOP
                     NI
                     NOP
 
-FIRQ:               PSH_CC
-                    E=0, F=1, I=1, PSH_PC
+FIRQ:               PSH_CC, PSH_GO
+                    E=0, F=1, I=1
+                    NOP
+                    NOP
                     INT_EN
-                    NOP
-                    NOP
                     NOP
                     NI
 

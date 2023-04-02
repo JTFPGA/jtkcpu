@@ -179,6 +179,7 @@ jtkcpu_ucode u_ucode(
     .clk               ( clk               ),
     .cen               ( cen               ),
 
+    .cc                ( cc                ),
     .op                ( op                ),
     .mdata             ( mdata             ),
 
@@ -276,6 +277,7 @@ jtkcpu_pshpul u_pshpul(
     .psh_all    ( psh_all    ),
     .rti_cc     ( rti_cc     ),
     .rti_other  ( rti_other  ),
+    .psh_cc     ( psh_cc     ),
     .pul_go     ( pul_go     ),
     .psh_go     ( psh_go     ),
     .psh_pc     ( psh_pc     ),

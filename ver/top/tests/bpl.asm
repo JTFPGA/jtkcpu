@@ -31,16 +31,7 @@ LOOPEND:
         CMPB #4
         BNE BAD
 
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 TABLE  FCB 3,2,6,-1,24,100,-23,-54,-2,0
 

@@ -24,16 +24,7 @@ LOOP    INCB
         CMPA #$00
         BEQ END
 
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
+        include finish.inc
 
         DC.B  [$FFFE-*]0
         FDB   RESET

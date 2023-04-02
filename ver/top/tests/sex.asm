@@ -26,16 +26,7 @@ RESET:  LDB #$A1
         CMPD #$7F
         BNE BAD
 
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
         DC.B  [$FFFE-*]0
         FDB   RESET

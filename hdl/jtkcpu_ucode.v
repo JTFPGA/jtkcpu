@@ -21,6 +21,7 @@ module jtkcpu_ucode(
     input            clk,
     input            cen,
 
+    input     [ 7:0] cc,
     input     [ 7:0] op,     // data fetched from memory
     input     [15:0] mdata,
 
@@ -121,9 +122,12 @@ reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
 reg                idx_postl, nil, idx_ind_rq;
+reg                nmin_l, do_nmi;
 wire               idx_ret, idx_ind, idx_jmp;
+wire               cc_i, cc_f;
 
-wire waitalu;
+assign cc_i = cc[CC_I];
+assign cc_f = cc[CC_F];
 
 always @* begin
     case( {mdata[7],mdata[2:0]} )
@@ -261,12 +265,16 @@ always @(posedge clk) begin
         idx_ld     <= 0;
         idx_acc    <= 0;
         idxw       <= 0;
+        nmin_l     <= 0;
+        do_nmi     <= 0;
     end else if( cen && !buserror ) begin
         nil       <= ni;
         post_idx  <= nx_cat;
         idx_post  <= 0;
         idx_ld    <= 0;
+        nmin_l    <= nmi_n;
 
+        if( !nmi_n && nmin_l ) do_nmi <= 1; // NMI is edge triggered
         if( !mem_busy && !stack_busy ) begin
             addr <= addr + 1; // keep processing an opcode routine
             if( skip_noind && !op[4] ) begin
@@ -274,13 +282,14 @@ always @(posedge clk) begin
             end
         end
         if( nil ) begin
-            if( !nmi_n ) begin // interrupt enabled irq
+            if( do_nmi ) begin // pending NMI
+                do_nmi  <= 0;
                 cur_int <= 4'b0100;
                 addr    <= { NMI, OPLEN };
-            end else if( !firq_n ) begin  // interrupt enabled nmi
+            end else if( !firq_n && !cc_f ) begin  // FIRQ triggered by level
                 cur_int <= 4'b0010;
                 addr    <= { FIRQ, OPLEN };
-            end else if ( !irq_n ) begin  // interrupt enabled firq
+            end else if ( !irq_n && !cc_i ) begin  // IRQ triggered by level
                 cur_int <= 4'b0001;
                 addr    <= { IRQ, OPLEN };
             end else begin   // interrupt disabled

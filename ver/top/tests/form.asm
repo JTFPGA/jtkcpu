@@ -11,21 +11,14 @@
 ; 6 -> set to trigger FIRQ. Clear manually
 ; 7 -> set to trigger NMI.  Clear manually
 
+RAMEND   EQU $1000
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  
+RESET:
+        LDS RAMEND
 
-END:    LDX #$BABE
-        LDA #1
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result ok
-        BRA END
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 ; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0

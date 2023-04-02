@@ -14,7 +14,7 @@ reg  [ 7:0] ram[0:2**12-1], rom[0:2**12-1];
 reg  [ 7:0] cpu_din;
 wire [ 7:0] cpu_dout;
 reg  [ 1:0] cen_cnt=0;
-reg         sim_bad, simctrl_cs, ram_cs;
+reg         sim_good, simctrl_cs, ram_cs;
 wire [23:0] cpu_addr;
 integer     f, fcnt, finish_cnt=-1;
 
@@ -53,7 +53,7 @@ always @(posedge clk) begin
     cen_cnt <= cen_cnt+1'd1;
     if( finish_cnt>0  ) finish_cnt <= finish_cnt - 1;
     if( finish_cnt==0 ) begin
-        if( sim_bad )
+        if( !sim_good )
             $display("FAIL");
         else
             $display("PASS");
@@ -61,8 +61,14 @@ always @(posedge clk) begin
     end
     if( simctrl_cs && cpu_we ) begin
         if( cpu_dout[0] ) finish_cnt <= 20;
-        sim_bad <= cpu_dout[1];
+        sim_good <= cpu_dout[1];
         {nmi,firq,irq} <= cpu_dout[7:5];
+        if(  cpu_dout[7] && !nmi  ) $display("NMI set");
+        if(  cpu_dout[6] && !firq ) $display("FIRQ set");
+        if(  cpu_dout[5] && !irq  ) $display("IRQ set");
+        if( !cpu_dout[7] && nmi   ) $display("NMI clear");
+        if( !cpu_dout[6] && firq  ) $display("FIRQ clear");
+        if( !cpu_dout[5] && irq   ) $display("IRQ clear");
     end
     if( ram_cs && cpu_we ) begin
         if(cen2) $display("RAM write %X -> %X", cpu_dout, cpu_addr );

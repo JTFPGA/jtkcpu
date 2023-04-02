@@ -32,17 +32,7 @@ CHECK:  LDA  ,-X
         DECB
         BNE CHECK
 
-END:    LDX #$BABE
-        LDA #1
-        LDY #TESTCTRL
-        STA ,Y                  ; Finish test, result ok
-        BRA END
-
-BAD:    LDX #$DEAD
-        LDA #3
-        LDX #TESTCTRL
-        STA ,X                  ; Finish test, result bad
-        BRA BAD
+        include finish.inc
 
 DATAR:  DB   0,1,2,3,4,5,6,7,8,9,$A,$B,$C,$D,$E,$F
 
