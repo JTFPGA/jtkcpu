@@ -59,7 +59,7 @@ module jtkcpu_memctrl(
     input             idx_en,
     input             addrx,
     input             addry,
-    input             ni,
+    input             fetch,
     input             opd,    // the next byte (word) is an operand
     input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
 
@@ -77,7 +77,7 @@ localparam FIRQ = 16'hFFF6,
 reg  is_int, hold;
 wire mem_en;
 
-assign mem_en = ni | opd | stack_busy | addrx | addry | idx_en;
+assign mem_en = fetch | opd | stack_busy | addrx | addry | idx_en;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin

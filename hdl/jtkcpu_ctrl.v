@@ -52,6 +52,7 @@ module jtkcpu_ctrl(
     input             firq_n,
     input             alu_busy,
     input             mem_busy,
+    input             uz,
 
     // stack
     output     [ 7:0] psh_sel,
@@ -73,7 +74,7 @@ module jtkcpu_ctrl(
     output            wrq,
     output            decb,
     output            decx,
-    output            ni,
+    output            fetch,
     output            set_i,
     output            set_e,
     output            set_f,
@@ -105,12 +106,12 @@ module jtkcpu_ctrl(
 
 // to do: signals that are resolved within the
 // module should be here as wires. Watchout for buses
-wire branch;
-wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
-     int_en,
-     up_ld16, up_ld8, up_lda, up_ldb, up_ab,
-     rti_cc, rti_other,
-     pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
+wire branch, ni;
+wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
+     int_en,   uc_loop, niuz,
+     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab,
+     rti_cc,   rti_other,
+     pc_jmp,   set_pc_branch16, set_pc_branch8, pc_inc1,
      buserror, intsrv,
 
      addr_data,
@@ -136,6 +137,7 @@ assign up_y = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lm
 assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
 assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 assign pc_inc1 = idx_post && idx_rsel==7;
+assign fetch = ni || (niuz&&uz);
 
 wire sbranch = (set_pc_branch8  & branch) | ( branch_bnz & ~cc[CC_Z]);
 wire lbranch = (set_pc_branch16 & branch);
@@ -146,7 +148,7 @@ always @(posedge clk) begin
         pc    <= 0;
         bdone <= 0;
     end else if(cen) begin
-        pc <= ( ni || opd || pc_inc1 ) && !intsrv ? pc+16'd1 :
+        pc <= ( ni || opd || pc_inc1 || (niuz && uz )) && !intsrv ? pc+16'd1 :
               sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
               lbranch && !bdone ? mdata+pc :
               pc_jmp       ? idx_addr :
@@ -188,6 +190,7 @@ jtkcpu_ucode u_ucode(
     .nmi_n             ( nmi_n             ),
     .firq_n            ( firq_n            ),
     .intvec            ( intvec            ),
+    .uz                ( uz                ),
 
     .addrx             ( addrx             ),
     .addry             ( addry             ),
@@ -215,6 +218,8 @@ jtkcpu_ucode u_ucode(
     .int_en            ( int_en            ),
     .memhi             ( memhi             ),
     .ni                ( ni                ),
+    .uc_loop           ( uc_loop           ),
+    .niuz              ( niuz              ),
     .opd               ( opd               ),
     .psh_all           ( psh_all           ),
     .psh_cc            ( psh_cc            ),

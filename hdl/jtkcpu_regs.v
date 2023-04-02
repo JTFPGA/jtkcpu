@@ -85,7 +85,8 @@ module jtkcpu_regs(
     output       [15:0] psh_addr,
     output   reg [15:0] x,
     output   reg [15:0] y,
-    output   reg [ 7:0] cc
+    output   reg [ 7:0] cc,
+    output   reg        uz
 );
 
 `include "jtkcpu.inc"
@@ -281,7 +282,9 @@ always @(posedge clk, posedge rst) begin
         u  <= 0;
         s  <= 0;
         cc <= 0;
+        uz <= 0;
     end else if(cen) begin
+        uz <= u==0;
         u <= nx_u;
         s <= nx_s;
         if( idx_upx ) x <= x + idx_step;

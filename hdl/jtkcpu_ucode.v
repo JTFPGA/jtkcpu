@@ -47,10 +47,13 @@ module jtkcpu_ucode(
     input           irq_n,
     input           nmi_n,
     input           firq_n,
+    input           uz,
     // control outputs from ucode
     output          idx_adv,
     output          addrx,
     output          addry,
+    output          uc_loop,
+    output          niuz,
     output          up_move,
     output          buserror,
     output          clr_e,
@@ -115,7 +118,7 @@ reg [UCODE_DW-1:0] mem[0:2**(UCODE_AW-1)], ucode;
 reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
-reg                idx_postl, nil, idx_ind_rq;
+reg                idx_postl, nil, niuzl, idx_ind_rq;
 reg                nmin_l, do_nmi;
 wire               idx_ret, idx_ind, idx_jmp,
                    set_idx_post, set_idx_acc, set_idxw;
@@ -267,7 +270,8 @@ always @(posedge clk) begin
         nmin_l     <= 0;
         do_nmi     <= 0;
     end else if( cen && !buserror ) begin
-        nil       <= ni;
+        nil       <= ni | niuzl;
+        niuzl     <= niuz & uz;
         post_idx  <= nx_cat;
         idx_post  <= 0;
         idx_ld    <= 0;
@@ -293,6 +297,7 @@ always @(posedge clk) begin
                 addr    <= { opcat, OPLEN }; // when a new opcode is read
             end
         end
+        if( uc_loop ) addr <= { opcat, OPLEN };
         // Indexed addressing parsing
         if( set_idx_post ) idx_postl <= 1;
         if( set_idxw     ) idxw <= 1;

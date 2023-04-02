@@ -150,7 +150,7 @@ MOVE:               ADDRY
 BMOVE:              NIUZ
                     NOP
                     ADDRY
-                    WE, UP_MOVE             # Y+, X+, U-
+                    WE, ADDRX, UP_MOVE             # Y+, X+, U-
                     UC_LOOP
 
 BSETA:              NIUZ
