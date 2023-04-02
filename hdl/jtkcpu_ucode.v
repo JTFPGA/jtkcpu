@@ -232,7 +232,10 @@ always @* begin
         PUSHU, PUSHS:   opcat = PSH;
         PULLU, PULLS:   opcat = PUL;
         NOP:            opcat = NOPE;
-        // SETLINES_IDX    opcat = SETLINES
+        SETLINES_IMM:   opcat = SETLNS;
+        SETLINES_IDX:   begin   opcat  = PARSE_IDX;
+                                nx_cat = SETLNS_IDX;
+                        end
 
         STA, STB:       begin   opcat  = PARSE_IDX;
                                 nx_cat = STORE8;

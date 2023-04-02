@@ -189,8 +189,12 @@ LEA:                UP_LEA, UP_CC
                     NI
 
 ############### MISC OPERATIONS ##################
-SETLINES:           OPD
+SETLNS:             OPD
                     UP_LINES, NI
+
+SETLNS_IDX:         IDX_EN
+                    UP_LINES, NI
+
 
 NOPE:               NI
 
