@@ -232,7 +232,8 @@ RTIT:               RTI_CC, PUL_GO
                     NOP
                     NI
 
-RTSR:               PUL_PC
+RTSR:               PSH_PC, PUL_GO
+                    NOP
                     NOP
                     NI
 

@@ -138,8 +138,6 @@ jtkcpu_ctrl u_ctrl(
     .up_u         ( up_u         ),
     .up_s         ( up_s         ),
     .up_pul_pc    ( up_pul_pc    )
-
-
 );
 
 jtkcpu_memctrl u_memctrl(

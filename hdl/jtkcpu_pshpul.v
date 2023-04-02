@@ -67,7 +67,7 @@ always @(posedge clk or posedge rst) begin
             dec_en <= 0;
             if( psh_go || pul_go ) begin
                 psh_sel <= postbyte;
-                us_sel  <= op[0] && op!=LBSR;
+                us_sel  <= op[0] && op!=LBSR && !rti_cc && !psh_pc && !rti_other && !psh_all;
                 hihalf  <= 0;
                 pul_en  <= pul_go;
                 dec_en  <= psh_go;

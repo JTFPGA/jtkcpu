@@ -69,7 +69,6 @@ module jtkcpu_ucode(
     output          psh_go,
     output          psh_pc,
     output          pul_go,
-    output          pul_pc,
     output          rti_cc,
     output          rti_other,
     output          set_e,

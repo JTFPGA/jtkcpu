@@ -120,7 +120,6 @@ wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
      back1_unz,
      back2_unz,
      idx_step,
-     pul_pc,
      set_opn0_a,
      set_opn0_b,
      set_opn0_mem,
@@ -158,8 +157,10 @@ always @(posedge clk) begin
               pc_jmp       ? idx_addr :
               up_pc        ? mdata    : pc;
         bdone <= sbranch | lbranch;
-        // if( up_pul_pc &&  hihalf ) pc[15:8] <= alu[15:8];
-        // if( up_pul_pc && !hihalf ) pc[ 7:0] <= alu[7:0];
+        if( up_pul_pc && pul_en ) begin
+            if( hihalf )  pc[15:8] <= mdata[7:0];
+                     else pc[ 7:0] <= mdata[7:0];
+        end
 
     end
 end
@@ -229,7 +230,6 @@ jtkcpu_ucode u_ucode(
     .psh_go            ( psh_go            ),
     .psh_pc            ( psh_pc            ),
     .pul_go            ( pul_go            ),
-    .pul_pc            ( pul_pc            ),
     .rti_cc            ( rti_cc            ),
     .rti_other         ( rti_other         ),
     .set_e             ( set_e             ),
