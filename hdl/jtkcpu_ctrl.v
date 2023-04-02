@@ -63,6 +63,9 @@ module jtkcpu_ctrl(
     output            addrx,
     output            addry,
     output            up_move,
+    output            incx,
+    output            decu,
+
     output            idx_adv,
     output            psh_dec,
     output            hihalf,
@@ -195,6 +198,8 @@ jtkcpu_ucode u_ucode(
     .addrx             ( addrx             ),
     .addry             ( addry             ),
     .up_move           ( up_move           ),
+    .decu              ( decu              ),
+    .incx              ( incx              ),
     .buserror          ( buserror          ),
     .clr_e             ( clr_e             ),
     .decb              ( decb              ),

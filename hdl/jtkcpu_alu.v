@@ -145,11 +145,9 @@ always @* begin
         end
         ANDCC: begin
             { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out } = cc_in & opnd1[7:0];
-            rslt=0;
         end
         ORCC: begin
             { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out } = cc_in | opnd1[7:0];
-            rslt=0;
         end
         CLRA,CLRB,CLR,CLRD,CLRW: begin  // CLR, CLRD, CLRW
             rslt  = 0;

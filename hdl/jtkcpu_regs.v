@@ -57,10 +57,13 @@ module jtkcpu_regs(
     input               up_y,
     input               up_u,
     input               up_s,
-    input               up_move,
     input               up_lmul,
     input               up_lea,
 
+    // MOVE/BSET
+    input               up_move,
+    input               incx,
+    input               decu,
     // Flags from ALU
     input               up_cc,
     input        [ 7:0] alu_cc,
@@ -163,9 +166,9 @@ always @* begin
 
         default : mux_reg0 = {a, a};
     endcase
-    if( opnd0_mem ) mux_reg0 = mdata;
-    if( dec_b     ) mux_reg0 = { a, b };
-    if( dec_x     ) mux_reg0 = x;
+    if( opnd0_mem    ) mux_reg0 = mdata;
+    if( dec_b | incx ) mux_reg0 = { a, b };
+    if( dec_x        ) mux_reg0 = x;
 end
 
 always @* begin
@@ -192,7 +195,7 @@ always @* begin
     nx_s = s;
     if( up_s  ) nx_s = up_lea && op[1:0]==3 ? idx_addr : mdata;
     if( up_u  ) nx_u = up_lea && op[1:0]==2 ? idx_addr : mdata;
-    if( psh_dec_u | up_move  ) nx_u = u - 16'd1;
+    if( psh_dec_u | up_move | decu ) nx_u = u - 16'd1;
     if( psh_dec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hihalf ) begin
         if( psh_ussel )
@@ -314,8 +317,8 @@ always @(posedge clk, posedge rst) begin
         if( up_pul_y && !psh_hihalf ) y[ 7:0] <= mdata[7:0];
 
         // inc/dec
-        if( up_move ) x <= x + 16'd1;
-        if( up_move ) y <= y + 16'd1;
+        if( up_move | incx ) x <= x + 16'd1;
+        if( up_move        ) y <= y + 16'd1;
 
         if( up_cc     ) cc <= alu_cc;
         if( up_pul_cc ) cc <= mdata[7:0];

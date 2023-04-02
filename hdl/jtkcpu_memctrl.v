@@ -52,7 +52,6 @@ module jtkcpu_memctrl(
     output reg        is_op, // the data[7:0] output is an OP code
 
     // select addressing mode
-    input             mem16,
     input             memhi,
     input             halt,   // hold the current address
     input             up_lines,
@@ -126,10 +125,6 @@ always @(posedge clk, posedge rst) begin
                 if( idx_en     ) begin
                     is_op <= 0;
                     addr  <= idx_addr + { 15'd0, idx_adv };
-                end
-                if( mem16 && !busy ) begin
-                    busy <= 1;
-                    dout <= alu_dout[15:8];
                 end
                 if( (wrq || psh_dec) && cen ) we <= 1;
             end

@@ -53,7 +53,7 @@ wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc;
 wire        branch, memhi;
 wire        pul_en, psh_dec, us_sel, opnd0_mem,
             wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
-            dec_b, dec_x,
+            dec_b, dec_x, incx, decu,
             clr_e, set_e, set_f, set_i, up_move,
             up_pul_pc;
 // Indexed addressing
@@ -110,6 +110,9 @@ jtkcpu_ctrl u_ctrl(
     .addrx        ( addrx        ),
     .addry        ( addry        ),
     .up_move      ( up_move      ),
+    .decu         ( decu         ),
+    .incx         ( incx         ),
+
     .hihalf       ( hihalf       ),
     .memhi        ( memhi        ),
     .fetch        ( fetch        ),
@@ -171,7 +174,6 @@ jtkcpu_memctrl u_memctrl(
     .busy         ( mem_busy     ),
     .up_pc        ( up_pc        ),
     .is_op        ( is_op        ),
-    .mem16        ( 1'b0         ),
     .memhi        ( memhi        ),
     .fetch        ( fetch        ),
     .halt         ( halt         ),
@@ -219,6 +221,8 @@ jtkcpu_regs u_regs(
     .alu          ( rslt         ),
     .up_move      ( up_move      ),
     .uz           ( uz           ),
+    .decu         ( decu         ),
+    .incx         ( incx         ),
 
     .psh_sel      ( psh_sel      ),
     .psh_hihalf   ( hihalf       ),

@@ -49,12 +49,15 @@ module jtkcpu_ucode(
     input           firq_n,
     input           uz,
     // control outputs from ucode
+    output          niuz,
+    output          up_move,
+    output          incx,
+    output          decu,
+
     output          idx_adv,
     output          addrx,
     output          addry,
     output          uc_loop,
-    output          niuz,
-    output          up_move,
     output          buserror,
     output          clr_e,
     output          decb,

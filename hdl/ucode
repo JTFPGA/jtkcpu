@@ -155,13 +155,13 @@ BMOVE:              NIUZ
 
 BSETA:              NIUZ
                     NOP
-                    OPN0=A, ADDRX, WE, UP_BSET     # X+, U-
+                    ADDRX, WE, INCX, DECU
                     UC_LOOP
 
 BSETD:              NIUZ
                     NOP
-                    OPN0=B, WE, ADDRX
-                    OPN0=A, WE, ADDRX, UP_BSET
+                    WE, ADDRX, INCX
+                    WE, ADDRX, INCX, MEMHI, DECU
                     UC_LOOP
 
 ############### LOAD/STORE OPERATIONS ############
