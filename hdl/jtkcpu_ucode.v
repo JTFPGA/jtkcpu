@@ -24,6 +24,7 @@ module jtkcpu_ucode(
     input     [ 7:0] cc,
     input     [ 7:0] op,     // data fetched from memory
     input     [15:0] mdata,
+    output           intsrv,
 
     // indexed addressing
     output reg [2:0] idx_rsel,
@@ -250,6 +251,7 @@ end
 // end
 
 assign intvec = cur_int & {4{int_en}};
+assign intsrv = do_nmi || (!firq_n && !cc_f) || (!irq_n && !cc_i);
 
 always @(posedge clk) begin
     if( rst ) begin

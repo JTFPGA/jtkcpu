@@ -113,7 +113,7 @@ wire pul_go, psh_go, psh_all, psh_cc, psh_pc,
      up_ld16, up_ld8, up_lda, up_ldb, up_ab,
      rti_cc, rti_other,
      pc_jmp, set_pc_branch16, set_pc_branch8, pc_inc1,
-     buserror,
+     buserror, intsrv,
 
      addr_data,
      addr_idx,
@@ -151,7 +151,7 @@ always @(posedge clk) begin
         pc    <= 0;
         bdone <= 0;
     end else if(cen) begin
-        pc <= ( ni | opd | pc_inc1 ) ? pc+16'd1 :
+        pc <= ( ni || opd || pc_inc1 ) && !intsrv ? pc+16'd1 :
               sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
               lbranch && !bdone ? mdata+pc :
               pc_jmp       ? idx_addr :
@@ -182,6 +182,7 @@ jtkcpu_ucode u_ucode(
     .cc                ( cc                ),
     .op                ( op                ),
     .mdata             ( mdata             ),
+    .intsrv            ( intsrv            ),
 
     .alu_busy          ( alu_busy          ),
     .mem_busy          ( mem_busy          ),
