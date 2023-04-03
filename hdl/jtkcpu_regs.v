@@ -164,7 +164,7 @@ always @(posedge clk, posedge rst) begin
             CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
                 CLRD,     NEGD,     ABSD,      STD: mux_reg0 <= {a, b};
 
-            CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 <= x;
+            CMPX_IMM, CMPX_IDX,  ABX, STX, DIV_X_B: mux_reg0 <= x;
             CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 <= y;
             CMPU_IMM, CMPU_IDX, STU:       mux_reg0 <= u;
             CMPS_IMM, CMPS_IDX, STS:       mux_reg0 <= s;
@@ -183,9 +183,9 @@ end
 
 always @* begin
     case ( op )
-        ABX:     mux_reg1 = {8'h0,  b};
-        LMUL:    mux_reg1 = x;
-        default: mux_reg1 = {8'h0,  a};
+        ABX, DIV_X_B: mux_reg1 = {8'h0,  b};
+        LMUL:         mux_reg1 = x;
+        default:      mux_reg1 = {8'h0,  a};
     endcase
 end
 

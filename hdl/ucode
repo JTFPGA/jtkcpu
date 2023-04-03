@@ -102,8 +102,8 @@ MEM_ALU_IDX:        IDX_EN
                     IDX_EN, WE
                     NI
 
-MULTI_ALU_INH:      OPD
-                    OPN0=REGS, UP_CC
+MULTI_ALU_INH:      OPD, MEMHI
+                    OPN0=REGS, UP_CC, UP_XB
                     NI
 
 MULTI_ALU_IDX:      IDX_EN

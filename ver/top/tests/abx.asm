@@ -14,7 +14,12 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:
+RESET:  LDB #$01
+        LDX #1234
+        ABX
+        CMPX #$FFA1
+        BNE BAD
+
 
         include finish.inc
 

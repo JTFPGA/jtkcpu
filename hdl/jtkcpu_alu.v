@@ -47,6 +47,8 @@ wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
 reg         div_start = 0, div_len = 0, div_sign = 0;
 wire        div_v;
 wire [ 7:0] div_quot, div_rem;
+wire [15:0] div_rslt;
+assign div_rslt = { div_rem, div_quot };
 
 assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 
@@ -239,6 +241,9 @@ always @* begin
                 rslt = opnd0;
             c_out = 0;
             v_out = 0;
+        end
+        DIV_X_B: begin
+            rslt = div_rslt;
         end
         default:
             rslt = opnd0;
