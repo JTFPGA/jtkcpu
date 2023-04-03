@@ -5,4 +5,3 @@
 *.lxt
 *.bin
 .~lock.op comparison.ods#
-hdl/jtkcpu_ucode.inc
