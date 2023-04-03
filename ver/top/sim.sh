@@ -32,5 +32,5 @@ fi
 mv tests/$TEST.bin test.bin
 rm -f tests/$TEST.p
 
-iverilog test.v ../../hdl/*.v -I../../hdl -o sim && sim -lxt
+iverilog -I../../hdl -o sim ../../hdl/*.v test.v && sim -lxt
 rm -f sim
