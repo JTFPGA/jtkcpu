@@ -8,7 +8,7 @@ module test;
 parameter SIMID="test";
 
 reg         rst, clk, halt=0,
-            nmi=0, irq=0, firq=0, dtack=0;
+            nmi=0, irq=0, firq=0, dtack=1;
 wire        cen, cen2;
 reg  [ 7:0] ram[0:2**12-1], rom[0:2**12-1];
 reg  [ 7:0] cpu_din;

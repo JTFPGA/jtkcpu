@@ -65,10 +65,17 @@ wire        idx_post, idx_pre, idxw,   idx_ld, idx_adv,
             idx_8,    idx_16,  idx_acc,idx_dp, idx_en,
             data2addr, uz;
 
+reg         clken, clken2;
+
+always @(negedge clk) begin
+    clken  <= cen & dtack;
+    clken2 <= cen2 & dtack;
+end
+
 jtkcpu_ctrl u_ctrl(
     .rst          ( rst          ),
     .clk          ( clk          ),
-    .cen          ( cen          ),
+    .cen          ( clken        ),
 
     .op           ( op           ),
     .mdata        ( mdata        ),
@@ -149,8 +156,8 @@ jtkcpu_ctrl u_ctrl(
 jtkcpu_memctrl u_memctrl(
     .rst          ( rst          ),
     .clk          ( clk          ),
-    .cen          ( cen          ),
-    .cen2         ( cen2         ),
+    .cen          ( clken        ),
+    .cen2         ( clken2       ),
 
     // Indexed addressing
     .idx_addr     ( idx_addr     ),
@@ -193,7 +200,7 @@ jtkcpu_memctrl u_memctrl(
 jtkcpu_alu u_alu(
     .rst          ( rst          ),
     .clk          ( clk          ),
-    .cen          ( cen          ),
+    .cen          ( clken        ),
 
     .op           ( op           ),
     .opnd0        ( opnd0        ),
@@ -212,8 +219,8 @@ jtkcpu_alu u_alu(
 jtkcpu_regs u_regs(
     .rst          ( rst          ),
     .clk          ( clk          ),
-    .cen          ( cen          ),
-    .cen2         ( cen2         ),
+    .cen          ( clken        ),
+    .cen2         ( clken2       ),
 
     .opnd0_mem    ( opnd0_mem    ),
     .pc           ( pc           ),
@@ -282,7 +289,7 @@ jtkcpu_regs u_regs(
 jtkcpu_idx u_idx(
     .rst          ( rst          ),
     .clk          ( clk          ),
-    .cen          ( cen          ),
+    .cen          ( clken        ),
 
     .idx_reg      ( idx_reg      ),
     .idx_racc     ( idx_racc     ),
