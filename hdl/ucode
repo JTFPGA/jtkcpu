@@ -133,7 +133,7 @@ LMULTIPLY:          NOP     # 20+ cycles in original
 
 ######### DECREMENT AND LOOP ##############
 LOOPX:              OPD,
-                    OPN0=X, DECX, UP_CC
+                    DECX, UP_CC     # DECX selects OPN0=X too
                     BRANCH_BNZ,
                     NI
 

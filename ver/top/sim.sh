@@ -34,6 +34,7 @@ if [ -z "$BATCH" ]; then
     cd ../../src
     go run uasm.go || exit $?
     cd -
+    verilator --lint-only ../../hdl/*.v -I../../hdl || exit $?
 else
     ASLLOG=/tmp/$SIMID.log
     NODUMP=-DNODUMP
