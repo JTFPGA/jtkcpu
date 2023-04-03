@@ -112,13 +112,14 @@ always @* begin
             v_out         = (opnd0[msb] & opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & ~opnd1[msb] & rslt[msb]);
             h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
-        SUBA_IMM,SUBB_IMM,SUBA_IDX,SUBB_IDX: begin  // SUB
+        SUBA_IMM,SUBB_IMM,
+        SUBA_IDX,SUBB_IDX,
+        CMPA_IMM, CMPB_IMM,
+        CMPA_IDX, CMPB_IDX: begin  // SUB
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]};
             v_out         = (opnd0[msb] & ~opnd1[msb] & ~rslt[msb]) | (~opnd0[msb] & opnd1[msb] & rslt[msb]);
         end
         SUBD_IMM, SUBD_IDX,
-        CMPA_IMM, CMPB_IMM,
-        CMPA_IDX, CMPB_IDX,
         CMPD_IMM, CMPD_IDX,
         CMPX_IMM, CMPX_IDX,
         CMPY_IMM, CMPY_IDX,

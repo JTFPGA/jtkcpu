@@ -25,7 +25,7 @@ RESET:  LDA #$E1
         RORB
         RORB
         RORB
-        CMPB #$DA
+        CMPB #$CA
         BNE BAD
 
         include finish.inc
