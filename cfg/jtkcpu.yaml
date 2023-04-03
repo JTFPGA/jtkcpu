@@ -1,0 +1,11 @@
+here:
+  - ../hdl/jtkcpu_alu.v
+  - ../hdl/jtkcpu_branch.v
+  - ../hdl/jtkcpu_ctrl.v
+  - ../hdl/jtkcpu_div.v
+  - ../hdl/jtkcpu_idx.v
+  - ../hdl/jtkcpu_memctrl.v
+  - ../hdl/jtkcpu_pshpul.v
+  - ../hdl/jtkcpu_regs.v
+  - ../hdl/jtkcpu_ucode.v
+  - ../hdl/jtkcpu.v
