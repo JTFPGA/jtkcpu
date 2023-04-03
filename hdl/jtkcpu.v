@@ -19,8 +19,8 @@
 module jtkcpu(
     input               rst,
     input               clk,
-    input               cen,
-    input               cen2,
+    input               cen  /* synthesis direct_enable */,
+    input               cen2 /* synthesis direct_enable */,
 
     input               halt,
     input               nmi_n,
@@ -213,6 +213,7 @@ jtkcpu_regs u_regs(
     .rst          ( rst          ),
     .clk          ( clk          ),
     .cen          ( cen          ),
+    .cen2         ( cen2         ),
 
     .opnd0_mem    ( opnd0_mem    ),
     .pc           ( pc           ),

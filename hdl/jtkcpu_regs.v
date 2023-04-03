@@ -20,6 +20,7 @@ module jtkcpu_regs(
     input               rst,
     input               clk,
     input               cen,
+    input               cen2,
 
     input        [15:0] pc,
     input        [15:0] mdata,     // postbyte used to select specific registers
@@ -149,31 +150,35 @@ always @* begin
     endcase
 end
 
-always @* begin
-    case ( op )
-        ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
-        ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
-        ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
-        ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: mux_reg0 = {a, b}; // "a" will be ignored
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        mux_reg0 <= 0;
+    end else if( cen2 ) begin
+        case ( op )
+            ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
+            ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
+            ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
+            ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: mux_reg0 <= {a, b}; // "a" will be ignored
 
-        CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
-        CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
-            CLRD,     NEGD,     ABSD,      STD: mux_reg0 = {a, b};
+            CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
+            CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
+                CLRD,     NEGD,     ABSD,      STD: mux_reg0 <= {a, b};
 
-        CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 = x;
-        CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 = y;
-        CMPU_IMM, CMPU_IDX, STU:       mux_reg0 = u;
-        CMPS_IMM, CMPS_IDX, STS:       mux_reg0 = s;
-        LEAX, LEAY, LEAU, LEAS:        mux_reg0 = idx_addr;
-        SEX: mux_reg0 = { a, b };
-        ANDCC, ORCC: mux_reg0 = {a, cc};
+            CMPX_IMM, CMPX_IDX,  ABX, STX: mux_reg0 <= x;
+            CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 <= y;
+            CMPU_IMM, CMPU_IDX, STU:       mux_reg0 <= u;
+            CMPS_IMM, CMPS_IDX, STS:       mux_reg0 <= s;
+            LEAX, LEAY, LEAU, LEAS:        mux_reg0 <= idx_addr;
+            SEX: mux_reg0 <= { a, b };
+            ANDCC, ORCC: mux_reg0 <= {a, cc};
 
-        default : mux_reg0 = {a, a};
-    endcase
-    if( opnd0_mem    ) mux_reg0 = mdata;
-    if( dec_b | incx ) mux_reg0 = { a, b };
-    if( incx & decu  ) mux_reg0 = {a, a};
-    if( dec_x        ) mux_reg0 = x;
+            default : mux_reg0 <= {a, a};
+        endcase
+        if( opnd0_mem    ) mux_reg0 <= mdata;
+        if( dec_b | incx ) mux_reg0 <= { a, b };
+        if( incx & decu  ) mux_reg0 <= {a, a};
+        if( dec_x        ) mux_reg0 <= x;
+    end
 end
 
 always @* begin
@@ -219,31 +224,37 @@ always @* begin
     if( !psh_dec && inc_pul && !psh_ussel ) nx_s = s + 16'd1;
 end
 
-always @* begin
-    // PUSH
-    casez( psh_sel )
-        8'b1???_????: begin psh_mux = psh_hihalf ? pc[15:8] : pc[7:0]; psh_bit = 8'h80; end
-        8'b01??_????: begin psh_mux = psh_hihalf ? psh_other[15:8] : psh_other[7:0]; psh_bit = 8'h40; end
-        8'b001?_????: begin psh_mux = psh_hihalf ? y[15:8] : y[7:0]; psh_bit = 8'h20; end
-        8'b0001_????: begin psh_mux = psh_hihalf ? x[15:8] : x[7:0]; psh_bit = 8'h10; end
-        8'b0000_1???: begin psh_mux = dp; psh_bit = 8'h8; end
-        8'b0000_01??: begin psh_mux =  b; psh_bit = 8'h4; end
-        8'b0000_001?: begin psh_mux =  a; psh_bit = 8'h2; end
-        8'b0000_0001: begin psh_mux = cc; psh_bit = 8'h1; end
-        default:      begin psh_mux = 0;  psh_bit = 8'h0; end
-    endcase
-    // PULL bit
-    casez( psh_sel )
-        8'b????_???1: pul_bit = 8'h01;
-        8'b????_??10: pul_bit = 8'h02;
-        8'b????_?100: pul_bit = 8'h04;
-        8'b????_1000: pul_bit = 8'h08;
-        8'b???1_0000: pul_bit = 8'h10;
-        8'b??10_0000: pul_bit = 8'h20;
-        8'b?100_0000: pul_bit = 8'h40;
-        8'b1000_0000: pul_bit = 8'h80;
-        default: pul_bit = 0;
-    endcase
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        psh_mux <= 0;
+        psh_bit <= 0;
+        pul_bit <= 0;
+    end else if( cen2 ) begin
+        // PUSH
+        casez( psh_sel )
+            8'b1???_????: begin psh_mux <= psh_hihalf ? pc[15:8] : pc[7:0]; psh_bit <= 8'h80; end
+            8'b01??_????: begin psh_mux <= psh_hihalf ? psh_other[15:8] : psh_other[7:0]; psh_bit <= 8'h40; end
+            8'b001?_????: begin psh_mux <= psh_hihalf ? y[15:8] : y[7:0]; psh_bit <= 8'h20; end
+            8'b0001_????: begin psh_mux <= psh_hihalf ? x[15:8] : x[7:0]; psh_bit <= 8'h10; end
+            8'b0000_1???: begin psh_mux <= dp; psh_bit <= 8'h8; end
+            8'b0000_01??: begin psh_mux <=  b; psh_bit <= 8'h4; end
+            8'b0000_001?: begin psh_mux <=  a; psh_bit <= 8'h2; end
+            8'b0000_0001: begin psh_mux <= cc; psh_bit <= 8'h1; end
+            default:      begin psh_mux <= 0;  psh_bit <= 8'h0; end
+        endcase
+        // PULL bit
+        casez( psh_sel )
+            8'b????_???1: pul_bit <= 8'h01;
+            8'b????_??10: pul_bit <= 8'h02;
+            8'b????_?100: pul_bit <= 8'h04;
+            8'b????_1000: pul_bit <= 8'h08;
+            8'b???1_0000: pul_bit <= 8'h10;
+            8'b??10_0000: pul_bit <= 8'h20;
+            8'b?100_0000: pul_bit <= 8'h40;
+            8'b1000_0000: pul_bit <= 8'h80;
+            default:      pul_bit <= 0;
+        endcase
+    end
 end
 
 // PULL
