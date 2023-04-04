@@ -116,7 +116,7 @@ module jtkcpu_ctrl(
 wire branch, ni;
 wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
      int_en,   uc_loop, niuz,
-     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab, up_xb, up_ldx,
+     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab, up_xb,
      rti_cc,   rti_other,
      pc_jmp,   set_pc_branch16, set_pc_branch8, pc_inc1,
      buserror, intsrv,
@@ -126,9 +126,7 @@ wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
      idx_step,
      set_opn0_a,
      set_opn0_b,
-     branch_bnz,
-     set_pc_xnz_branch,
-     up_data;
+     branch_bnz;
 
 // assign up_a = ( up_ld8 & ~(op[0]^is_inh) ) ;
 // assign up_b = ( up_ld8 &  (op[0]^is_inh) ) ;
@@ -239,14 +237,11 @@ jtkcpu_ucode u_ucode(
     .set_pc_branch16   ( set_pc_branch16   ),
     .set_pc_branch8    ( set_pc_branch8    ),
     .pc_jmp            ( pc_jmp            ),
-    .set_pc_xnz_branch ( set_pc_xnz_branch ),
     .up_cc             ( up_cc             ),
-    .up_data           ( up_data           ),
     .up_ld16           ( up_ld16           ),
     .up_ld8            ( up_ld8            ),
     .up_lda            ( up_lda            ),
     .up_ldb            ( up_ldb            ),
-    .up_ldx            ( up_ldx            ),
     .up_ab             ( up_ab             ),
     .up_xb             ( up_xb             ),
     .up_lea            ( up_lea            ),
