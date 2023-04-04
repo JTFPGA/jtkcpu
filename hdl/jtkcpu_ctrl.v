@@ -115,7 +115,7 @@ module jtkcpu_ctrl(
 wire branch, ni;
 wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
      int_en,   uc_loop, niuz,
-     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab, up_xb,
+     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab, up_xb, up_ldx,
      rti_cc,   rti_other,
      pc_jmp,   set_pc_branch16, set_pc_branch8, pc_inc1,
      buserror, intsrv,
@@ -247,6 +247,7 @@ jtkcpu_ucode u_ucode(
     .up_ld8            ( up_ld8            ),
     .up_lda            ( up_lda            ),
     .up_ldb            ( up_ldb            ),
+    .up_ldx            ( up_ldx            ),
     .up_ab             ( up_ab             ),
     .up_xb             ( up_xb             ),
     .up_lea            ( up_lea            ),

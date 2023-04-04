@@ -155,7 +155,7 @@ always @(posedge clk, posedge rst) begin
         mux_reg0 <= 0;
     end else if( cen2 ) begin
         case ( op )
-            ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB,
+            ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB, ABX,
             ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
             ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
             ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: mux_reg0 <= {a, b}; // "a" will be ignored
@@ -164,8 +164,8 @@ always @(posedge clk, posedge rst) begin
             CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
                 CLRD,     NEGD,     ABSD,      STD: mux_reg0 <= {a, b};
 
-            CMPX_IMM, CMPX_IDX,  ABX, STX, DIV_X_B: mux_reg0 <= x;
-            CMPY_IMM, CMPY_IDX, LMUL, STY: mux_reg0 <= y;
+            CMPX_IMM, CMPX_IDX,  STX, DIV_X_B, LMUL: mux_reg0 <= x;
+            CMPY_IMM, CMPY_IDX, STY: mux_reg0 <= y;
             CMPU_IMM, CMPU_IDX, STU:       mux_reg0 <= u;
             CMPS_IMM, CMPS_IDX, STS:       mux_reg0 <= s;
             LEAX, LEAY, LEAU, LEAS:        mux_reg0 <= idx_addr;
@@ -183,8 +183,8 @@ end
 
 always @* begin
     case ( op )
-        ABX, DIV_X_B: mux_reg1 = {8'h0,  b};
-        LMUL:         mux_reg1 = x;
+        DIV_X_B: mux_reg1 = {8'h0,  b};
+        // LMUL:         mux_reg1 = x;
         default:      mux_reg1 = {8'h0,  a};
     endcase
 end

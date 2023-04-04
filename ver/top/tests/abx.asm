@@ -14,8 +14,9 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDB #$01
-        LDX #1234
+RESET:  CLRB
+        LDB #10
+        LDX #500
         ABX
         CMPX #$FFA1
         BNE BAD

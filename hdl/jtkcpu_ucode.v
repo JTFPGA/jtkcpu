@@ -94,6 +94,7 @@ module jtkcpu_ucode(
     output          up_ld8,
     output          up_lda,
     output          up_ldb,
+    output          up_ldx,
     output          up_ab,
     output          up_xb,
     output          up_lea,
@@ -211,7 +212,8 @@ always @* begin
                                                             end
 
         // FIX MULTI_ALU_INH
-        MUL, LMUL:                                          opcat = MULTIPLY;
+        MUL:                                                opcat = MULTIPLY;
+        LMUL:                                               opcat = LMULTIPLY;
         DIV_X_B:                                            opcat = MULTI_ALU_INH;
         LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:   opcat = MULTI_ALU;
         LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:   opcat = MULTI_ALU_IDX;

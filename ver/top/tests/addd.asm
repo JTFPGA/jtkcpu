@@ -11,21 +11,19 @@
 ; 6 -> set to trigger FIRQ. Clear manually
 ; 7 -> set to trigger NMI.  Clear manually
 
-RAMEND   EQU $1000
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #1234
-        LDY #0303
-        LMUL
-        CMPX #$35A8
+RESET:  LDA #$05
+        ADDD #10
+        LDB #$64
+        CMPA #$0F
         BNE BAD
-        CMPY #$0008
+        ADDD #100
+        CMPD #$C8
         BNE BAD
 
         include finish.inc
 
-; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
         FDB   RESET
-

@@ -85,7 +85,7 @@ SINGLE_B_INH:       OPN0=REGS, UP_CC, UP_LDB
 SINGLE_ALU_INH16:   OPN0=REGS, UP_CC, UP_AB
                     NI
 
-SINGLE_ABX:         OPN0=REGS, UP_CC, UP_XB
+SINGLE_ABX:         OPN0=REGS, UP_LDX
                     NI
 
 SINGLE_ALU_IDX:     IDX_EN
@@ -132,7 +132,7 @@ LMULTIPLY:          NOP     # 20+ cycles in original
                     NOP
                     NOP
                     NOP     # 6th clock tick
-                    UP_LMUL # Result goes to {Y,X}
+                    UP_CC, UP_LMUL # Result goes to {Y,X}
                     NI
 
 ######### DECREMENT AND LOOP ##############

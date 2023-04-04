@@ -208,7 +208,7 @@ always @* begin
             {c_out, rslt} = {opnd0, cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        ABX: rslt = {8'h0, opnd0[7:0]} + {8'h0, opnd1[7:0]};  // ABX
+        ABX: rslt =  {8'h0, opnd0[7:0]} + opnd1 ;  // ABX
         DAA: begin  // DAA
             if ( c_out || opnd0[7:4] > 4'h9 || (opnd0[7:4] > 4'h8 && opnd0[3:0] > 4'h9 ))
                 rslt[7:4] = 4'h6;
