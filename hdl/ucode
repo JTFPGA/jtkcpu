@@ -100,6 +100,7 @@ MULTI_ALU:          OPD
 
 MEM_ALU_IDX:        IDX_EN
                     IDX_EN, WE
+                    OPN0=MEM, UP_CC
                     NI
 
 MULTI_ALU_INH:      OPD, MEMHI
@@ -110,9 +111,10 @@ MULTI_ALU_IDX:      IDX_EN
                     OPN0=REGS, UP_CC
                     NI
 
-WMEM_ALU:           IDX_EN
-                    OPN0=MEM, UP_DATA
-                    IDX_EN, WE
+WMEM_ALU:           IDX_EN, MEMHI
+                    IDX_EN, IDX_ADV
+                    OPN0=MEM, UP_CC, IDX_EN, WE, MEMHI
+                    OPN0=MEM,        IDX_EN, WE, IDX_ADV
                     NI
 
 MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)

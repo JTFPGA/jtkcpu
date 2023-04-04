@@ -170,7 +170,7 @@ always @* begin
             { c_out, rslt } = ~{ opnd0[15], opnd0 } + 17'b1;
             v_out = opnd0[msb]==rslt[msb];
         end
-        INCA,INCB,INC,INCD,INCW: begin  // INC, INCD, INCW
+        INCA,INCB,INC,INCD,INCW: begin
             rslt  = opnd0 + 1'b1;
             v_out = (~opnd0[msb] & rslt[msb]); // overflow calculated for signed integers
         end

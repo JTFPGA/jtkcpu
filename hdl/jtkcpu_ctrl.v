@@ -97,7 +97,7 @@ module jtkcpu_ctrl(
     output            up_y,
     output            up_u,
     output            up_s,
-    output reg        opnd0_mem,
+    output            opnd0_mem,
 
     output reg [15:0] pc
 
@@ -125,7 +125,6 @@ wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
      idx_step,
      set_opn0_a,
      set_opn0_b,
-     set_opn0_mem,
      set_opn0_regs,
      branch_bnz,
      set_pc_xnz_branch,
@@ -166,15 +165,6 @@ always @(posedge clk) begin
         end
 
     end
-end
-
-always @(posedge clk) if(cen) begin
-    case( op )
-        CLR, INC, NEG, COM, TST, DEC,
-        LSR, ROR, ASR, ASL, ROL:
-                 opnd0_mem <= 1;
-        default: opnd0_mem <= 0;
-    endcase
 end
 
 jtkcpu_ucode u_ucode(
@@ -244,7 +234,7 @@ jtkcpu_ucode u_ucode(
     .set_i             ( set_i             ),
     .set_opn0_a        ( set_opn0_a        ),
     .set_opn0_b        ( set_opn0_b        ),
-    .set_opn0_mem      ( set_opn0_mem      ),
+    .set_opn0_mem      ( opnd0_mem         ),
     .set_opn0_regs     ( set_opn0_regs     ),
     .branch_bnz        ( branch_bnz        ),
     .set_pc_branch16   ( set_pc_branch16   ),

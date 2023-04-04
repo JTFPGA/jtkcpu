@@ -217,7 +217,9 @@ always @* begin
         LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:   opcat = MULTI_ALU_IDX;
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW,
-        INCW, DECW, TSTW:                                   opcat = WMEM_ALU;
+        INCW, DECW, TSTW:                             begin opcat  = PARSE_IDX;
+                                                            nx_cat = WMEM_ALU;
+                                                            end
         BSR:                                                opcat = SBSR;
         LBSR:                                               opcat = BSRL;
         BRA, BRN, BHI, BLS, BCC, BCS, BNE,
