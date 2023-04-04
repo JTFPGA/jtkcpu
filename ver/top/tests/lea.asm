@@ -15,12 +15,29 @@ RAMEND   EQU $1000
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$1234
-        LDY #$0343
-        LMUL            ; 3B'5F9C
-        CMPX #$3B
+RESET:  LEAX RESET
+        CMPX #RESET
         BNE BAD
-        CMPY #$5F9C
+
+        LEAX -2,X
+        CMPX #(RESET-2)
+        BNE BAD
+
+        LEAY RAMEND
+        LEAY $234,Y
+        CMPY #(RAMEND+$234)
+        BNE BAD
+
+        LEAU RAMEND
+        LDA #$10
+        LEAU A,U
+        CMPU #(RAMEND+$10)
+        BNE BAD
+
+        LEAS RAMEND
+        LDB #$FF
+        LEAS B,S
+        CMPS #(RAMEND-1)
         BNE BAD
 
         include finish.inc

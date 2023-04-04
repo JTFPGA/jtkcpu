@@ -93,6 +93,7 @@ module jtkcpu_ctrl(
     output            up_a,
     output            up_b,
     output            up_d,
+    output            up_abx,
     output            up_x,
     output            up_y,
     output            up_u,
@@ -147,7 +148,7 @@ wire sbranch = (set_pc_branch8  & branch) | ( branch_bnz & ~cc[CC_Z]);
 wire lbranch = (set_pc_branch16 & branch);
 reg  bdone;
 
-always @(posedge clk) begin
+always @(posedge clk, posedge rst) begin
     if( rst ) begin
         pc    <= 0;
         bdone <= 0;
@@ -196,7 +197,7 @@ jtkcpu_ucode u_ucode(
     .clr_e             ( clr_e             ),
     .decb              ( decb              ),
     .decx              ( decx              ),
-
+    .up_abx            ( up_abx            ),
     // Indexed addressing
     .idx_rsel          ( idx_rsel          ),
     .idx_asel          ( idx_asel          ),

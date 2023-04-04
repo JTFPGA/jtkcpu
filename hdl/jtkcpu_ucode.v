@@ -53,6 +53,7 @@ module jtkcpu_ucode(
     output          up_move,
     output          incx,
     output          decu,
+    output          up_abx,
 
     output          up_tfr,
     output          up_exg,

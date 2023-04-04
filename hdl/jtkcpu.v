@@ -50,7 +50,7 @@ wire        alu_busy, mem_busy, stack_busy;
 wire        hihalf;
 wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
-            up_exg, up_tfr;
+            up_exg, up_tfr, up_abx;
 wire        branch, memhi;
 wire        pul_en, psh_dec, us_sel, opnd0_mem,
             wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
@@ -146,6 +146,7 @@ jtkcpu_ctrl u_ctrl(
     .up_b         ( up_b         ),
     .up_d         ( up_d         ),
     .up_x         ( up_x         ),
+    .up_abx       ( up_abx       ),
     .up_y         ( up_y         ),
     .pc           ( pc           ),
     .up_u         ( up_u         ),
@@ -258,6 +259,7 @@ jtkcpu_regs u_regs(
     .up_a         ( up_a         ),
     .up_b         ( up_b         ),
     .up_d         ( up_d         ),
+    .up_abx       ( up_abx       ),
     .up_x         ( up_x         ),
     .up_y         ( up_y         ),
     .up_u         ( up_u         ),

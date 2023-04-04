@@ -60,6 +60,7 @@ module jtkcpu_regs(
     input               up_b,
     input               up_d,
     input               up_x,
+    input               up_abx,
     input               up_y,
     input               up_u,
     input               up_s,
@@ -203,8 +204,8 @@ always @* begin
     end
     nx_u = u;
     nx_s = s;
-    if( up_s  ) nx_s = up_lea && op[1:0]==3 ? idx_addr : mdata;
-    if( up_u  ) nx_u = up_lea && op[1:0]==2 ? idx_addr : mdata;
+    if( up_s  ) nx_s = up_lea ? idx_addr : mdata;
+    if( up_u  ) nx_u = up_lea ? idx_addr : mdata;
     if( psh_dec_u | up_move | decu ) nx_u = u - 16'd1;
     if( psh_dec_s         ) nx_s = s - 16'd1;
     if( up_pul_other &&  psh_hihalf ) begin
@@ -323,9 +324,12 @@ always @(posedge clk, posedge rst) begin
 
         if( up_pul_dp ) dp <= alu[7:0];
 
-        if( up_x  ) x <= up_lmul || up_lea && op[1:0]==0 ? alu[15:0] : mdata;
-        if( dec_x ) x <= alu[15:0];
-        if( up_y  ) y <= up_lmul ? alu[31:16] : up_lea && op[1:0]==1 ? alu[15:0] : mdata;
+        if( up_x    ) x <= up_lea ? idx_addr : mdata;
+        if( up_lmul ) x <= alu[31:16];
+        if( up_abx  ) x <= alu[15: 0];
+        if( dec_x   ) x <= alu[15:0];
+        if( up_y    ) y <= up_lea ? idx_addr : mdata;
+        if( up_lmul ) y <= alu[15:0];
         // 16-bit registers from memory (PULL)
         if( up_pul_x &&  psh_hihalf ) x[15:8] <= mdata[7:0];
         if( up_pul_x && !psh_hihalf ) x[ 7:0] <= mdata[7:0];
