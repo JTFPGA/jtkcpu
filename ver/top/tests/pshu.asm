@@ -17,38 +17,38 @@ DATAW    EQU $0100
 
         ORG $F000
 RESET:  LDU #RAMEND
-        CLRB
-        LDA #$23
-        PSHU A                  ; PUSH A
 
-        LDB ,U
-        CMPB #$23
-        BNE BAD
-
-        CLRA
-        PSHU B                  ; PUSH B
-        LDA ,U
-        CMPA #$23
-        BNE BAD
-
-        LDD #$1234              ; PUSH D
-        PSHU D
-        CLRD
-        CMPD #0
-        BNE BAD
-        LDD ,U
-        CMPD #$1234
-        BNE BAD
-
-        LDX #$CAFE              ; PUSH X,Y,S
-        LDY #$BEEF
-        LDS #$DACA
+        LDX #$FEED              ; PUSH X,Y,S
+        LDY #$BEBE
+        LDS #$ABBA
         PSHU X,Y,S
         CMPX ,U
         BNE BAD
         CMPY 2,U
         BNE BAD
-        CMPU 4,U
+        CMPS 4,U
+        BNE BAD
+
+        LDA #$AA
+        PSHU A                  ; PUSH A
+
+        LDB ,U
+        CMPB #$AA
+        BNE BAD
+
+        CLRA
+        PSHU B                  ; PUSH B
+        LDA ,U
+        CMPA #$AA
+        BNE BAD
+
+        LDD #$ACDC              ; PUSH D
+        PSHU D
+        CLRD
+        CMPD #0
+        BNE BAD
+        LDD ,U
+        CMPD #$ACDC
         BNE BAD
 
         ORCC #$FF
