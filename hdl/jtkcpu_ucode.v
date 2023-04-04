@@ -169,8 +169,8 @@ always @* begin
         CLRB, INCB, NEGB, COMB, TSTB, DECB,
         ABSB, LSRB, RORB, ASRB, ASLB, ROLB:                 opcat = SINGLE_B_INH;
 
-        ABX, SEX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:       opcat = SINGLE_ALU_INH16;
-
+        SEX, CLRD, INCD, NEGD, TSTD, DECD, ABSD:       opcat = SINGLE_ALU_INH16;
+        ABX : opcat = SINGLE_ABX;
         CLR,  INC,  NEG,  COM,  TST,  DEC,
         LSR,  ROR,  ASR,  ASL,  ROL:                  begin opcat  = PARSE_IDX;
                                                             nx_cat = MEM_ALU_IDX;

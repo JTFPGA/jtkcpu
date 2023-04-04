@@ -18,6 +18,7 @@ RESET:  LDA #$FF
         SBCA #$F0
         CMPA #$0F
         BNE BAD
+
         LDB #$F0
         SBCB #$FF
         CMPB #$F1

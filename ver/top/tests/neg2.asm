@@ -18,7 +18,7 @@ RESET:
         LDB #$55
         STB ,X
         NEG ,X
-        BMI BAD
+        BPL BAD
 
         LDA #-$55
         CMPA ,X
