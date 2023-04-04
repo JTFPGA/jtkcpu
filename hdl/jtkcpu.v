@@ -204,7 +204,7 @@ jtkcpu_alu u_alu(
 
     .op           ( op           ),
     .opnd0        ( opnd0        ),
-    .opnd1        ( mdata        ),
+    .opnd1        ( opnd1        ),
     .cc_in        ( cc           ),
     .cc_out       ( cc_out       ),
     .busy         ( alu_busy     ),

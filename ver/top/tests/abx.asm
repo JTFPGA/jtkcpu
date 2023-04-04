@@ -15,12 +15,17 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:  CLRB
-        LDB #10
-        LDX #500
+        LDB #$AA
+        LDX #$CA54
         ABX
-        CMPX #$FFA1
+        CMPX #$CAFE
         BNE BAD
 
+        LDB #$FF
+        LDX #$FF01
+        ABX
+        CMPX #$0
+        BNE BAD
 
         include finish.inc
 
