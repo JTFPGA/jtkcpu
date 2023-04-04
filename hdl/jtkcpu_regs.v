@@ -175,7 +175,7 @@ always @(posedge clk, posedge rst) begin
             default : mux_reg0 <= {a, a};
         endcase
         if( opnd0_mem    ) mux_reg0 <= mdata;
-        if( dec_b | incx ) mux_reg0 <= { a, b };
+        if( dec_b | incx ) mux_reg0 <= {a, b};
         if( incx & decu  ) mux_reg0 <= {a, a};
         if( dec_x        ) mux_reg0 <= x;
     end

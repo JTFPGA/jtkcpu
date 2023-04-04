@@ -50,65 +50,65 @@ IDX_ACC:            NOP
 
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
-                    OPN0=REGS, UP_CC, UP_LD8
+                    UP_CC, UP_LD8
                     NI
 
 CMP8:               OPD
-                    OPN0=REGS, UP_CC
+                    UP_CC
                     NI
 
 CMP8_IDX:           IDX_EN
-                    OPN0=REGS, UP_CC
+                    UP_CC
                     NI
 
 SINGLE_ALU_16:      OPD, MEMHI
                     OPD
-                    OPN0=REGS, UP_CC, UP_LD16
+                    UP_CC, UP_LD16
                     NI
 
 SINGLE_ALUD:        OPD, MEMHI
                     OPD
-                    OPN0=REGS, UP_CC, UP_AB
+                    UP_CC, UP_AB
                     NI
 
 SINGLE_ALUD_IDX:    IDX_EN, MEMHI
                     IDX_EN, IDX_ADV
-                    OPN0=REGS, UP_CC, UP_AB
+                    UP_CC, UP_AB
                     NI
 
 CMP16:              OPD, MEMHI
                     OPD
-                    OPN0=REGS, UP_CC
+                    UP_CC
                     NI
 
 CMP16_IDX:          IDX_EN, MEMHI
                     IDX_EN, IDX_ADV
-                    OPN0=REGS, UP_CC
+                    UP_CC
                     NI
 
-SINGLE_A_INH:       OPN0=REGS, UP_CC, UP_LDA
+SINGLE_A_INH:       UP_CC, UP_LDA
                     NI
 
-SINGLE_B_INH:       OPN0=REGS, UP_CC, UP_LDB
+SINGLE_B_INH:       UP_CC, UP_LDB
                     NI
 
-SINGLE_ALU_INH16:   OPN0=REGS, UP_CC, UP_AB
+SINGLE_ALU_INH16:   UP_CC, UP_AB
                     NI
 
-SINGLE_ABX:         OPN0=REGS, UP_LEA
+SINGLE_ABX:         UP_LEA
                     NI
 
 SINGLE_ALU_IDX:     IDX_EN
-                    OPN0=REGS, UP_CC, UP_LD8
+                    UP_CC, UP_LD8
                     NI
 
 SINGLE_ALU_IDX16:   IDX_EN, MEMHI
                     IDX_EN, IDX_ADV
-                    OPN0=REGS, UP_CC, UP_LD16
+                    UP_CC, UP_LD16
                     NI
 
 MULTI_ALU:          OPD
-                    OPN0=REGS, UP_CC
+                    UP_CC
                     NI
 
 MEM_ALU_IDX:        IDX_EN
@@ -116,11 +116,11 @@ MEM_ALU_IDX:        IDX_EN
                     NI
 
 MULTI_ALU_INH:      OPD, MEMHI
-                    OPN0=REGS, UP_CC, UP_XB
+                    UP_CC, UP_XB
                     NI
 
 MULTI_ALU_IDX:      IDX_EN
-                    OPN0=REGS, UP_CC
+                    UP_CC
                     NI
 
 WMEM_ALU:           IDX_EN, MEMHI
@@ -179,11 +179,11 @@ BSETD:              NIUZ
                     UC_LOOP
 
 ############### LOAD/STORE OPERATIONS ############
-STORE8:             OPN0=REGS, IDX_EN, WE,
+STORE8:             IDX_EN, WE,
                     NI
 
-STORE16:            OPN0=REGS, IDX_EN, WE, MEMHI
-                    OPN0=REGS, IDX_EN, WE, IDX_ADV
+STORE16:            IDX_EN, WE, MEMHI
+                    IDX_EN, WE, IDX_ADV
                     NI
 
 LEA:                UP_LEA, UP_CC
