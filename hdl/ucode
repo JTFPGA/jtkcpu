@@ -66,6 +66,16 @@ SINGLE_ALU_16:      OPD, MEMHI
                     OPN0=REGS, UP_CC, UP_LD16
                     NI
 
+SINGLE_ALUD:        OPD, MEMHI
+                    OPD
+                    OPN0=REGS, UP_CC, UP_AB
+                    NI
+
+SINGLE_ALUD_IDX:    IDX_EN, MEMHI
+                    IDX_EN, IDX_ADV
+                    OPN0=REGS, UP_CC, UP_AB
+                    NI
+
 CMP16:              OPD, MEMHI
                     OPD
                     OPN0=REGS, UP_CC

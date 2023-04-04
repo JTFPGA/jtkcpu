@@ -14,13 +14,20 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$05
-        ADDD #10
+RESET:  CLRB
+        LDA  #$5
+        ADDD #$A00
         LDB #$64
         CMPA #$0F
         BNE BAD
-        ADDD #100
-        CMPD #$C8
+
+        ADDD #$111
+        CMPD #$1075
+        BNE BAD
+
+        STD ,X
+        ADDD ,X
+        CMPD #$20EA
         BNE BAD
 
         include finish.inc
