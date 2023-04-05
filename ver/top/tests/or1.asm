@@ -14,10 +14,12 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDB #$3B
+RESET:
+        LDB #$3B
         ORB #$0C
-        CMPB #$3
+        CMPB #$3F
         BNE BAD
+
         LDA #$07
         ORA #$0E
         CMPA #$0F
