@@ -26,8 +26,7 @@ RESET:
         BNE BAD
         CLRD
 
-        LDA #$88
-        LDB #$F1
+        LDD #$88F1
         NEGD
         CMPD #$770F
         BNE BAD

@@ -206,8 +206,8 @@ always @(posedge clk) if(cen) begin
         9'o324: ucode <= 60'h10000000;
         9'o330: ucode <= 60'h80000;    // SHIFTD_IDX
         9'o331: ucode <= 60'h80000000000;
-        9'o332: ucode <= 60'hA00000000000;
-        9'o333: ucode <= 60'h10000000;
+        9'o333: ucode <= 60'hA00000000000;
+        9'o334: ucode <= 60'h10000000;
         9'o340: ucode <= 60'h80000;    // MEM_ALU_IDX
         9'o341: ucode <= 60'h800800100080000;
         9'o342: ucode <= 60'h10000000;

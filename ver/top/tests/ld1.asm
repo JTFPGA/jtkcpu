@@ -15,16 +15,16 @@ TESTCTRL EQU $1000
 
 		ORG $F000
 RESET:
-		LEAS DATAS
+	LEAS DATAS
         LEAU DATAU
-		LDX ,S++
-		CMPX #$BEBE
-		BNE BAD
-		LDY ,U++
-		CMPY #$CAFE
-		BNE BAD
+	LDX ,S++
+	CMPX #$BEBE
+	BNE BAD
+	LDY ,U++
+	CMPY #$CAFE
+	BNE BAD
 
-		LDX  ,S++
+	LDX  ,S++
         CMPX #$ABCD
         BNE  BAD
 
