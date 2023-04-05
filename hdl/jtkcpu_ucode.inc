@@ -138,8 +138,9 @@ always @(posedge clk) if(cen) begin
         9'o031: ucode <= 59'h100000;
         9'o040: ucode <= 59'h800000;    // IDX_RDEC
         9'o041: ucode <= 59'h100000;
-        9'o050: ucode <= 59'h802000;    // IDX_RDEC2
-        9'o051: ucode <= 59'h100000;
+        9'o050: ucode <= 59'h2000;    // IDX_RDEC2
+        9'o051: ucode <= 59'h800000;
+        9'o052: ucode <= 59'h100000;
         9'o060: ucode <= 59'h40000000;    // IDX_OFFSET8
         9'o061: ucode <= 59'h108000;
         9'o070: ucode <= 59'h48000000;    // IDX_OFFSET16

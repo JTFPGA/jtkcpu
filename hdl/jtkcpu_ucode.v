@@ -312,6 +312,7 @@ always @(posedge clk) begin
             idx_rsel   <= mdata[6:4];
             idx_asel   <= mdata[1:0];
             idx_ind_rq <= mdata[3];
+            idxw       <= 0;
         end
         if( idx_ind ) begin
             idx_ld    <= !data2addr && !idx_dp && !idx_8 && !idx_16;

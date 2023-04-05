@@ -29,7 +29,8 @@ IDX_RINC2:          IDX_POST=1, IDXW=1          # 1 - R++ / [R++]
                     IDX_IND
 IDX_RDEC:           IDX_PRE
                     IDX_IND                     # 2 -  -R
-IDX_RDEC2:          IDX_PRE, IDXW=1
+IDX_RDEC2:          IDXW=1
+                    IDX_PRE
                     IDX_IND                     # 3 - --R
 IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
                     IDX_8, IDX_IND
