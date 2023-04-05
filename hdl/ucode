@@ -116,6 +116,7 @@ SHIFTD:             OPD
 
 SHIFTD_IDX:         IDX_EN
                     SHD_EN
+                    NOP
                     UP_CC, UP_AB
                     NI
 
