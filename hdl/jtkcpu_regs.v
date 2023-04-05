@@ -328,9 +328,8 @@ always @(posedge clk, posedge rst) begin
 
         if( up_x    ) x <= up_lea ? idx_addr : mdata;
         if( up_lmul ) x <= alu[31:16];
-        if( up_abx  ) x <= alu[15: 0];
-        if( up_div  ) x <= alu[15: 0];
-        if( dec_x   ) x <= alu[15: 0];
+        if( up_abx || up_div || dec_x ) x <= alu[15: 0];
+
         if( up_y    ) y <= up_lea ? idx_addr : mdata;
         if( up_lmul ) y <= alu[15:0];
         // 16-bit registers from memory (PULL)

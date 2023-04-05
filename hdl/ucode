@@ -131,21 +131,21 @@ WMEM_ALU:           IDX_EN, MEMHI
                     OPN0=MEM,        IDX_EN, WE, IDX_ADV
                     NI
 
-MULTIPLY:           NOP     # 11 cycles in 6809 (8 here)
+MULTIPLY:           NOP             # 11 cycles in 6809 (8 here)
                     NOP
                     NOP
-                    NOP     # 6th clock tick
+                    NOP             # 6th clock tick
                     UP_CC, UP_AB
                     NI
-                    NOP     # Leave this NOP
+                    NOP             # Leave this NOP
 
-LMULTIPLY:          NOP     # 20+ cycles in original
+LMULTIPLY:          NOP             # 20+ cycles in original
                     NOP
                     NOP
                     NOP             # 6th clock tick
                     UP_CC, UP_LMUL  # Result goes to {X,Y}
                     NI
-                    NOP     # Leave this NOP
+                    NOP             # Leave this NOP
 
 ######### DECREMENT AND LOOP ##############
 LOOPX:              OPD,
