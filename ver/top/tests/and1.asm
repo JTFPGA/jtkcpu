@@ -15,12 +15,13 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:  LDX #DATAR
-        LDY #05
+        LDB #05
 
 LOOP:   LDA  ,X
+        COMA
         ANDA ,X
-        DEC  ,Y
-        CMPA #00
+        BNE BAD
+        DECB
         BNE LOOP
 
         include finish.inc

@@ -17,22 +17,23 @@ DATAW    EQU $0100
 
         ORG $F000
 RESET:  LDU #RAMEND
+
         LDX #$ABBA
         LDY #$BEBE
         LDD #$ACDC
         PSHU D,X,Y
-        CMPD ,U
+
+        CMPY 4,U
         BNE BAD
         CMPX 2,U
         BNE BAD
-        CMPY 4,U
+        CMPD ,U
         BNE BAD
 
         CLRD
         LDD #$CAFE
         PSHU D
-        LDX ,U
-        CMPD ,X
+        CMPD ,U
         BNE BAD
 
         include finish.inc
