@@ -177,7 +177,7 @@ always @(posedge clk, posedge rst) begin
             default : opnd0 <= {a, a};
         endcase
         if( opnd0_mem    ) opnd0 <= mdata;
-        if( dec_b | incx ) opnd0 <= {a, b};
+        if( dec_b | incx | up_d ) opnd0 <= {a, b};
         if( incx & decu  ) opnd0 <= {a, a};
         if( dec_x        ) opnd0 <= x;
     end

@@ -14,14 +14,14 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$0D
+RESET:  LDX #$0C
         LDD #$ABCD
         DECD
         CMPD #$ABCC
         BNE BAD
 
 LOOP:   DECD
-        DECW ,X
+        LEAX -1,X
         CMPX #$00
         BNE LOOP
         CMPD #$ABC0
