@@ -46,13 +46,11 @@ wire [ 7:0] op, postbyte;
 wire [ 7:0] stack_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
-wire        alu_busy, mem_busy, stack_busy;
-wire        hihalf;
-wire        is_op;
-wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
-            up_exg, up_tfr, up_abx, up_div;
-wire        branch, memhi;
-wire        pul_en, psh_dec, us_sel, opnd0_mem, div_en,
+wire        alu_busy, mem_busy, stack_busy,
+            hihalf, is_op, branch, memhi, shd_en,
+            up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
+            up_exg, up_tfr, up_abx, up_div,
+            pul_en, psh_dec, us_sel, opnd0_mem, div_en,
             wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
             dec_b, dec_x, incx, decu,
             clr_e, set_e, set_f, set_i, up_move,
@@ -138,6 +136,7 @@ jtkcpu_ctrl u_ctrl(
     .set_e        ( set_e        ),
     .set_f        ( set_f        ),
     .set_i        ( set_i        ),
+    .shd_en       ( shd_en       ),
     .up_a         ( up_a         ),
     .up_abx       ( up_abx       ),
     .up_b         ( up_b         ),
@@ -214,6 +213,7 @@ jtkcpu_alu u_alu(
     .dec8         ( dec_b        ),
     .dec16        ( dec_x        ),
     .div_en       ( div_en       ),
+    .shd_en       ( shd_en       ),
 
     .rslt         ( rslt[15:0]   ),
     .rslt_hi      ( rslt[31:16]  )
@@ -281,8 +281,8 @@ jtkcpu_regs u_regs(
     .dec_b        ( dec_b        ),
     .psh_dec      ( psh_dec      ),
 
-    .mux_reg0     ( opnd0        ),
-    .mux_reg1     ( opnd1        ),
+    .opnd0        ( opnd0        ),
+    .opnd1        ( opnd1        ),
     .nx_u         ( nx_u         ),
     .nx_s         ( nx_s         ),
     .psh_addr     ( psh_addr     ),

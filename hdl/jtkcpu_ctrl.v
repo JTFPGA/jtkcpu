@@ -86,6 +86,7 @@ module jtkcpu_ctrl(
     output            set_i,
     output            set_e,
     output            set_f,
+    output            shd_en,
     output            clr_e,
     output            up_cc,
 
@@ -239,6 +240,7 @@ jtkcpu_ucode u_ucode(
     .set_opn0_mem      ( opnd0_mem         ),
     .set_pc_branch16   ( set_pc_branch16   ),
     .set_pc_branch8    ( set_pc_branch8    ),
+    .shd_en            ( shd_en            ),
     .uc_loop           ( uc_loop           ),
     .up_ab             ( up_ab             ),
     .up_cc             ( up_cc             ),

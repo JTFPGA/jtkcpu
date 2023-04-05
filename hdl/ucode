@@ -108,8 +108,15 @@ SINGLE_ALU_IDX16:   IDX_EN, MEMHI
                     UP_CC, UP_LD16
                     NI
 
-MULTI_ALU:          OPD
-                    UP_CC
+SHIFTD:             OPD
+                    SHD_EN
+                    NOP
+                    UP_CC, UP_AB
+                    NI
+
+SHIFTD_IDX:         IDX_EN
+                    SHD_EN
+                    UP_CC, UP_AB
                     NI
 
 MEM_ALU_IDX:        IDX_EN
@@ -120,10 +127,6 @@ DIVIDE:             DIV_EN
                     NOP
                     NOP
                     UP_CC, UP_DIV
-                    NI
-
-MULTI_ALU_IDX:      IDX_EN
-                    UP_CC
                     NI
 
 WMEM_ALU:           IDX_EN, MEMHI

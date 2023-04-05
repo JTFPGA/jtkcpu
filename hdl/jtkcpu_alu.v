@@ -31,6 +31,7 @@ module jtkcpu_alu(
     input             dec8,
     input             dec16,
     input             div_en,
+    input             shd_en,
 
     output            busy,
 
@@ -41,6 +42,8 @@ module jtkcpu_alu(
 `include "jtkcpu.inc"
 
 wire [3:0] msb;
+reg  [7:0] shd_cnt;
+wire       shd_busy, div_busy;
 reg        alu16, up_z, up_n;
 reg        c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
@@ -50,8 +53,10 @@ wire        div_v;
 wire [ 7:0] div_rem;
 wire [15:0] div_quot;
 
-assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
-assign msb    = alu16 ? 4'd15 : 4'd7;
+assign cc_out   = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
+assign msb      = alu16 ? 4'd15 : 4'd7;
+assign shd_busy = shd_cnt!=0;
+assign busy     = div_busy | shd_busy;
 
 always @(posedge clk) begin
     alu16 <= op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
@@ -66,6 +71,16 @@ always @(posedge clk) begin
              op!=ABSD && op!=ANDCC && op!=ORCC;
 end
 
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        shd_cnt <= 0;
+    end else if(cen) begin
+        if( shd_en && opnd1[7:0]!=0 )
+            shd_cnt <= opnd1[7:0]-8'd1 ;
+        else if( shd_cnt!=0 ) shd_cnt <= shd_cnt-1'd1;
+    end
+end
+
 jtkcpu_div u_div(
     .rst  ( rst         ),
     .clk  ( clk         ),
@@ -77,7 +92,7 @@ jtkcpu_div u_div(
     .start( div_en      ),
     .quot ( div_quot    ),
     .rem  ( div_rem     ),
-    .busy ( busy        ),
+    .busy ( div_busy    ),
     .v    ( div_v       )
 );
 
@@ -207,7 +222,6 @@ always @* begin
             // {c_out, rslt} = {opnd0, 1'b0};
             rslt  = opnd0 << 1;
             c_out = opnd0[msb];
-            // v_out = opnd0[msb] ^ opnd0[msb-1];
             v_out = opnd0[msb] ^ rslt[msb];
         end
         ROLA,ROLB,ROL,ROLW,ROLD_IMM,ROLD_IDX: begin  // ROL, ROLW, ROLD

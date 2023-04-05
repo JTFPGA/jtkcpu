@@ -87,8 +87,8 @@ module jtkcpu_regs(
     input               dec_x,
     input               dec_b,
 
-    output   reg [15:0] mux_reg0,
-    output   reg [15:0] mux_reg1,
+    output   reg [15:0] opnd0,
+    output   reg [15:0] opnd1,
     output   reg [15:0] nx_u,
     output   reg [15:0] nx_s,
     output   reg [15:0] x,
@@ -154,40 +154,40 @@ end
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        mux_reg0 <= 0;
+        opnd0 <= 0;
     end else if( cen2 ) begin
         case ( op )
             ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB, ABX,
             ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
             ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
-            ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: mux_reg0 <= {a, b}; // "a" will be ignored
+            ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: opnd0 <= {a, b}; // "a" will be ignored
 
             CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
             CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
-                CLRD,     NEGD,     ABSD,      STD: mux_reg0 <= {a, b};
+                CLRD,     NEGD,     ABSD,      STD: opnd0 <= {a, b};
 
-            CMPX_IMM, CMPX_IDX, STX, DIVXB: mux_reg0 <= x;
-            CMPY_IMM, CMPY_IDX, STY, LMUL:    mux_reg0 <= y;
-            CMPU_IMM, CMPU_IDX, STU:          mux_reg0 <= u;
-            CMPS_IMM, CMPS_IDX, STS:          mux_reg0 <= s;
-            LEAX, LEAY, LEAU, LEAS:           mux_reg0 <= idx_addr;
-            SEX: mux_reg0 <= { a, b };
-            ANDCC, ORCC: mux_reg0 <= {a, cc};
+            CMPX_IMM, CMPX_IDX, STX, DIVXB: opnd0 <= x;
+            CMPY_IMM, CMPY_IDX, STY, LMUL:    opnd0 <= y;
+            CMPU_IMM, CMPU_IDX, STU:          opnd0 <= u;
+            CMPS_IMM, CMPS_IDX, STS:          opnd0 <= s;
+            LEAX, LEAY, LEAU, LEAS:           opnd0 <= idx_addr;
+            SEX: opnd0 <= { a, b };
+            ANDCC, ORCC: opnd0 <= {a, cc};
 
-            default : mux_reg0 <= {a, a};
+            default : opnd0 <= {a, a};
         endcase
-        if( opnd0_mem    ) mux_reg0 <= mdata;
-        if( dec_b | incx ) mux_reg0 <= {a, b};
-        if( incx & decu  ) mux_reg0 <= {a, a};
-        if( dec_x        ) mux_reg0 <= x;
+        if( opnd0_mem    ) opnd0 <= mdata;
+        if( dec_b | incx ) opnd0 <= {a, b};
+        if( incx & decu  ) opnd0 <= {a, a};
+        if( dec_x        ) opnd0 <= x;
     end
 end
 
 always @* begin
     case ( op )
-        DIVXB:    mux_reg1 = {8'h0,  b};
-        ABX, LMUL:  mux_reg1 = x;
-        default:    mux_reg1 = mdata;
+        DIVXB:    opnd1 = {8'h0,  b};
+        ABX, LMUL:  opnd1 = x;
+        default:    opnd1 = mdata;
     endcase
 end
 

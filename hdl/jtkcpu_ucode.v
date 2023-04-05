@@ -81,6 +81,7 @@ module jtkcpu_ucode(
     output          set_opn0_mem,
     output          set_pc_branch16,
     output          set_pc_branch8,
+    output          shd_en,
     output          uc_loop,
     output          up_ab,
     output          up_abx,
@@ -205,9 +206,13 @@ always @* begin
 
         MUL:                                                opcat = MULTIPLY;
         LMUL:                                               opcat = LMULTIPLY;
-        DIVXB:                                            opcat = DIVIDE;
-        LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:   opcat = MULTI_ALU;
-        LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:   opcat = MULTI_ALU_IDX;
+        DIVXB:                                              opcat = DIVIDE;
+        LSRD_IMM, RORD_IMM, ASRD_IMM,
+        ASLD_IMM, ROLD_IMM:                                 opcat = SHIFTD;
+        LSRD_IDX, RORD_IDX, ASRD_IDX,
+        ASLD_IDX, ROLD_IDX:                           begin opcat  = PARSE_IDX;
+                                                            nx_cat = SHIFTD_IDX;
+                                                            end
 
         LSRW, RORW, ASRW, ASLW, ROLW, NEGW, CLRW,
         INCW, DECW, TSTW:                             begin opcat  = PARSE_IDX;
