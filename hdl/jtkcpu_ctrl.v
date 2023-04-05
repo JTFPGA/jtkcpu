@@ -65,6 +65,7 @@ module jtkcpu_ctrl(
     output            up_move,
     output            incx,
     output            decu,
+    output            div_en,
 
     output            up_tfr,
     output            up_exg,
@@ -77,6 +78,7 @@ module jtkcpu_ctrl(
     output            up_lea,
     output            up_lines,
     output            up_lmul,
+    output            up_div,
     output            wrq,
     output            decb,
     output            decx,
@@ -116,7 +118,7 @@ module jtkcpu_ctrl(
 wire branch, ni;
 wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
      int_en,   uc_loop, niuz,
-     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab, up_xb,
+     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab,
      rti_cc,   rti_other,
      pc_jmp,   set_pc_branch16, set_pc_branch8, pc_inc1,
      buserror, intsrv,
@@ -132,10 +134,10 @@ wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
 // assign up_b = ( up_ld8 &  (op[0]^is_inh) ) ;
 
 assign up_a = ( up_ld8 && ~op[0] ) || up_lda;
-assign up_b = ( up_ld8 &&  op[0] ) || up_ldb || up_xb;
+assign up_b = ( up_ld8 &&  op[0] ) || up_ldb || up_div;
 
 assign up_d = (up_ld16 && op[3:1]==0) || up_ab;
-assign up_x = (up_ld16 && op[3:1]==1) || (up_lea && op[1:0]==LEAX[1:0]) || up_lmul || up_xb;
+assign up_x = (up_ld16 && op[3:1]==1) || (up_lea && op[1:0]==LEAX[1:0]) || up_lmul || up_div;
 assign up_y = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lmul;
 assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
 assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
@@ -214,12 +216,14 @@ jtkcpu_ucode u_ucode(
     .up_tfr            ( up_tfr            ),
     .up_exg            ( up_exg            ),
 
+    .branch_bnz        ( branch_bnz        ),
+    .div_en            ( div_en            ),
     .int_en            ( int_en            ),
     .memhi             ( memhi             ),
     .ni                ( ni                ),
-    .uc_loop           ( uc_loop           ),
     .niuz              ( niuz              ),
     .opd               ( opd               ),
+    .pc_jmp            ( pc_jmp            ),
     .psh_all           ( psh_all           ),
     .psh_cc            ( psh_cc            ),
     .psh_go            ( psh_go            ),
@@ -233,20 +237,19 @@ jtkcpu_ucode u_ucode(
     .set_opn0_a        ( set_opn0_a        ),
     .set_opn0_b        ( set_opn0_b        ),
     .set_opn0_mem      ( opnd0_mem         ),
-    .branch_bnz        ( branch_bnz        ),
     .set_pc_branch16   ( set_pc_branch16   ),
     .set_pc_branch8    ( set_pc_branch8    ),
-    .pc_jmp            ( pc_jmp            ),
+    .uc_loop           ( uc_loop           ),
+    .up_ab             ( up_ab             ),
     .up_cc             ( up_cc             ),
     .up_ld16           ( up_ld16           ),
     .up_ld8            ( up_ld8            ),
     .up_lda            ( up_lda            ),
     .up_ldb            ( up_ldb            ),
-    .up_ab             ( up_ab             ),
-    .up_xb             ( up_xb             ),
     .up_lea            ( up_lea            ),
     .up_lines          ( up_lines          ),
     .up_lmul           ( up_lmul           ),
+    .up_div            ( up_div            ),
     .we                ( wrq               )
 
 );

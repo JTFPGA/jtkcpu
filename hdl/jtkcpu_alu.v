@@ -30,6 +30,7 @@ module jtkcpu_alu(
     // Special OPs
     input             dec8,
     input             dec16,
+    input             div_en,
 
     output            busy,
 
@@ -39,26 +40,30 @@ module jtkcpu_alu(
 
 `include "jtkcpu.inc"
 
-reg c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
-reg alu16;
-wire [3:0] msb   = alu16 ? 4'd15 : 4'd7;
+wire [3:0] msb;
+reg        alu16, up_z, up_n;
+reg        c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
 // Divider
-reg         div_start = 0, div_len = 0, div_sign = 0;
+reg         div_sign = 0;
 wire        div_v;
-wire [ 7:0] div_quot, div_rem;
-wire [15:0] div_rslt;
-assign div_rslt = { div_rem, div_quot };
+wire [ 7:0] div_rem;
+wire [15:0] div_quot;
 
 assign cc_out = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
+assign msb    = alu16 ? 4'd15 : 4'd7;
 
 always @(posedge clk) begin
     alu16 <= op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
              op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
              op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
              op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
-             op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW ||
+             op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW || op==DIVXB  ||
              dec16;
+    up_n  <= op!=LEAX && op!=LEAY  && op!=LEAU  && op!=LEAS  && op!=ABX &&
+             op!=MUL  && op!=LMUL  && op!=DIVXB && op!=ANDCC && op!=ORCC;
+    up_z  <= op!=LEAU && op!=LEAS  && op!=ABX   && op!=ABSA  && op!=ABSB &&
+             op!=ABSD && op!=ANDCC && op!=ORCC;
 end
 
 jtkcpu_div u_div(
@@ -67,9 +72,9 @@ jtkcpu_div u_div(
     .cen  ( cen         ),
     .op0  ( opnd0       ),
     .op1  ( opnd1[7:0]  ),
-    .len  ( div_len     ),
+    .len  ( 1'b1        ),
     .sign ( div_sign    ),
-    .start( div_start   ),
+    .start( div_en      ),
     .quot ( div_quot    ),
     .rem  ( div_rem     ),
     .busy ( busy        ),
@@ -242,8 +247,9 @@ always @* begin
             c_out = 0;
             v_out = 0;
         end
-        DIV_X_B: begin
-            rslt = div_rslt;
+        DIVXB: begin
+            rslt    = div_quot;
+            rslt_hi = {8'd0, div_rem};
         end
         default:
             rslt = opnd0;
@@ -254,9 +260,9 @@ always @* begin
         v_out = (opnd0[msb] & ~rslt[msb]); // overflow calculated for signed integers
     end
 
-    if ( op!=LEAU && op!=LEAS && op!=ABX && op!=ABSA && op!=ABSB && op!=ABSD && op!=ANDCC && op!=ORCC )
+    if( up_z )
         z_out = alu16 ? rslt==0 : rslt[7:0]==0;
-    if ( op!=LEAX && op!=LEAY && op!=LEAU && op!=LEAS && op!=ABX && op!=MUL && op!=LMUL && op!=ANDCC && op!=ORCC)
+    if( up_n )
         n_out = rslt[msb];
 end
 

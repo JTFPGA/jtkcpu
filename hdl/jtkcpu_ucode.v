@@ -49,27 +49,23 @@ module jtkcpu_ucode(
     input           firq_n,
     input           uz,
     // control outputs from ucode
-    output          niuz,
-    output          up_move,
-    output          incx,
-    output          decu,
-    output          up_abx,
-
-    output          up_tfr,
-    output          up_exg,
-
-    output          idx_adv,
     output          addrx,
     output          addry,
-    output          uc_loop,
+    output          branch_bnz,
     output          buserror,
     output          clr_e,
     output          decb,
+    output          decu,
     output          decx,
+    output          div_en,
+    output          idx_adv,
+    output          incx,
     output          int_en,
     output          memhi,
     output          ni,
+    output          niuz,
     output          opd,
+    output          pc_jmp,
     output          psh_all,
     output          psh_cc,
     output          psh_go,
@@ -83,20 +79,23 @@ module jtkcpu_ucode(
     output          set_opn0_a,
     output          set_opn0_b,
     output          set_opn0_mem,
-    output          branch_bnz,
     output          set_pc_branch16,
     output          set_pc_branch8,
-    output          pc_jmp,
+    output          uc_loop,
+    output          up_ab,
+    output          up_abx,
     output          up_cc,
+    output          up_exg,
     output          up_ld16,
     output          up_ld8,
     output          up_lda,
     output          up_ldb,
-    output          up_ab,
-    output          up_xb,
     output          up_lea,
     output          up_lines,
     output          up_lmul,
+    output          up_move,
+    output          up_tfr,
+    output          up_div,
     output          we,
 
     // other outputs
@@ -204,10 +203,9 @@ always @* begin
                                                             nx_cat = JMSR;
                                                             end
 
-        // FIX MULTI_ALU_INH
         MUL:                                                opcat = MULTIPLY;
         LMUL:                                               opcat = LMULTIPLY;
-        DIV_X_B:                                            opcat = MULTI_ALU_INH;
+        DIVXB:                                            opcat = DIVIDE;
         LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM:   opcat = MULTI_ALU;
         LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX:   opcat = MULTI_ALU_IDX;
 
@@ -285,7 +283,7 @@ always @(posedge clk) begin
         nmin_l    <= nmi_n;
 
         if( !nmi_n && nmin_l ) do_nmi <= 1; // NMI is edge triggered
-        if( !mem_busy && !stack_busy && !niuz && !niuzl ) begin
+        if( !mem_busy && !alu_busy && !stack_busy && !niuz && !niuzl ) begin
             addr <= addr + 1'd1; // keep processing an opcode routine
         end
         if( nil ) begin

@@ -115,8 +115,10 @@ MEM_ALU_IDX:        IDX_EN
                     OPN0=MEM, UP_CC, IDX_EN, WE
                     NI
 
-MULTI_ALU_INH:      OPD, MEMHI
-                    UP_CC, UP_XB
+DIVIDE:             DIV_EN
+                    NOP
+                    NOP
+                    UP_CC, UP_DIV
                     NI
 
 MULTI_ALU_IDX:      IDX_EN

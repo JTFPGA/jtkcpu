@@ -25,7 +25,7 @@ module jtkcpu_div(
     input             len,
     input             start,
     input             sign,
-    output     [ 7:0] quot,
+    output     [15:0] quot,
     output reg [ 7:0] rem,
     output reg        busy,
     output reg        v
@@ -42,7 +42,7 @@ reg         sign0, sign1, rsi;
 assign larger = sub>= { 8'd0, divor };
 assign rslt   = sub - { 8'd0, divor };
 assign nx_quot= { fullq[14:0], larger };
-assign quot   = fullq[7:0];
+assign quot   = fullq;
 
 always @* begin
     op0_unsig = op0;
@@ -67,7 +67,7 @@ always @(posedge clk or posedge rst) begin
         start_l<= 0;
         v      <= 0;
         rsi    <= 0;
-    end else begin
+    end else if(cen) begin
         start_l <= start;
         if( start && !start_l) begin
             busy   <= 1;

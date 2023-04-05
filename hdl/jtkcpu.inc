@@ -177,7 +177,7 @@ localparam [7:0]
     SEX          = 8'hB2,
     MUL          = 8'hB3,
     LMUL         = 8'hB4,
-    DIV_X_B      = 8'hB5,
+    DIVXB      = 8'hB5,
     BMOVE_Y_X_U  = 8'hB6,
     MOVE_Y_X_U   = 8'hB7,
     LSRD_IMM     = 8'hB8,

@@ -50,9 +50,9 @@ wire        alu_busy, mem_busy, stack_busy;
 wire        hihalf;
 wire        is_op;
 wire        up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
-            up_exg, up_tfr, up_abx;
+            up_exg, up_tfr, up_abx, up_div;
 wire        branch, memhi;
-wire        pul_en, psh_dec, us_sel, opnd0_mem,
+wire        pul_en, psh_dec, us_sel, opnd0_mem, div_en,
             wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
             dec_b, dec_x, incx, decu,
             clr_e, set_e, set_f, set_i, up_move,
@@ -87,6 +87,7 @@ jtkcpu_ctrl u_ctrl(
 
     .up_tfr       ( up_tfr       ),
     .up_exg       ( up_exg       ),
+    .up_div       ( up_div       ),
 
     .opnd0_mem    ( opnd0_mem    ),
     // Indexed addressing
@@ -124,33 +125,33 @@ jtkcpu_ctrl u_ctrl(
     .decu         ( decu         ),
     .incx         ( incx         ),
 
-    .hihalf       ( hihalf       ),
-    .memhi        ( memhi        ),
+    .clr_e        ( clr_e        ),
+    .decb         ( dec_b        ),
+    .decx         ( dec_x        ),
+    .div_en       ( div_en       ),
     .fetch        ( fetch        ),
+    .hihalf       ( hihalf       ),
+    .intvec       ( intvec       ),
+    .memhi        ( memhi        ),
     .opd          ( opd          ),
+    .pc           ( pc           ),
+    .set_e        ( set_e        ),
+    .set_f        ( set_f        ),
+    .set_i        ( set_i        ),
+    .up_a         ( up_a         ),
+    .up_abx       ( up_abx       ),
+    .up_b         ( up_b         ),
+    .up_cc        ( up_cc        ),
+    .up_d         ( up_d         ),
     .up_lea       ( up_lea       ),
     .up_lines     ( up_lines     ),
     .up_lmul      ( up_lmul      ),
+    .up_s         ( up_s         ),
+    .up_u         ( up_u         ),
+    .up_x         ( up_x         ),
+    .up_y         ( up_y         ),
     .us_sel       ( us_sel       ),
     .wrq          ( wrq          ),
-    .decx         ( dec_x        ),
-    .decb         ( dec_b        ),
-    .set_e        ( set_e        ),
-    .set_i        ( set_i        ),
-    .set_f        ( set_f        ),
-    .clr_e        ( clr_e        ),
-    .up_cc        ( up_cc        ),
-    .intvec       ( intvec       ),
-
-    .up_a         ( up_a         ),
-    .up_b         ( up_b         ),
-    .up_d         ( up_d         ),
-    .up_x         ( up_x         ),
-    .up_abx       ( up_abx       ),
-    .up_y         ( up_y         ),
-    .pc           ( pc           ),
-    .up_u         ( up_u         ),
-    .up_s         ( up_s         ),
     .up_pul_pc    ( up_pul_pc    )
 );
 
@@ -212,6 +213,7 @@ jtkcpu_alu u_alu(
     // Special instructions
     .dec8         ( dec_b        ),
     .dec16        ( dec_x        ),
+    .div_en       ( div_en       ),
 
     .rslt         ( rslt[15:0]   ),
     .rslt_hi      ( rslt[31:16]  )
@@ -265,6 +267,7 @@ jtkcpu_regs u_regs(
     .up_u         ( up_u         ),
     .up_s         ( up_s         ),
     .up_lmul      ( up_lmul      ),
+    .up_div       ( up_div       ),
     .up_lea       ( up_lea       ),
     .up_cc        ( up_cc        ),
     .alu_cc       ( cc_out       ),

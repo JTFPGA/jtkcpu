@@ -65,6 +65,7 @@ module jtkcpu_regs(
     input               up_u,
     input               up_s,
     input               up_lmul,
+    input               up_div,
     input               up_lea,
 
     // MOVE/BSET
@@ -165,7 +166,7 @@ always @(posedge clk, posedge rst) begin
             CMPD_IMM, ADDD_IDX, SUBD_IDX, LSRD_IDX, RORD_IDX, ASRD_IDX, ASLD_IDX, ROLD_IDX,
                 CLRD,     NEGD,     ABSD,      STD: mux_reg0 <= {a, b};
 
-            CMPX_IMM, CMPX_IDX, STX, DIV_X_B: mux_reg0 <= x;
+            CMPX_IMM, CMPX_IDX, STX, DIVXB: mux_reg0 <= x;
             CMPY_IMM, CMPY_IDX, STY, LMUL:    mux_reg0 <= y;
             CMPU_IMM, CMPU_IDX, STU:          mux_reg0 <= u;
             CMPS_IMM, CMPS_IDX, STS:          mux_reg0 <= s;
@@ -184,7 +185,7 @@ end
 
 always @* begin
     case ( op )
-        DIV_X_B:    mux_reg1 = {8'h0,  b};
+        DIVXB:    mux_reg1 = {8'h0,  b};
         ABX, LMUL:  mux_reg1 = x;
         default:    mux_reg1 = mdata;
     endcase
@@ -314,6 +315,7 @@ always @(posedge clk, posedge rst) begin
 
         if( up_a         ) a <= alu[7:0];
         if( up_b | dec_b ) b <= alu[7:0];
+        if( up_div       ) b <= alu[16+:8];
         if( up_pul_a     ) a <= mdata[7:0];
         if( up_pul_b     ) b <= mdata[7:0];
 
@@ -327,7 +329,8 @@ always @(posedge clk, posedge rst) begin
         if( up_x    ) x <= up_lea ? idx_addr : mdata;
         if( up_lmul ) x <= alu[31:16];
         if( up_abx  ) x <= alu[15: 0];
-        if( dec_x   ) x <= alu[15:0];
+        if( up_div  ) x <= alu[15: 0];
+        if( dec_x   ) x <= alu[15: 0];
         if( up_y    ) y <= up_lea ? idx_addr : mdata;
         if( up_lmul ) y <= alu[15:0];
         // 16-bit registers from memory (PULL)
