@@ -94,14 +94,15 @@ always @* begin
     rslt  = opnd0;  // default value
 
     case (op)
+        TSTA, TSTB, TSTD,
         STA,  STB,  STD,
         STX,  STY,  STU,  STS,
         LEAX, LEAY, LEAU, LEAS: begin
             rslt  = opnd0;
-            v_out = 0;      // TO DO: do STA/B modify any flag?
+            v_out = 0;
         end
-        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,TSTA,TSTB,TST,LDD_IMM,LDD_IDX,LDX_IMM,
-        LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,TSTD,TSTW: begin  // LD, ST, TST, TSTD, TSTW
+        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,TST,LDD_IMM,LDD_IDX,LDX_IMM,
+        LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,TSTW: begin  // LD, ST, TST, TSTD, TSTW
             rslt  = opnd1;
             v_out = 0;
         end
