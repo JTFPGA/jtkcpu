@@ -129,7 +129,7 @@ always @(posedge clk, posedge rst) begin
                 if( (wrq || psh_dec) && cen ) we <= 1;
             end
             // interrupt vectors
-            if( intvec!=0 ) begin
+            if( intvec!=0 && !is_int) begin
                 busy   <= 1;
                 is_op  <= 0;
                 is_int <= 1;

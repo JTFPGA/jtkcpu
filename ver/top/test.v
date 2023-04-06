@@ -9,7 +9,7 @@ parameter SIMID="test";
 
 reg         rst, clk, halt=0,
             nmi=0, irq=0, firq=0, dtack=1;
-wire        cen, cen2;
+wire        cen2;
 reg  [ 7:0] ram[0:2**12-1], rom[0:2**12-1];
 reg  [ 7:0] cpu_din;
 wire [ 7:0] cpu_dout, upper_lines;
@@ -19,7 +19,6 @@ wire [23:0] cpu_addr;
 integer     f, fcnt, finish_cnt=-1;
 
 assign cen2 =  cen_cnt[0];
-assign cen  = &cen_cnt[1:0];
 assign upper_lines = cpu_addr[23:16];
 
 initial begin
@@ -95,7 +94,6 @@ end
 jtkcpu uut(
     .rst        ( rst       ),
     .clk        ( clk       ),
-    .cen        ( cen       ),
     .cen2       ( cen2      ),
 
     .halt       ( halt      ),
