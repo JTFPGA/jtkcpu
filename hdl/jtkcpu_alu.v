@@ -64,6 +64,7 @@ always @(posedge clk) begin
              op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
              op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
              op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW || op==DIVXB  ||
+             op==LEAX     || op==LEAY     || op==LEAU     || op==LEAS     ||
              dec16;
     up_n  <= op!=LEAX && op!=LEAY  && op!=LEAU  && op!=LEAS  && op!=ABX &&
              op!=MUL  && op!=LMUL  && op!=DIVXB && op!=ANDCC && op!=ORCC;
