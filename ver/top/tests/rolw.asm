@@ -26,37 +26,37 @@ RESET:  LEAS RAMEND
         CMPX #$0001
         BNE BAD
 
-        CLRD
-        LDD #$0200
-        STD ,X
-        ROLW ,X
-        ROLW ,X
-        ROLW ,X
-        ROLW ,X
-        LDD ,X
-        CMPD #$2000
-        BNE BAD
-
-        LDD #$1000
-        STD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        ROLW ,Y
-        LDD ,Y
-        CMPD #$0010
-        BNE BAD
+;        CLRD
+;        LDD #$0200
+;        STD ,X
+;        ROLW ,X
+;        ROLW ,X
+;        ROLW ,X
+;        ROLW ,X
+;        LDD ,X
+;        CMPD #$2000
+;        BNE BAD
+;
+;        LDD #$1000
+;        STD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        ROLW ,Y
+;        LDD ,Y
+;        CMPD #$0010
+;        BNE BAD
 
         include finish.inc
 

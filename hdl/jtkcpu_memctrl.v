@@ -143,10 +143,12 @@ always @(posedge clk, posedge rst) begin
             end
             // Capture data
             if( is_op ) op <= din;
-            if(memhi) begin
-                data[15:8] <= din;
-            end else if(!hold && !wrq) begin
-                data[ 7:0] <= din; // get the lower half/regular 1-byte access
+            if( !hold && !wrq ) begin
+                if(memhi) begin
+                    data[15:8] <= din;
+                end else begin
+                    data[ 7:0] <= din; // get the lower half/regular 1-byte access
+                end
             end
         end
     end

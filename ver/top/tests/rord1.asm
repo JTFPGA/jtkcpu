@@ -17,21 +17,12 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:  LEAS RAMEND
 
-        LDY #$0010
-        STY ,X
+        LDA  #10
+        STA  ,X
+        LDD  #$100
         RORD ,X
-        LDY ,X
-        CMPY #$0008
+        CMPD #$8000
         BNE BAD
-
-        LDD #$0400
-        STD ,X
-        RORD ,X
-        LDD ,X
-        CMPD #$0200
-        BNE BAD
-
-
 
         include finish.inc
 

@@ -224,11 +224,11 @@ always @* begin
             c_out = opnd0[msb];
             v_out = opnd0[msb] ^ rslt[msb];
         end
-        ROLA,ROLB,ROL: begin  // ROL, ROLW, ROLD
+        ROLA,ROLB,ROL: begin
             {c_out, rslt[7:0]} = {opnd0[7:0], cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        ROLW,ROLD_IMM,ROLD_IDX: begin  // ROL, ROLW, ROLD
+        ROLW,ROLD_IMM,ROLD_IDX: begin
             {c_out, rslt[15:0]} = {opnd0[15:0], cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end

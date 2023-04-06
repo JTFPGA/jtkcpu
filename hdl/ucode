@@ -132,8 +132,8 @@ DIVIDE:             DIV_EN
 
 WMEM_ALU:           IDX_EN, MEMHI
                     IDX_EN, IDX_ADV
-                    OPN0=MEM, UP_CC, IDX_EN, WE, MEMHI
-                    OPN0=MEM,        IDX_EN, WE, IDX_ADV
+                    OPN0=MEM,        IDX_EN, WE, MEMHI
+                    OPN0=MEM, UP_CC, IDX_EN, WE, IDX_ADV
                     NI
 
 MULTIPLY:           NOP             # 11 cycles in 6809 (8 here)
