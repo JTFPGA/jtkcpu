@@ -262,6 +262,14 @@ end
 assign intvec = cur_int & {4{int_en}};
 assign intsrv = do_nmi || (!firq_n && !cc_f) || (!irq_n && !cc_i);
 
+`ifdef SIMULATION
+always @(posedge clk) if( buserror )  begin
+    $display("\nJTKCPU Error: simulation finished because of bus error");
+    $finish;
+    $finish;
+end
+`endif
+
 always @(posedge clk) begin
     if( rst ) begin
         addr       <= { RESET, OPLEN };  // Reset starts ucode at 0
