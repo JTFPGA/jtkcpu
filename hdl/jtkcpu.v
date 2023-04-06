@@ -20,6 +20,7 @@ module jtkcpu(
     input               rst,
     input               clk,
     input               cen2 /* synthesis direct_enable */,
+    output              cen_out,
 
     input               halt,
     input               nmi_n,
@@ -62,7 +63,11 @@ wire        idx_post, idx_pre, idxw,   idx_ld, idx_adv,
             idx_8,    idx_16,  idx_acc,idx_dp, idx_en,
             data2addr, uz;
 
-reg         clken=0, clken2=0, phase=0;
+reg         clken=0  /* synthesis direct_enable */,
+            clken2=0 /* synthesis direct_enable */,
+            phase=0;
+
+assign cen_out = clken2;
 
 always @(negedge clk) begin
     if( dtack & cen2 ) begin
