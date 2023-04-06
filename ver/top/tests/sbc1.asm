@@ -14,10 +14,33 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$FE
+RESET:
+        LDB #$03
+        STB ,X
         LDA #$01
         SBCA ,X
-        CMPA #$0
+        BCC  BAD
+        CMPA #$FE
+        BNE BAD
+
+        CLRD
+
+        LDB #$01
+        STB ,X
+        LDA #$05
+        SBCA ,X
+        BCS  BAD
+        CMPA #$04
+        BNE BAD
+
+        CLRD
+
+        LDA #$FF
+        STA ,Y
+        LDB #$F0
+        SBCB ,Y
+        BCC BAD
+        CMPB #$F1
         BNE BAD
 
 

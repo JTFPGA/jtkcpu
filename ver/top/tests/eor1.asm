@@ -14,13 +14,25 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDX #$0F
-        LDY #$09
-        EORB ,X
+RESET:  LDA #$5B
+        LDB #$1D
+        STB ,Y
         EORA ,Y
-        CMPA #$0C
+        CMPA #$46
         BNE BAD
-        CMPB #$7F
+
+        LDB #$23
+        LDA #$67
+        STA ,X
+        EORB ,X
+        CMPB #$44
+        BNE BAD
+
+        LDB #$CA
+        STB ,X
+        LDA #$FE
+        EORA ,X
+        CMPA #$34
         BNE BAD
 
         include finish.inc

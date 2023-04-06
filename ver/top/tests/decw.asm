@@ -39,7 +39,11 @@ LOOP:
         DECW ,Y
         LDX ,Y
         BNE LOOP
-        CMPX #$00
+        CMPX #$0000
+        BNE BAD
+
+        LDD ,Y
+        CMPD #$0000
         BNE BAD
 
         include finish.inc

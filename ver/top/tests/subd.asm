@@ -23,11 +23,13 @@ RESET:  LDA  #$0F
         SUBD #$111
         CMPD #$453
         BNE BAD
+        BCS BAD
 
         STD ,X
         SUBD ,X
         CMPD #$00
         BNE BAD
+        BCS BAD
 
         include finish.inc
 
