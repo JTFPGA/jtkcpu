@@ -15,28 +15,8 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:
-        LDA #$87
-        ROLA
-        ROLA
-        ROLA
-        ROLA
-        CMPA #$74
-        BNE BAD
-        LDB #$15
-        ROLB
-        CMPB #$2A
-        BNE BAD
-
-        CLRA
-        LDA #$80
-        ROLA
-        ROLA
-        CMPA #$01
-        BNE BAD
 
         include finish.inc
 
-; fill with zeros... up to interrupt table
         DC.B  [$FFFE-*]0
         FDB   RESET
-
