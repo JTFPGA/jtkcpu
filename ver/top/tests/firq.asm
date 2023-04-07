@@ -30,6 +30,16 @@ LOOP:   ; Spend some time here, the FIRQ should be ignored because of default CC
         LDA #$10        ; enable FIRQ, keep IRQ disabled
         PSHS A
         PULS CC
+        NOP
+        NOP
+        NOP             ; the interrupt should happen around here
+        NOP
+        NOP
+        NOP
+        PSHS CC         ; check that the CC was restored correctly
+        PULS A
+        CMPA #$10
+        BNE BAD
 LOOP2:
         CMPB #5
         BNE LOOP2

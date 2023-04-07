@@ -35,6 +35,16 @@ LOOP:   ; Spend some time here, the IRQ should be ignored because of default CC
         CLRA        ; enable interrupts
         PSHS A
         PULS CC
+        NOP
+        NOP
+        NOP             ; the interrupt should happen around here
+        NOP
+        NOP
+        NOP
+        PSHS CC         ; check that the CC was restored correctly
+        PULS A
+        CMPA #0
+        BNE BAD
 LOOP2:
         CMPX #$1234     ; these registers should be the same after the IRQ service
         BNE BAD
