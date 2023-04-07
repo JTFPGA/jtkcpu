@@ -279,23 +279,23 @@ RESET:              INT_EN, I=1, F=1
 # Do not make FIRQ, IRQ or NMI ucode longer than 6 instructions
 # or it will fail
 FIRQ:               PSH_CC, PSH_GO
-                    E=0, F=1, I=1
+                    F=1, I=1
                     NOP
-                    INT_EN
+                    INT_EN, E=0, F=1, I=1
                     NOP
                     NI
 
 IRQ:                PSH_ALL, PSH_GO
-                    E=1, I=1
+                    I=1
                     NOP
-                    INT_EN
+                    INT_EN, E=1, I=1
                     NOP
                     NI
 
 NMI:                PSH_ALL, PSH_GO
-                    E=1, I=1, F=1
+                    I=1, F=1
                     NOP
-                    INT_EN
+                    INT_EN, E=1, I=1, F=1
                     NOP
                     NI
 

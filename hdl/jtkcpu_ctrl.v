@@ -67,6 +67,7 @@ module jtkcpu_ctrl(
     output            decu,
     output            div_en,
 
+    output            int_en,
     output            up_tfr,
     output            up_exg,
 
@@ -118,7 +119,7 @@ module jtkcpu_ctrl(
 // module should be here as wires. Watchout for buses
 wire branch, ni;
 wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
-     int_en,   uc_loop, niuz,
+     uc_loop, niuz,
      up_ld16,  up_ld8,  up_lda, up_ldb, up_ab,
      rti_cc,   rti_other,
      pc_jmp,   set_pc_branch16, set_pc_branch8, pc_inc1,

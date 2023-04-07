@@ -76,12 +76,11 @@ module jtkcpu_regs(
     input               up_cc,
     input        [ 7:0] alu_cc,
     // Flags from control
+    input               int_en,
     input               set_e,
     input               set_i,
     input               set_f,
     input               clr_e,
-    //input               clr_i,
-    //input               clr_f,
 
     // Direct increment/decrement
     input               dec_x,
@@ -345,8 +344,8 @@ always @(posedge clk, posedge rst) begin
         if( up_cc     ) cc <= alu_cc;
         if( up_pul_cc ) cc <= mdata[7:0];
         if( set_e ) cc[CC_E] <= 1;
-        if( set_i ) cc[CC_I] <= 1;
-        if( set_f ) cc[CC_F] <= 1;
+        if( set_i & int_en ) cc[CC_I] <= 1;
+        if( set_f & int_en ) cc[CC_F] <= 1;
         if( clr_e ) cc[CC_E] <= 0;
 
         if( up_tfr || up_exg ) begin
