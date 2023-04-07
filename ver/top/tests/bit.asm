@@ -15,24 +15,32 @@ TESTCTRL EQU $1000
 
         ORG $F000
 RESET:
-        LDB #01
+        LDA #$55
+        BITA #$AA
+        BNE BAD
+        CMPA #$55
+        BNE BAD
+
+        LDB #$AA
+        BITB #$55
+        BNE BAD
+        CMPB #$AA
+        BNE BAD
+
         STB ,X
-        LDA  ,X
-        COMA
+        LDB #$FF
+        BITB ,X
+        BEQ BAD
+        CMPB #$FF
+        BNE BAD
+
+        LDA #$F
+        STA ,X
+        LDA #$F0
         BITA ,X
         BNE BAD
-        TSTA
+        CMPA #$F0
         BNE BAD
-
-        CLRD
-
-        LDA #$55
-        STA ,X
-        LDB  ,X
-        COMB
-        BITB ,X
-        BNE BAD
-
 
         include finish.inc
 

@@ -19,7 +19,7 @@ RESET:  LDA #$57
         CMPA #$07
         BNE BAD
         LDB #$3B
-        BITB #$6B
+        ANDB #$6B
         CMPB #$2B
         BNE BAD
 

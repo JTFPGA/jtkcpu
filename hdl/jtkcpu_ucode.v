@@ -155,8 +155,8 @@ always @* begin
     case( op )
         ANDA_IMM, ADDA_IMM, SUBA_IMM, LDA_IMM,
         ANDB_IMM, ADDB_IMM, SUBB_IMM, LDB_IMM,
-        EORA_IMM, BITA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM,
-        EORB_IMM, BITB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:    opcat = SINGLE_ALU;
+        EORA_IMM, ADCA_IMM, SBCA_IMM, ORA_IMM,
+        EORB_IMM, ADCB_IMM, SBCB_IMM, ORB_IMM:              opcat = SINGLE_ALU;
         ADDD_IMM, SUBD_IMM:                                 opcat = SINGLE_ALUD;
         LDD_IMM, LDY_IMM,
         LDX_IMM, LDU_IMM, LDS_IMM:                          opcat = SINGLE_ALU_16;
@@ -180,10 +180,14 @@ always @* begin
         CMPU_IDX, CMPS_IDX:                           begin opcat  = PARSE_IDX;
                                                             nx_cat = CMP16_IDX;
                                                             end
+        BITA_IMM, BITB_IMM:                                 opcat  = BIT_ALU;
+        BITA_IDX, BITB_IDX:                           begin opcat  = PARSE_IDX;
+                                                            nx_cat = BIT_ALU_IDX;
+                                                            end
         ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,
-        EORA_IDX, BITA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,
+        EORA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,
         ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,  ORB_IDX,
-        EORB_IDX, BITB_IDX, ADCB_IDX, SBCB_IDX:       begin opcat  = PARSE_IDX;
+        EORB_IDX, ADCB_IDX, SBCB_IDX:                 begin opcat  = PARSE_IDX;
                                                             nx_cat = SINGLE_ALU_IDX;
                                                             end
         LEAU, LEAX, LEAS, LEAY:                       begin opcat  = PARSE_IDX;
