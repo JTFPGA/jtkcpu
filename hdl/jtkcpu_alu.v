@@ -32,6 +32,7 @@ module jtkcpu_alu(
     input             dec16,
     input             div_en,
     input             shd_en,
+    input             idx_en,
 
     output            busy,
 
@@ -42,11 +43,14 @@ module jtkcpu_alu(
 `include "jtkcpu.inc"
 
 wire [3:0] msb;
-reg  [7:0] shd_cnt;
 wire       div_busy;
 reg        shd_busy, alu16, up_z, up_n;
 reg        c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
+// Multi-bit shift
+reg  [ 7:0] shd_cnt;
+wire [ 7:0] shd_mux;
+reg  [15:0] shd_data;
 // Divider
 reg         div_sign = 0;
 wire        div_v;
@@ -56,6 +60,7 @@ wire [15:0] div_quot;
 assign cc_out   = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 assign msb      = alu16 ? 4'd15 : 4'd7;
 assign busy     = div_busy | shd_busy;
+assign shd_mux  = idx_en ? opnd0[15:8] : opnd1[7:0];
 
 always @(posedge clk) begin
     alu16 <= op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
@@ -73,13 +78,18 @@ end
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        shd_cnt <= 0;
+        shd_cnt  <= 0;
+        shd_data <= 0;
     end else if(cen) begin
         shd_busy <= shd_cnt!=0;
-        if( shd_en && opnd1[7:0]!=0 ) begin
-            shd_cnt  <= opnd1[7:0];
+        if( shd_en && shd_mux!=0 ) begin
+            shd_data <= opnd1;
+            shd_cnt  <= shd_mux;
             shd_busy <= 1;
-        end else if( shd_cnt!=0 ) shd_cnt <= shd_cnt-1'd1;
+        end else if( shd_cnt!=0 ) begin
+            shd_cnt  <= shd_cnt-1'd1;
+            shd_data <= rslt;
+        end
     end
 end
 
@@ -210,7 +220,7 @@ always @* begin
         LSRW: begin
             {rslt[15:0], c_out} = {1'b0, opnd0[15:0]};
         end
-        RORA,RORB,ROR: begin  // ROR, RORW, RORD
+        RORA,RORB,ROR: begin
             {rslt[7:0], c_out} = {cc_in[CC_C], opnd0[7:0]};
         end
         RORW: begin
@@ -220,7 +230,7 @@ always @* begin
             {c_out, rslt[15:0]} = {opnd0[15:0], cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        ASRA,ASRB,ASR,ASRW: begin  // ASR, ASRW, ASRD
+        ASRA,ASRB,ASR,ASRW: begin
             rslt      = opnd0>>1;
             rslt[msb] = opnd0[msb];
             c_out     = opnd0[0];
@@ -235,26 +245,58 @@ always @* begin
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
 
-        ////////////// shift operations on D register
-        ASRD_IMM,ASRD_IDX: if( shd_busy ) begin
+        ////////////// multi-shift operations on D register
+        ASRD_IMM: if( shd_busy ) begin
             rslt      = opnd0>>1;
             rslt[msb] = opnd0[msb];
             c_out     = opnd0[0];
         end
-        LSRD_IMM,LSRD_IDX: if( shd_busy ) begin
+        LSRD_IMM: if( shd_busy ) begin
             {rslt[15:0], c_out} = {1'b0, opnd0[15:0]};
         end
-        ASLD_IMM, ASLD_IDX: if( shd_busy ) begin
+        ASLD_IMM: if( shd_busy ) begin
             rslt  = opnd0 << 1;
             c_out = opnd0[15];
             v_out = opnd0[15] ^ rslt[15];
         end
-        RORD_IMM,RORD_IDX: if( shd_busy ) begin
+        RORD_IMM: if( shd_busy ) begin
             {rslt[15:0], c_out} = {cc_in[CC_C], opnd0[15:0]};
         end
-        ROLD_IMM,ROLD_IDX: if( shd_busy ) begin
+        ROLD_IMM: if( shd_busy ) begin
             {c_out, rslt[15:0]} = {opnd0[15:0], cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
+        end
+
+        ////////////// multi-shift operations on 16-bit memory
+        ASRD_IDX: if( shd_busy ) begin
+            rslt      = shd_data>>1;
+            rslt[msb] = shd_data[msb];
+            c_out     = shd_data[0];
+        end else begin
+            rslt  = shd_data;
+        end
+        LSRD_IDX: if( shd_busy ) begin
+            {rslt[15:0], c_out} = {1'b0, shd_data[15:0]};
+        end else begin
+            rslt  = shd_data;
+        end
+        ASLD_IDX: if( shd_busy ) begin
+            rslt  = shd_data << 1;
+            c_out = shd_data[15];
+            v_out = shd_data[15] ^ rslt[15];
+        end else begin
+            rslt  = shd_data;
+        end
+        RORD_IDX: if( shd_busy ) begin
+            {rslt[15:0], c_out} = {cc_in[CC_C], shd_data[15:0]};
+        end else begin
+            rslt  = shd_data;
+        end
+        ROLD_IDX: if( shd_busy ) begin
+            {c_out, rslt[15:0]} = {shd_data[15:0], cc_in[CC_C]};
+            v_out         =  shd_data[msb] ^ rslt[msb];
+        end else begin
+            rslt  = shd_data;
         end
 
         ABX: rslt =  {8'h0, opnd0[7:0]} + opnd1 ;  // ABX

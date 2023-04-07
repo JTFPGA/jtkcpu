@@ -53,7 +53,7 @@ wire        alu_busy, mem_busy, stack_busy,
             pul_en, psh_dec, us_sel, opnd0_mem, div_en,
             wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
             dec_b, dec_x, incx, decu,
-            clr_e, set_e, set_f, set_i, up_move,
+            clr_e, set_e, set_f, set_i, up_move, up_data,
             up_pul_pc;
 // Indexed addressing
 wire [15:0] idx_addr, idx_reg, idx_racc;
@@ -93,6 +93,7 @@ jtkcpu_ctrl u_ctrl(
     .up_tfr       ( up_tfr       ),
     .up_exg       ( up_exg       ),
     .up_div       ( up_div       ),
+    .up_data      ( up_data      ),
 
     .opnd0_mem    ( opnd0_mem    ),
     // Indexed addressing
@@ -222,6 +223,7 @@ jtkcpu_alu u_alu(
     .dec16        ( dec_x        ),
     .div_en       ( div_en       ),
     .shd_en       ( shd_en       ),
+    .idx_en       ( idx_en       ),
 
     .rslt         ( rslt[15:0]   ),
     .rslt_hi      ( rslt[31:16]  )

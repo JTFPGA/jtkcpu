@@ -122,11 +122,14 @@ SHIFTD:             OPD
                     UP_CC, UP_AB
                     NI
 
-SHIFTD_IDX:         IDX_EN
-                    SHD_EN
+SHIFTD_IDX:         IDX_EN, MEMHI
+                    IDX_EN, IDX_ADV
+                    IDX_EN, IDX_ADV, SHD_EN
                     NOP
-                    UP_CC, UP_AB
-                    NI
+                    OPN0=MEM, UP_CC
+                    IDX_EN, WE, MEMHI
+                    IDX_EN, WE, IDX_ADV
+NOPE:               NI                      # NI SHARED WITH PREVIOUS CATEGORY
 
 MEM_ALU_IDX:        IDX_EN
                     OPN0=MEM, UP_CC, IDX_EN, WE
@@ -218,8 +221,6 @@ EXCHANGE:           OPD
 TRANSFER:           OPD
                     UP_TFR
                     NI
-
-NOPE:               NI
 
 ############### FLOW CONTROL #####################
 SBRANCH:            OPD

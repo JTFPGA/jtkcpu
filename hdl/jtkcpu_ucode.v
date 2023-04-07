@@ -96,6 +96,7 @@ module jtkcpu_ucode(
     output          up_move,
     output          up_tfr,
     output          up_div,
+    output          up_data,
     output          we,
 
     // other outputs

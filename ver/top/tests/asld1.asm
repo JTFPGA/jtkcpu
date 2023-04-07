@@ -17,32 +17,12 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:  LEAS RAMEND
 
-        LDA #16
-        STA ,X
         LDD #$0001
+        STD ,X
+        LDA #15
         ASLD ,X
-        CMPD #$0000
-        BNE BAD
-
-        LDB #10
-        STB ,X
-        LDD #$0010
-        ASLD ,X
-        CMPD #$0010 << 10
-        BNE BAD
-
-        CLRA
-        STA ,X
-        LDD #$1234
-        ASLD ,X
-        CMPD #$1234
-        BNE BAD
-
-        LDA #1
-        STA ,X
-        LDD #$1234
-        ASLD ,X
-        CMPD #$1234<<1
+        ASLD #15
+        CMPD ,X
         BNE BAD
 
         include finish.inc
