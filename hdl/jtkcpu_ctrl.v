@@ -154,7 +154,7 @@ always @(posedge clk, posedge rst) begin
         pc    <= 0;
         bdone <= 0;
     end else if(cen) begin
-        pc <= ( ni || opd || pc_inc1 || (niuz && uz )) && !intsrv ? pc+16'd1 :
+        pc <= ( (ni&&!intsrv) || opd || pc_inc1 || (niuz && uz ))? pc+16'd1 :
               sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
               lbranch && !bdone ? mdata+pc :
               pc_jmp       ? idx_addr :

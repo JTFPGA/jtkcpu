@@ -262,10 +262,15 @@ assign intvec = cur_int & {4{int_en}};
 assign intsrv = do_nmi || (!firq_n && !cc_f) || (!irq_n && !cc_i);
 
 `ifdef SIMULATION
-always @(posedge clk) if( buserror )  begin
-    $display("\nJTKCPU Error: simulation finished because of bus error");
-    $finish;
-    $finish;
+integer error_cnt=-1;
+always @(posedge clk) if( cen )  begin
+    if( buserror && error_cnt<0 ) error_cnt <= 40;
+    if( error_cnt > 0 ) error_cnt <= error_cnt - 1;
+    if( error_cnt==0 ) begin
+        $display("\nJTKCPU Error: simulation finished because of bus error");
+        $finish;
+        // $finish;
+    end
 end
 `endif
 
