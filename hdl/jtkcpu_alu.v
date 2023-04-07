@@ -112,7 +112,10 @@ always @* begin
     case (op)
         TSTA, TSTB, TSTD,
         STA,  STB,  STD,
-        STX,  STY,  STU,  STS,
+        STX,  STY,  STU,  STS: begin
+            rslt  = opnd0;
+            v_out = 0;
+        end
         LEAX, LEAY, LEAU, LEAS: begin
             rslt  = opnd0;
         end
