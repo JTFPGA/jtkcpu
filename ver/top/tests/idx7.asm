@@ -27,6 +27,11 @@ PNTR:   FDB DATAR+2
         CMPD #$BEEF
         BNE BAD
 
+        LDA ,PC+
+        FCB $43
+        CMPA #$43
+        BNE BAD
+
         include finish.inc
 
 
