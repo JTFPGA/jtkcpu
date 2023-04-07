@@ -194,11 +194,11 @@ always @* begin
         end
         INCA,INCB,INC,INCD,INCW: begin
             rslt  = opnd0 + 1'b1;
-            v_out = (~opnd0[msb] & rslt[msb]); // overflow calculated for signed integers
+            v_out = opnd0[msb] ^ rslt[msb]; // overflow calculated for signed integers
         end
         DECA,DECB,DEC,DECD,DECW: begin  // DEC, DECD, DECW
             rslt  = opnd0 - 1'b1;
-            v_out = (opnd0[msb] & ~rslt[msb]); // overflow calculated for signed integers
+            v_out = opnd0[msb] ^ rslt[msb]; // overflow calculated for signed integers
         end
         LSRA,LSRB,LSR: begin  // LSR, LSRW, LSRD
             {rslt[7:0], c_out} = {1'b0, opnd0[7:0]};
