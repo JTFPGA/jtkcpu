@@ -67,7 +67,7 @@ fi
 mv tests/$TEST.bin $SIMID.bin
 rm -f tests/$TEST.p
 
-iverilog -I../../hdl $NODUMP -Ptest.SIMID=\"$SIMID\" -o $SIMID.sim test.v ../../hdl/*.v || exit 1
+iverilog -I../../hdl $NODUMP -DSIMULATION -Ptest.SIMID=\"$SIMID\" -o $SIMID.sim test.v ../../hdl/*.v || exit 1
 
 if [ -z "$BATCH" ]; then
     $SIMID.sim -lxt | tee $SIMID.log

@@ -303,21 +303,25 @@ always @(posedge clk) begin
         if( !mem_busy && !alu_busy && !stack_busy && !niuz && !niuzl ) begin
             addr <= addr + 1'd1; // keep processing an opcode routine
         end
-        if( nil ) begin
+        if( ni ) begin
             if( do_nmi ) begin // pending NMI
                 do_nmi  <= 0;
                 cur_int <= 4'b0100;
                 addr    <= { NMI, OPLEN };
+                nil <= 0;
             end else if( !firq_n && !cc_f ) begin  // FIRQ triggered by level
                 cur_int <= 4'b0010;
                 addr    <= { FIRQ, OPLEN };
+                nil <= 0;
             end else if ( !irq_n && !cc_i ) begin  // IRQ triggered by level
                 cur_int <= 4'b0001;
                 addr    <= { IRQ, OPLEN };
-            end else begin   // interrupt disabled
-                cur_int <= 0;
-                addr    <= { opcat, OPLEN }; // when a new opcode is read
+                nil <= 0;
             end
+        end
+        if( nil ) begin
+            cur_int <= 0;
+            addr    <= { opcat, OPLEN }; // when a new opcode is read
         end
         if( uc_loop ) addr <= { opcat, OPLEN };
         // Indexed addressing parsing

@@ -323,7 +323,7 @@ always @(posedge clk, posedge rst) begin
             b <= alu[ 7:0];
         end
 
-        if( up_pul_dp ) dp <= alu[7:0];
+        if( up_pul_dp ) dp <= mdata[7:0];
 
         if( up_x    ) x <= up_lea ? idx_addr : mdata;
         if( up_lmul ) x <= alu[31:16];

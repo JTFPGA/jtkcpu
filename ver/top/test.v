@@ -49,6 +49,17 @@ initial begin
 `endif
 end
 
+integer idly=-1;
+reg irq_dly, nmi_dly, firq_dly;
+
+always @(posedge clk) if(cen2) begin
+    if( simctrl_cs && cpu_we ) idly <= $abs($random)%100;
+    if( idly>=0 ) idly<=idly-1;
+    irq_dly  <= irq  && ( irq_dly || idly==0);
+    firq_dly <= firq && (firq_dly || idly==0);
+    nmi_dly  <= nmi  && ( nmi_dly || idly==0);
+end
+
 always @(posedge clk) begin
     cen_cnt <= cen_cnt+1'd1;
     if( finish_cnt>0  ) finish_cnt <= finish_cnt - 1;
@@ -97,9 +108,9 @@ jtkcpu uut(
     .cen2       ( cen2      ),
 
     .halt       ( halt      ),
-    .nmi_n      ( ~nmi      ),
-    .irq_n      ( ~irq      ),
-    .firq_n     ( ~firq     ),
+    .nmi_n      ( ~nmi_dly  ),
+    .irq_n      ( ~irq_dly  ),
+    .firq_n     ( ~firq_dly ),
     .dtack      ( dtack     ),
 
     // memory bus
