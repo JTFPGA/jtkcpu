@@ -76,7 +76,6 @@ module jtkcpu_ucode(
     output          set_e,
     output          set_f,
     output          set_i,
-    output          set_opn0_a,
     output          set_opn0_b,
     output          set_opn0_mem,
     output          set_pc_branch16,

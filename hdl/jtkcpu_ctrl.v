@@ -127,7 +127,6 @@ wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
      addr_data,
      addr_idx,
      idx_step,
-     set_opn0_a,
      set_opn0_b,
      branch_bnz;
 
@@ -235,7 +234,6 @@ jtkcpu_ucode u_ucode(
     .set_e             ( set_e             ),
     .set_f             ( set_f             ),
     .set_i             ( set_i             ),
-    .set_opn0_a        ( set_opn0_a        ),
     .set_opn0_b        ( set_opn0_b        ),
     .set_opn0_mem      ( opnd0_mem         ),
     .set_pc_branch16   ( set_pc_branch16   ),
