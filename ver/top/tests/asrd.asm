@@ -19,12 +19,19 @@ RESET:  LEAS RAMEND
 
         LDD #$1000
         ASRD #11
-        CMPD #$0002
+        CMPD #$1000>>11
         BNE BAD
 
-        LDD #$4000
+        LDD #$8000
         ASRD #5
-        CMPD #$0200
+        CMPD #$FC00
+        BNE BAD
+
+        LDA #6
+        STA ,X
+        LDD #$8000
+        ASRD ,X
+        CMPD #$FE00
         BNE BAD
 
         include finish.inc

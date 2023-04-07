@@ -28,7 +28,21 @@ RESET:  LEAS RAMEND
         STB ,X
         LDD #$0010
         ASLD ,X
-        CMPD #$4000
+        CMPD #$0010 << 10
+        BNE BAD
+
+        CLRA
+        STA ,X
+        LDD #$1234
+        ASLD ,X
+        CMPD #$1234
+        BNE BAD
+
+        LDA #1
+        STA ,X
+        LDD #$1234
+        ASLD ,X
+        CMPD #$1234<<1
         BNE BAD
 
         include finish.inc

@@ -43,8 +43,8 @@ module jtkcpu_alu(
 
 wire [3:0] msb;
 reg  [7:0] shd_cnt;
-wire       shd_busy, div_busy;
-reg        alu16, up_z, up_n;
+wire       div_busy;
+reg        shd_busy, alu16, up_z, up_n;
 reg        c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
 // Divider
@@ -55,7 +55,6 @@ wire [15:0] div_quot;
 
 assign cc_out   = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 assign msb      = alu16 ? 4'd15 : 4'd7;
-assign shd_busy = shd_cnt!=0;
 assign busy     = div_busy | shd_busy;
 
 always @(posedge clk) begin
@@ -76,9 +75,11 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin
         shd_cnt <= 0;
     end else if(cen) begin
-        if( shd_en && opnd1[7:0]!=0 )
-            shd_cnt <= opnd1[7:0]-8'd1 ;
-        else if( shd_cnt!=0 ) shd_cnt <= shd_cnt-1'd1;
+        shd_busy <= shd_cnt!=0;
+        if( shd_en && opnd1[7:0]!=0 ) begin
+            shd_cnt  <= opnd1[7:0];
+            shd_busy <= 1;
+        end else if( shd_cnt!=0 ) shd_cnt <= shd_cnt-1'd1;
     end
 end
 
@@ -202,25 +203,29 @@ always @* begin
             rslt  = opnd0 - 1'b1;
             v_out = opnd0[msb] ^ rslt[msb]; // overflow calculated for signed integers
         end
-        LSRA,LSRB,LSR: begin  // LSR, LSRW, LSRD
+
+        LSRA,LSRB,LSR: begin
             {rslt[7:0], c_out} = {1'b0, opnd0[7:0]};
         end
-        LSRW,LSRD_IMM,LSRD_IDX: begin  // LSR, LSRW, LSRD
+        LSRW: begin
             {rslt[15:0], c_out} = {1'b0, opnd0[15:0]};
         end
         RORA,RORB,ROR: begin  // ROR, RORW, RORD
             {rslt[7:0], c_out} = {cc_in[CC_C], opnd0[7:0]};
         end
-        RORW,RORD_IMM,RORD_IDX: begin  // ROR, RORW, RORD
+        RORW: begin
             {rslt[15:0], c_out} = {cc_in[CC_C], opnd0[15:0]};
         end
-        ASRA,ASRB,ASR,ASRW,ASRD_IMM,ASRD_IDX: begin  // ASR, ASRW, ASRD
+        ROLW: begin
+            {c_out, rslt[15:0]} = {opnd0[15:0], cc_in[CC_C]};
+            v_out         =  opnd0[msb] ^ rslt[msb];
+        end
+        ASRA,ASRB,ASR,ASRW: begin  // ASR, ASRW, ASRD
             rslt      = opnd0>>1;
             rslt[msb] = opnd0[msb];
             c_out     = opnd0[0];
         end
-        ASLA,ASLB,ASL,ASLW,ASLD_IMM,ASLD_IDX: begin  // LSL, ASL, ASLW, ASLD
-            // {c_out, rslt} = {opnd0, 1'b0};
+        ASLA,ASLB,ASL,ASLW: begin
             rslt  = opnd0 << 1;
             c_out = opnd0[msb];
             v_out = opnd0[msb] ^ rslt[msb];
@@ -229,10 +234,29 @@ always @* begin
             {c_out, rslt[7:0]} = {opnd0[7:0], cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
-        ROLW,ROLD_IMM,ROLD_IDX: begin
+
+        ////////////// shift operations on D register
+        ASRD_IMM,ASRD_IDX: if( shd_busy ) begin
+            rslt      = opnd0>>1;
+            rslt[msb] = opnd0[msb];
+            c_out     = opnd0[0];
+        end
+        LSRD_IMM,LSRD_IDX: if( shd_busy ) begin
+            {rslt[15:0], c_out} = {1'b0, opnd0[15:0]};
+        end
+        ASLD_IMM, ASLD_IDX: if( shd_busy ) begin
+            rslt  = opnd0 << 1;
+            c_out = opnd0[15];
+            v_out = opnd0[15] ^ rslt[15];
+        end
+        RORD_IMM,RORD_IDX: if( shd_busy ) begin
+            {rslt[15:0], c_out} = {cc_in[CC_C], opnd0[15:0]};
+        end
+        ROLD_IMM,ROLD_IDX: if( shd_busy ) begin
             {c_out, rslt[15:0]} = {opnd0[15:0], cc_in[CC_C]};
             v_out         =  opnd0[msb] ^ rslt[msb];
         end
+
         ABX: rslt =  {8'h0, opnd0[7:0]} + opnd1 ;  // ABX
         DAA: begin  // DAA
             if ( c_out || opnd0[7:4] > 4'h9 || (opnd0[7:4] > 4'h8 && opnd0[3:0] > 4'h9 ))
