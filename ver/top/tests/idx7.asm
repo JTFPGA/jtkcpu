@@ -14,16 +14,21 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LEAX DATAR
-        LDD ,X
-        LDY #*
+RESET:
+        BRA CNT
+DATAR:  FDB   $CAFE, $BEEF, $DED0
+CNT:
+        LDD DATAR,PC
+        CMPD #$CAFE
+        BNE BAD
 
-        CMPD DATAR-*,PC
+        LDD [,PC++]
+PNTR:   FDB DATAR+2
+        CMPD #$BEEF
         BNE BAD
 
         include finish.inc
 
-DATAR:  FDB   $CAFE, $BEEF, $DED0
 
         DC.B  [$FFFE-*]0
         FDB   RESET
