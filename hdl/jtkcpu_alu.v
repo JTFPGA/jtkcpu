@@ -265,7 +265,7 @@ always @* begin
             else
                 rslt = opnd0;
             c_out = 0;
-            v_out = 0;
+            v_out = opnd0[msb]==rslt[msb];
         end
         DIVXB: begin
             rslt    = div_quot;
