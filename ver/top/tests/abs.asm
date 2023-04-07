@@ -16,6 +16,7 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:  LDA #$55
         ABSA
+        BVS BAD
         CMPA #$55
         BNE BAD
 
@@ -24,8 +25,38 @@ RESET:  LDA #$55
         CMPB #$23
         BNE BAD
 
+        LDB #$80
+        ABSB
+        BVC BAD
+        CMPB #$80
+        BNE BAD
+
+        LDB #$FF
+        ABSB
+        BVS BAD
+        CMPB #$1
+        BNE BAD
+
         CLRA
         ABSA
+        BNE BAD
+
+        LDD #$8000
+        ABSD
+        BVC BAD
+        CMPD #$8000
+        BNE BAD
+
+        LDD #$FFFF
+        ABSD
+        BVS BAD
+        CMPB #$1
+        BNE BAD
+
+        LDD #$7FFF
+        ABSD
+        BVS BAD
+        CMPD #$7FFF
         BNE BAD
 
         include finish.inc
