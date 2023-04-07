@@ -18,12 +18,17 @@ RESET:  LDA #$AB
         ASLA
         CMPA #$56
         BNE BAD
+
         LDB #$0F
         ASLB
         ASLB
         ASLB
         CMPB #$78
         BNE BAD
+
+        LDA #$8F
+        ASLA
+        BVC BAD
 
         include finish.inc
 

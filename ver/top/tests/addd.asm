@@ -30,6 +30,12 @@ RESET:  CLRB
         CMPD #$20EA
         BNE BAD
 
+        LDD #$8000
+        SUBD #1
+        BVC BAD
+        ADDD #1
+        BVC BAD
+
         include finish.inc
 
         DC.B  [$FFFE-*]0

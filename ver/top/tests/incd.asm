@@ -31,6 +31,14 @@ LOOP:   INCD
         CMPB #$D5
         BNE BAD
 
+        LDD #$7FFF
+        INCD
+        BVC BAD
+
+        LDD #$8000
+        DECD
+        BVC BAD
+
         include finish.inc
 
 FIRQ:

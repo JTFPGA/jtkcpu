@@ -24,6 +24,10 @@ RESET:
         CMPA ,X
         BNE BAD
 
+        LDA #$80
+        NEGA
+        BVC BAD
+
         include finish.inc
 
         DC.B  [$FFFE-*]0

@@ -17,11 +17,32 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:
         LDA #$7F
-        LDB #$80
         INCA
+        BVC BAD
+
+        LDA #$FF
+        INCA
+        BVC BAD
+
+        LDB #0
         DECB
-        CMPD #$807F
-        BNE BAD
+        BVC BAD
+
+        LDB #$80
+        DECB
+        BVC BAD
+
+        LDA #$7F
+        ADDA #1
+        BVC BAD
+        SUBA #1
+        BVC BAD
+
+        LDA #$80
+        SUBA #1
+        BVC BAD
+        ADDA #1
+        BVC BAD
 
         CLRA
         LDA #$7F
