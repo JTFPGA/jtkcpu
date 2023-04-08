@@ -48,8 +48,8 @@ reg        shd_busy, alu16, up_z, up_n;
 reg        c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
 // Multi-bit shift
-reg  [ 7:0] shd_cnt;
-wire [ 7:0] shd_mux;
+reg  [ 3:0] shd_cnt;
+wire [ 3:0] shd_mux;
 reg  [15:0] shd_data;
 // Divider
 reg         div_sign = 0;
@@ -60,7 +60,7 @@ wire [15:0] div_quot;
 assign cc_out   = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 assign msb      = alu16 ? 4'd15 : 4'd7;
 assign busy     = div_busy | shd_busy;
-assign shd_mux  = idx_en ? opnd0[15:8] : opnd1[7:0];
+assign shd_mux  = idx_en ? opnd0[11:8] : opnd1[3:0];
 
 always @(posedge clk) begin
     alu16 <= op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||

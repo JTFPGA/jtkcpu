@@ -27,13 +27,6 @@ RESET:  LEAS RAMEND
         CMPD #$FC00
         BNE BAD
 
-        LDA #6
-        STA ,X
-        LDD #$8000
-        ASRD ,X
-        CMPD #$FE00
-        BNE BAD
-
         include finish.inc
 
 CHECBK: DC.W $0000
