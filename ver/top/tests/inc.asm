@@ -25,6 +25,22 @@ LOOP:   INCA
         CMPA #$0F
         BEQ BAD
 
+        LDA #$FF
+        INCA
+        BVS BAD
+
+        LDB #$7F
+        INCB
+        BVC BAD
+
+        LDD #$FFFF
+        INCD
+        BVS BAD
+
+        LDD #$7FFF
+        INCD
+        BVC BAD
+
         include finish.inc
 
 ; fill with zeros... up to interrupt table

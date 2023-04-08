@@ -24,6 +24,14 @@ LOOP:   DECA
         CMPA #00
         BNE BAD
 
+        CLRA
+        DECA
+        BVS BAD
+
+        LDA #$80
+        DECA
+        BVC BAD
+
         include finish.inc
 
         DC.B  [$FFFE-*]0
