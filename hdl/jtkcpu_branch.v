@@ -17,31 +17,31 @@
     Date: 14-02-2023 */
 
 module jtkcpu_branch(
-	input      [7:0] op, 
+	input      [7:0] op,
 	input      [7:0] cc,
-    output reg       branch 
+    output reg       branch
 );
 
 `include "jtkcpu.inc"
 
 always @* begin
     case( op )
-        BRA,LBRA,BSR,LBSR: branch = 1;  
-        BRN,LBRN: branch = 0; 
-        BHI,LBHI: branch = !( cc[CC_Z] || cc[CC_C] ); 
-        BLS,LBLS: branch =  ( cc[CC_Z] || cc[CC_C] );  
-        BCC,LBCC: branch =   !cc[CC_C]; 
-        BCS,LBCS: branch =    cc[CC_C]; 
-        BNE,LBNE: branch =   !cc[CC_Z]; 
-        BEQ,LBEQ: branch =    cc[CC_Z]; 
-        BVC,LBVC: branch =   !cc[CC_V]; 
-        BVS,LBVS: branch =    cc[CC_V];  
-        BPL,LBPL: branch =   !cc[CC_N]; 
-        BMI,LBMI: branch =    cc[CC_N];  
-        BGE,LBGE: branch = !( cc[CC_N] ^^ cc[CC_V] ); 
-        BLT,LBLT: branch =  ( cc[CC_N] ^^ cc[CC_V] );  
-        BGT,LBGT: branch = !( cc[CC_N] ^^ cc[CC_V] ) && !( cc[CC_Z] ); 
-        BLE,LBLE: branch =  ( cc[CC_N] ^^ cc[CC_V] ) || ( cc[CC_Z] );   
+        BRA,LBRA,BSR,LBSR: branch = 1;
+        BRN,LBRN: branch = 0;
+        BHI,LBHI: branch = !( cc[CC_Z] || cc[CC_C] );
+        BLS,LBLS: branch =  ( cc[CC_Z] || cc[CC_C] );
+        BCC,LBCC: branch =   !cc[CC_C];
+        BCS,LBCS: branch =    cc[CC_C];
+        BNE,LBNE: branch =   !cc[CC_Z];
+        BEQ,LBEQ: branch =    cc[CC_Z];
+        BVC,LBVC: branch =   !cc[CC_V];
+        BVS,LBVS: branch =    cc[CC_V];
+        BPL,LBPL: branch =   !cc[CC_N];
+        BMI,LBMI: branch =    cc[CC_N];
+        BGE,LBGE: branch =    cc[CC_N] == cc[CC_V];
+        BLT,LBLT: branch =    cc[CC_N] != cc[CC_V];
+        BGT,LBGT: branch =  ( cc[CC_N] == cc[CC_V] ) && !cc[CC_Z];
+        BLE,LBLE: branch = !((cc[CC_N] == cc[CC_V] ) && !cc[CC_Z]);
         default : branch = 0;
     endcase
 end
