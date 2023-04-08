@@ -14,9 +14,48 @@
 TESTCTRL EQU $1000
 
         ORG $F000
-RESET:  LDA #$AB
+RESET:  LDA #$1
+
         ASLA
-        CMPA #$56
+        BCS BAD
+        BVS BAD
+        BEQ BAD
+
+        ASLA
+        BCS BAD
+        BVS BAD
+        BEQ BAD
+
+        ASLA
+        BCS BAD
+        BVS BAD
+        BEQ BAD
+
+        ASLA
+        BCS BAD
+        BVS BAD
+        BEQ BAD
+
+        ASLA
+        BCS BAD
+        BVS BAD
+        BEQ BAD
+        CMPA #$20
+        BNE BAD
+
+        ASLA
+        BCS BAD
+        BVS BAD
+        BEQ BAD
+
+        ASLA
+        BCS BAD
+        BVC BAD
+        BEQ BAD
+
+        ASLA
+        BCC BAD
+        BVC BAD
         BNE BAD
 
         LDB #$0F

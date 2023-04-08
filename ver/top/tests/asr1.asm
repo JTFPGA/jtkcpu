@@ -16,19 +16,61 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:  LDB #$40
         STB ,U
+
         ASR ,U
+        BCS BAD
+        BEQ BAD
+        BMI BAD
+        BVS BAD
+
         ASR ,U
+        BCS BAD
+        BEQ BAD
+        BMI BAD
+        BVS BAD
+
         ASR ,U
+        BCS BAD
+        BEQ BAD
+        BMI BAD
+        BVS BAD
+
         LDB ,U
         CMPB #$08
         BNE BAD
 
-        LDA #$04
+        ASR ,U
+        BCS BAD
+        BEQ BAD
+        BMI BAD
+        BVS BAD
+
+        ASR ,U
+        BCS BAD
+        BEQ BAD
+        BMI BAD
+        BVS BAD
+
+        ASR ,U
+        BCS BAD
+        BEQ BAD
+        BMI BAD
+        BVS BAD
+
+        ASR ,U
+        BCC BAD
+        BNE BAD
+        BMI BAD
+        BVS BAD
+
+        LDA #$FE
         STA ,X
         ASR ,X
         ASR ,X
+        BCC BAD
+        BPL BAD
         LDA ,X
-        CMPA #$01
+        CMPA #$FF
         BNE BAD
 
         include finish.inc

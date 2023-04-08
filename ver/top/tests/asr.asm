@@ -20,10 +20,54 @@ RESET:  LDB #$0B
         ASRB
         CMPB #$01
         BNE BAD
+
         LDA #$34
         ASRA
         ASRA
         CMPA #$0D
+        BNE BAD
+
+        LDA #$80
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        CMPA #$F8
+        BNE BAD
+        BVS BAD
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        BVS BAD
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        ASRA
+        BCS BAD
+        BPL BAD
+        BVS BAD
+        CMPA #$FF
+        BNE BAD
+        BVS BAD
+        TFR A,B
+        ASRB
+        BCC BAD
+        CMPB #$FF
+        BVS BAD
         BNE BAD
 
         include finish.inc
