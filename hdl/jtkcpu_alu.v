@@ -137,16 +137,16 @@ always @* begin
         end
         ADDA_IMM,ADDB_IMM,ADDA_IDX,ADDB_IDX: begin  // ADD
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} + {1'b0, opnd1[7:0]};
-            v_out = opnd0[7]^opnd1[7]^c_out^rslt[7];
+            v_out = opnd0[7]==opnd1[7] && opnd0[7]!=rslt[7];
             h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
         ADDD_IMM,ADDD_IDX: begin  // ADD
             {c_out, rslt} = {1'b0, opnd0} + {1'b0, opnd1};
-            v_out = opnd0[15]^opnd1[15]^c_out^rslt[15];
+            v_out = opnd0[15]==opnd1[15] && opnd0[15]!=rslt[15];
         end
         ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX: begin  // ADC
             {c_out, rslt[7:0]} =  {1'b0, opnd0[7:0]} + {1'b0, opnd1[7:0]} + {8'd0,cc_in[CC_C]};
-            v_out = opnd0[7]^opnd1[7]^c_out^rslt[7];
+            v_out = opnd0[7]==opnd1[7] && opnd0[7]!=rslt[7];
             h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
         SUBA_IMM,SUBB_IMM,
@@ -154,7 +154,7 @@ always @* begin
         CMPA_IMM, CMPB_IMM,
         CMPA_IDX, CMPB_IDX: begin  // SUB
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]};
-            v_out = opnd0[7]^opnd1[7]^c_out^rslt[7];
+            v_out = opnd0[7]!=opnd1[7] && opnd0[7]!=rslt[7];
         end
         SUBD_IMM, SUBD_IDX,
         CMPD_IMM, CMPD_IDX,
@@ -163,11 +163,11 @@ always @* begin
         CMPU_IMM, CMPU_IDX,
         CMPS_IMM, CMPS_IDX:  begin  // SUB/CMP
             {c_out, rslt} = {1'b0, opnd0} - {1'b0, opnd1};
-            v_out = opnd0[15]^opnd1[15]^c_out^rslt[15];
+            v_out = opnd0[15]!=opnd1[15] && opnd0[15]!=rslt[15];
         end
         SBCA_IMM,SBCB_IMM,SBCA_IDX,SBCB_IDX: begin   // SBC
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]} - {8'd0,cc_in[CC_C]};
-            v_out = opnd0[7]^opnd1[7]^c_out^rslt[7];
+            v_out = opnd0[7]!=opnd1[7] && opnd0[7]!=rslt[7];
         end
         ANDA_IMM, ANDB_IMM,
         ANDA_IDX, ANDB_IDX,
@@ -247,7 +247,7 @@ always @* begin
         end
         ROLA,ROLB,ROL: begin
             {c_out, rslt[7:0]} = {opnd0[7:0], cc_in[CC_C]};
-            v_out         =  opnd0[msb] ^ rslt[msb];
+            v_out =  opnd0[msb] ^ rslt[msb];
         end
 
         ////////////// multi-shift operations on D register
@@ -269,7 +269,7 @@ always @* begin
         end
         ROLD_IMM: if( shd_busy ) begin
             {c_out, rslt[15:0]} = {opnd0[15:0], cc_in[CC_C]};
-            v_out         =  opnd0[msb] ^ rslt[msb];
+            v_out =  opnd0[msb] ^ rslt[msb];
         end
 
         ////////////// multi-shift operations on 16-bit memory
@@ -299,7 +299,7 @@ always @* begin
         end
         ROLD_IDX: if( shd_busy ) begin
             {c_out, rslt[15:0]} = {shd_data[15:0], cc_in[CC_C]};
-            v_out         =  shd_data[msb] ^ rslt[msb];
+            v_out =  shd_data[msb] ^ rslt[msb];
         end else begin
             rslt  = shd_data;
         end
@@ -349,7 +349,7 @@ always @* begin
 
     if( dec8 || dec16 ) begin // this should be moved with the DEC above
         rslt  = opnd0 - 1'b1;
-        v_out = (opnd0[msb] ^ rslt[msb]);
+        v_out = opnd0[msb] & ~rslt[msb];
     end
 
     if( up_z )

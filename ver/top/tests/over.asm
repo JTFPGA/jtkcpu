@@ -22,11 +22,11 @@ RESET:
 
         LDA #$FF
         INCA
-        BVC BAD
+        BVS BAD
 
         LDB #0
         DECB
-        BVC BAD
+        BVS BAD
 
         LDB #$80
         DECB
