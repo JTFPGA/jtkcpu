@@ -16,12 +16,26 @@ TESTCTRL EQU $1000
         ORG $F000
 RESET:
         LDA #$87
-        ROLA
-        ROLA
-        ROLA
-        ROLA
+        ROLA            ;(1)0E
+        BVC BAD
+        BCC BAD
+        ROLA            ;(0)1D
+        BVS BAD
+        BCS BAD
+
+        ROLA            ;(0)3A
+        ROLA            ;(0)74
         CMPA #$74
         BNE BAD
+        ORCC #1
+        ROLA            ;(0)E9
+        BCS BAD
+        CMPA #$E9
+        BNE BAD
+        ROLA
+        BCC BAD
+
+        ANDCC #$FE
         LDB #$15
         ROLB
         CMPB #$2A
