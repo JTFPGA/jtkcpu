@@ -147,7 +147,7 @@ always @* begin
         ADCA_IMM,ADCB_IMM,ADCA_IDX,ADCB_IDX: begin  // ADC
             {c_out, rslt[7:0]} =  {1'b0, opnd0[7:0]} + {1'b0, opnd1[7:0]} + {8'd0,cc_in[CC_C]};
             v_out = opnd0[7]^opnd1[7]^c_out^rslt[7];
-            h_out         = opnd0[4] ^ opnd1[4] ^ rslt[4];
+            h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
         SUBA_IMM,SUBB_IMM,
         SUBA_IDX,SUBB_IDX,
@@ -169,15 +169,20 @@ always @* begin
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]} - {8'd0,cc_in[CC_C]};
             v_out = opnd0[7]^opnd1[7]^c_out^rslt[7];
         end
-        ANDA_IMM,ANDB_IMM,ANDA_IDX,ANDB_IDX,BITA_IMM,BITB_IMM,BITA_IDX,BITB_IDX: begin  // AND, BIT
+        ANDA_IMM, ANDB_IMM,
+        ANDA_IDX, ANDB_IDX,
+        BITA_IMM, BITB_IMM,
+        BITA_IDX, BITB_IDX: begin  // AND, BIT
             rslt  = opnd0 & opnd1;
             v_out = 0;
         end
-        EORA_IMM,EORB_IMM,EORA_IDX,EORB_IDX: begin    // EOR
+        EORA_IMM, EORB_IMM,
+        EORA_IDX, EORB_IDX: begin    // EOR
             rslt  = opnd0 ^ opnd1;
             v_out = 0;
         end
-        ORA_IMM,ORB_IMM,ORA_IDX,ORB_IDX: begin  // OR
+        ORA_IMM, ORB_IMM,
+        ORA_IDX, ORB_IDX: begin  // OR
             rslt  = opnd0 | opnd1;
             v_out = 0;
         end
@@ -301,16 +306,17 @@ always @* begin
 
         ABX: rslt =  {8'h0, opnd0[7:0]} + opnd1 ;  // ABX
         DAA: begin  // DAA
-            if ( c_out || opnd0[7:4] > 4'h9 || (opnd0[7:4] > 4'h8 && opnd0[3:0] > 4'h9 ))
-                rslt[7:4] = 4'h6;
+            if ( c_out || opnd0[7:4] > 9 || (opnd0[7:4] > 8 && opnd0[3:0] > 9 ))
+                rslt[7:4] = 6;
             else
-                rslt[7:4] = 4'h0;
-            if ( h_out || opnd0[3:0] > 4'h9 )
-                rslt[3:0] = 4'h6;
+                rslt[7:4] = 0;
+            if ( h_out || opnd0[3:0] > 9 )
+                rslt[3:0] = 6;
             else
-                rslt[3:0] = 4'h0;
+                rslt[3:0] = 0;
             {rslt[8], rslt[7:0]} = {1'b0, opnd0[7:0]} + rslt[7:0];
             c_out = c_out | rslt[8];
+            v_out = 0;
         end
         SEX: begin  // SEX
             rslt  = {{8{opnd0[7]}}, opnd0[7:0]};
