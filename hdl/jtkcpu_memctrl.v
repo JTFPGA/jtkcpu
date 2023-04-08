@@ -107,7 +107,7 @@ always @(posedge clk, posedge rst) begin
             is_int <= 0;
             // Select the active address
             if( is_int ) begin // Keep the address constant while waiting
-                is_op <= 1;    // for the PC to get the interrupt intvec
+                // is_op <= 1;    // for the PC to get the interrupt intvec
                 up_pc <= 1;
             end else if( mem_en ) begin
                 addr <= pc;
@@ -142,7 +142,10 @@ always @(posedge clk, posedge rst) begin
                 endcase
             end
             // Capture data
-            if( is_op ) op <= din;
+            if( is_op ) begin
+                op <= din;
+                // $display("OP=%02X",op);
+            end
             if( !hold && !wrq ) begin
                 if(memhi) begin
                     data[15:8] <= din;
