@@ -53,6 +53,15 @@ class Emu {
         set_nz(r);
         if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
+    void cmp( char r, char opnd ) {
+        int rxn = r;
+        int rop = opnd;
+        if( ((rxn&0xff) - (rop&0xff))&0x100 ) cc |= CC_C; else cc &= ~CC_C;
+        r   -= opnd;  // limited sum
+        rxn -= rop; // more bits
+        set_nz(r);
+        if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
+    }
     void sub( char &r, char opnd, char cin ) {
         int rxn = r;
         int rop = opnd;
@@ -118,6 +127,8 @@ public:
         case ADCB: add( b, rom[addr++], cc&1 ); break;
         case SUBA: sub( a, rom[addr++], 0 ); break;
         case SUBB: sub( b, rom[addr++], 0 ); break;
+        case CMPA: cmp( a, rom[addr++] ); break;
+        case CMPB: cmp( b, rom[addr++] ); break;
         case SBCA: sub( a, rom[addr++], cc&1 ); break;
         case SBCB: sub( b, rom[addr++], cc&1 ); break;
         case ANDA: and8( a, rom[addr++] ); break;
@@ -183,6 +194,7 @@ class Test {
             case ANDA: case ANDB:
             case EORA: case EORB:
             case ORA:  case ORB:
+            case CMPA: case CMPB:
             case ANDCC:
                 if( maxbytes<2 ) break;
                 rom[k++] = (char)op;

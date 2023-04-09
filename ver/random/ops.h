@@ -14,6 +14,8 @@
 #define EORB  0x2D
 #define ORA   0x30
 #define ORB   0x31
+#define CMPA  0x34
+#define CMPB  0x35
 #define ANDCC 0x3C
 #define EXG   0x3E
 #define TFR   0x3F
