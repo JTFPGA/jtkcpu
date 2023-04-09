@@ -34,20 +34,31 @@ module jtkcpu(
     output       [23:0] addr,
     output              we    // write enable
     //output              as
+`ifdef JTKCPU_DEBUG ,
+    output       [15:0] x, y, u, s, pc,
+    output       [ 7:0] a, b, cc, dp,
+    output              is_op
+`endif
 );
+
+`ifndef JTKCPU_DEBUG
+wire [15:0] x, y, u, s, pc;
+wire [ 7:0] a, b, cc, dp;
+wire        is_op;
+`endif
 
 wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
 wire [15:0] mdata;
 wire [15:0] psh_addr;
-wire [15:0] regs_x, regs_y, u, s, pc, nx_u, nx_s;
-wire [ 7:0] cc, cc_out, dp;
+wire [15:0] regs_x, regs_y, nx_u, nx_s;
+wire [ 7:0] cc_out;
 wire [ 7:0] op, postbyte;
 wire [ 7:0] stack_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
 wire        alu_busy, mem_busy, stack_busy,
-            hihalf, is_op, branch, memhi, shd_en, int_en,
+            hihalf, branch, memhi, shd_en, int_en,
             up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
             up_exg, up_tfr, up_abx, up_div,
             pul_en, psh_dec, us_sel, opnd0_mem, div_en,
@@ -237,9 +248,13 @@ jtkcpu_regs u_regs(
 
     .opnd0_mem    ( opnd0_mem    ),
     .pc           ( pc           ),
+    .a            ( a            ),
+    .b            ( b            ),
     .dp           ( dp           ),
     .x            ( regs_x       ),
     .y            ( regs_y       ),
+    .u            ( u            ),
+    .s            ( s            ),
     .cc           ( cc           ),
     .mdata        ( mdata        ),
     .op           ( op           ),

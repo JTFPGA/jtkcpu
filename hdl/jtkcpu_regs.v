@@ -92,6 +92,10 @@ module jtkcpu_regs(
     output   reg [15:0] nx_s,
     output   reg [15:0] x,
     output   reg [15:0] y,
+    output   reg [15:0] u,
+    output   reg [15:0] s,
+    output   reg [ 7:0] a,
+    output   reg [ 7:0] b,
     output   reg [ 7:0] cc,
     output   reg        uz
 );
@@ -101,8 +105,8 @@ module jtkcpu_regs(
 reg         psh_dec_u, psh_dec_s, inc_pul,
             up_pul_x, up_pul_y, up_pul_other,
             up_pul_a, up_pul_b, up_pul_dp, up_pul_cc;
-reg  [ 7:0] a, b, psh_bit, pul_bit;
-reg  [15:0] u, s, stfr, dtfr;
+reg  [ 7:0] psh_bit, pul_bit;
+reg  [15:0] stfr, dtfr;
 wire [15:0] psh_other;
 wire        idx_upx, idx_upy, idx_upu, idx_ups;
 wire [15:0] idx_step, d;
