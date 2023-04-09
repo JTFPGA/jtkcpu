@@ -63,13 +63,20 @@ assign busy     = div_busy | shd_busy;
 assign shd_mux  = idx_en ? opnd0[11:8] : opnd1[3:0];
 
 always @(posedge clk) begin
-    alu16 <= op==CMPD_IMM || op==CMPD_IDX || op==ASRD_IMM || op==ASRD_IDX || op==ASRW || op==ADDD_IMM || op==INCD || op==NEGD || op==ABSD ||
-             op==CMPX_IMM || op==CMPX_IDX || op==ASLD_IMM || op==ASLD_IDX || op==ASLW || op==ADDD_IDX || op==INCW || op==NEGW || op== ABX ||
-             op==CMPY_IMM || op==CMPY_IDX || op==ROLD_IMM || op==ROLD_IDX || op==ROLW || op==SUBD_IMM || op==DECD || op==TSTD || op== SEX ||
-             op==CMPU_IMM || op==CMPU_IDX || op==RORD_IMM || op==RORD_IDX || op==LSRW || op==SUBD_IDX || op==DECW || op==TSTW ||
-             op==CMPS_IMM || op==CMPS_IDX || op==LSRD_IMM || op==LSRD_IDX || op==RORW || op==DIVXB  ||
-             op==LEAX     || op==LEAY     || op==LEAU     || op==LEAS     ||
-             dec16;
+    case( op )
+        CMPD_IMM, CMPD_IDX, ASRD_IMM, ASRD_IDX, ASRW, ADDD_IMM, INCD, NEGD, ABSD,
+        CMPX_IMM, CMPX_IDX, ASLD_IMM, ASLD_IDX, ASLW, ADDD_IDX, INCW, NEGW,  ABX,
+        CMPY_IMM, CMPY_IDX, ROLD_IMM, ROLD_IDX, ROLW, SUBD_IMM, DECD, TSTD,  SEX,
+        CMPU_IMM, CMPU_IDX, RORD_IMM, RORD_IDX, LSRW, SUBD_IDX, DECW, TSTW,
+        CMPS_IMM, CMPS_IDX, LSRD_IMM, LSRD_IDX, RORW, DIVXB,
+        LEAX,     LDD_IMM,  LDX_IMM,  LDY_IMM,  STX,
+        LEAY,     LDD_IDX,  LDX_IDX,  LDY_IDX,  STY,
+        LEAU,     LDU_IMM,  LDS_IMM,  CLRD,     STU,
+        LEAS,     LDU_IDX,  LDS_IDX,  CLRW,     STS, STD:
+                 alu16 <= 1;
+        default: alu16 <= 0;
+    endcase
+    if( dec16 ) alu16 <= 1;
     up_n  <= op!=LEAX && op!=LEAY  && op!=LEAU  && op!=LEAS  && op!=ABX &&
              op!=MUL  && op!=LMUL  && op!=DIVXB && op!=ANDCC && op!=ORCC;
     up_z  <= op!=LEAU && op!=LEAS  && op!=ABX   && op!=ABSA  && op!=ABSB &&
@@ -130,8 +137,9 @@ always @* begin
         LEAX, LEAY, LEAU, LEAS: begin
             rslt  = opnd0;
         end
-        LDA_IMM,LDB_IMM,LDA_IDX,LDB_IDX,TST,LDD_IMM,LDD_IDX,LDX_IMM,
-        LDX_IDX,LDY_IMM,LDY_IDX,LDU_IMM,LDU_IDX,LDS_IMM,LDS_IDX,TSTW: begin  // LD, ST, TST, TSTD, TSTW
+        LDA_IMM, LDB_IMM, LDA_IDX, LDB_IDX, TST,
+        LDD_IMM, LDD_IDX, LDX_IMM, LDX_IDX, LDY_IMM,
+        LDY_IDX, LDU_IMM, LDU_IDX, LDS_IMM, LDS_IDX, TSTW: begin  // LD, ST, TST, TSTD, TSTW
             rslt  = opnd1;
             v_out = 0;
         end
@@ -149,8 +157,8 @@ always @* begin
             v_out = opnd0[7]==opnd1[7] && opnd0[7]!=rslt[7];
             h_out = opnd0[4] ^ opnd1[4] ^ rslt[4];
         end
-        SUBA_IMM,SUBB_IMM,
-        SUBA_IDX,SUBB_IDX,
+        SUBA_IMM, SUBB_IMM,
+        SUBA_IDX, SUBB_IDX,
         CMPA_IMM, CMPB_IMM,
         CMPA_IDX, CMPB_IDX: begin  // SUB
             {c_out, rslt[7:0]} = {1'b0, opnd0[7:0]} - {1'b0, opnd1[7:0]};

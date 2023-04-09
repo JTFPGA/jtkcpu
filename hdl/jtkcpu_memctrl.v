@@ -67,7 +67,8 @@ module jtkcpu_memctrl(
     input             wrq
 );
 
-// To do: fill in the vectors for each interrupt type
+`include "jtkcpu.inc"
+
 localparam FIRQ = 16'hFFF6,
            IRQ  = 16'hFFF8,
            NMI  = 16'hFFFC,
