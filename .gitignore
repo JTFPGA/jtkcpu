@@ -3,7 +3,9 @@
 *.p
 *.log
 *.lxt
+*.vcd
 *.bin
+obj_dir
 .~lock.op comparison.ods#
 syn/db
 syn/incremental_db

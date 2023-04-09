@@ -1,0 +1,10 @@
+#define LDA  0x10
+#define LDB  0x11
+#define ADDA 0x14
+#define ADDB 0x15
+#define ADCA 0x18
+#define ADCB 0x19
+#define SUBA 0x1C
+#define SUBB 0x1D
+#define SBCA 0x20
+#define SBCB 0x21

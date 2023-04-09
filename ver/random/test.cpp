@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "UUT.h"
+#include "ops.h"
 
 #include "verilated_vcd_c.h"
 
@@ -14,12 +15,22 @@ class Emu {
         int rxn = r;
         int rop = opnd;
         if( ((r&0xf)+(opnd&0xf)+cin)>0xf ) cc |= CC_H; else cc &= ~CC_H;
-        if( ((rxn&0xff) + (rop&0xff)+cin)>0xff ) cc |= CC_C; else cc &= ~CC_C;
+        if( ((rxn&0xff) + (rop&0xff)+cin)&0x100 ) cc |= CC_C; else cc &= ~CC_C;
         r   += opnd + cin;  // limited sum
         rxn += rop  + cin; // more bits
         if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
         if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
-        if( (rxn<0 && r>0) || (rxn>0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
+        if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
+    }
+    void sub( char &r, char opnd, char cin ) {
+        int rxn = r;
+        int rop = opnd;
+        if( ((rxn&0xff) - (rop&0xff)-cin)&0x100 ) cc |= CC_C; else cc &= ~CC_C;
+        r   -= opnd + cin;  // limited sum
+        rxn -= rop  + cin; // more bits
+        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
+        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+        if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
     void ld( char &r, char opnd ) {
         r = opnd;  // limited sum
@@ -35,12 +46,16 @@ public:
         addr -= ROM_START;
         char op = rom[addr++];
         switch(op) {
-        case 0x10: ld(a, rom[addr++]); break;
-        case 0x11: ld(b, rom[addr++]); break;
-        case 0x14: add( a, rom[addr++], 0 ); break;
-        case 0x15: add( b, rom[addr++], 0 ); break;
-        case 0x18: add( a, rom[addr++], cc&1 ); break;
-        case 0x19: add( b, rom[addr++], cc&1 ); break;
+        case LDA : ld(a, rom[addr++]); break;
+        case LDB : ld(b, rom[addr++]); break;
+        case ADDA: add( a, rom[addr++], 0 ); break;
+        case ADDB: add( b, rom[addr++], 0 ); break;
+        case ADCA: add( a, rom[addr++], cc&1 ); break;
+        case ADCB: add( b, rom[addr++], cc&1 ); break;
+        case SUBA: sub( a, rom[addr++], 0 ); break;
+        case SUBB: sub( b, rom[addr++], 0 ); break;
+        case SBCA: sub( a, rom[addr++], cc&1 ); break;
+        case SBCB: sub( b, rom[addr++], cc&1 ); break;
         }
         bool good = true;
         good = good && (a == (char)(uut.a));
@@ -78,12 +93,11 @@ class Test {
         while(true) {
             int op = rand()&0xff;
             switch( op ) {
-            case 0x10: // LDA
-            case 0x11: // LDB
-            case 0x14: // ADDA
-            case 0x15: // ADDB
-            case 0x18: // ADDA
-            case 0x19: // ADDB
+            case LDA : case LDB :
+            case ADDA: case ADDB:
+            case ADCA: case ADCB:
+            case SUBA: case SUBB:
+            case SBCA: case SBCB:
                 if( maxbytes<2 ) break;
                 rom[k++] = (char)op;
                 rom[k++] = (char)rand();
