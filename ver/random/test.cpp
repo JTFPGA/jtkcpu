@@ -11,6 +11,19 @@ const int ROM_START=0x6000;
 class Emu {
     enum { CC_H=0x20, CC_N=8, CC_Z=4, CC_V=2, CC_C=1 };
     UUT &uut;
+    int get_exg( int opnd ) {
+        switch(opnd & 0x07)
+        {
+            case 0: return ((int)a)&0xff;
+            case 1: return ((int)b)&0xff;
+            case 2: return x;
+            case 3: return y;
+            case 4: return s;
+            case 5: return u;
+        }
+        printf("Unexpected operand for EXG\n");
+        return -1;
+    }
     void set_nz( char &r ) {
         if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
         if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
@@ -54,10 +67,34 @@ class Emu {
         set_nz(r);
         cc &= ~CC_V;
     }
+    void exg( char opnd ) {
+        unsigned left  = get_exg(opnd>>4);
+        unsigned right = get_exg(opnd);
+        switch( (opnd>>4)&7 ) {
+        case 0: a = right; break;
+        case 1: b = right; break;
+        case 2: x = right; break;
+        case 3: y = right; break;
+        case 4: s = right; break;
+        case 5: u = right; break;
+        }
+        switch( opnd&7 ) {
+        case 0: a = left; break;
+        case 1: b = left; break;
+        case 2: x = left; break;
+        case 3: y = left; break;
+        case 4: s = left; break;
+        case 5: u = left; break;
+        }
+    }
 public:
     const char *rom;
     char a, b, cc;
-    Emu(UUT &_uut) : uut(_uut) { a=b=0; cc=0x50; }
+    short int x,y,u,s;
+    Emu(UUT &_uut) : uut(_uut) {
+        a=b=0; cc=0x50;
+        x = y = u = s;
+    }
     bool Cmp(int addr) {
         addr -= ROM_START;
         char op = rom[addr++];
@@ -79,18 +116,27 @@ public:
         case ORA:  or8( a, rom[addr++] ); break;
         case ORB:  or8( b, rom[addr++] ); break;
         case ANDCC: cc &= rom[addr++]; break;
+        case EXG: exg( rom[addr++] ); break;
         }
         bool good = true;
         good = good && (a == (char)(uut.a));
         good = good && (b == (char)(uut.b));
         good = good && (cc == (char)(uut.cc));
+        good = good && ( (x&0xffff) == uut.x);
+        good = good && ( (y&0xffff) == uut.y);
+        good = good && ( (s&0xffff) == uut.s);
+        good = good && ( (u&0xffff) == uut.u);
         return good;
     }
     void Dump(int addr) {
         printf("Diverged at %X\n",addr);
         printf("        EMU -- SIM\n");
-        printf("a  = %02X   -- %02X\n", ((int)a)&0xff, uut.a );
-        printf("b  = %02X   -- %02X\n", ((int)b)&0xff, uut.b );
+        printf("a  =   %02X --   %02X\n", ((int)a)&0xff, uut.a );
+        printf("b  =   %02X --   %02X\n", ((int)b)&0xff, uut.b );
+        printf("x  = %04X   -- %04X\n", ((int)x)&0xffff, uut.x );
+        printf("y  = %04X   -- %04X\n", ((int)y)&0xffff, uut.y );
+        printf("u  = %04X   -- %04X\n", ((int)u)&0xffff, uut.u );
+        printf("s  = %04X   -- %04X\n", ((int)s)&0xffff, uut.s );
         printf("cc = %02X   -- %02X\n", ((int)cc)&0xff, uut.cc );
         printf("ROM... ");
         addr -= ROM_START;
@@ -113,6 +159,7 @@ class Test {
 
     void random_op(int &k, int maxbytes ) {
         if( maxbytes<=0 ) return;
+        char aux;
         while(true) {
             int op = rand()&0xff;
             switch( op ) {
@@ -128,6 +175,14 @@ class Test {
                 if( maxbytes<2 ) break;
                 rom[k++] = (char)op;
                 rom[k++] = (char)rand();
+                return;
+            case EXG:
+                if( maxbytes<2 ) break;
+                rom[k++] = (char)op;
+                do{
+                    aux=rand();
+                }while((aux&0x0f)>0x05 || (aux&0xf0)>0x50);
+                rom[k++] = aux;
                 return;
             }
         }

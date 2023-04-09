@@ -15,3 +15,4 @@
 #define ORA   0x30
 #define ORB   0x31
 #define ANDCC 0x3C
+#define EXG   0x3E

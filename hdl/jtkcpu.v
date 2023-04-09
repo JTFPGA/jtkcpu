@@ -51,7 +51,7 @@ wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
 wire [15:0] mdata;
 wire [15:0] psh_addr;
-wire [15:0] regs_x, regs_y, nx_u, nx_s;
+wire [15:0] nx_u, nx_s;
 wire [ 7:0] cc_out;
 wire [ 7:0] op, postbyte;
 wire [ 7:0] stack_bit, psh_sel, psh_mux;
@@ -186,8 +186,8 @@ jtkcpu_memctrl u_memctrl(
     .idx_adv      ( idx_adv      ),
 
     .pc           ( pc           ),
-    .regs_x       ( regs_x       ),
-    .regs_y       ( regs_y       ),
+    .regs_x       ( x            ),
+    .regs_y       ( y            ),
     .din          ( din          ),
     .dout         ( dout         ),
     .up_move      ( up_move      ),
@@ -251,8 +251,8 @@ jtkcpu_regs u_regs(
     .a            ( a            ),
     .b            ( b            ),
     .dp           ( dp           ),
-    .x            ( regs_x       ),
-    .y            ( regs_y       ),
+    .x            ( x            ),
+    .y            ( y            ),
     .u            ( u            ),
     .s            ( s            ),
     .cc           ( cc           ),
