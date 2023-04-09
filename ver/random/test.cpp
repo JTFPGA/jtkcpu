@@ -24,31 +24,35 @@ class Emu {
         printf("Unexpected operand for EXG\n");
         return -1;
     }
-    void set_nz( char &r ) {
+    void set_nz( int8_t &r ) {
         if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
         if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
     }
-    void and8( char &r, char opnd ) {
+    void set_nz16( int16_t r ) {
+        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
+        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+    }
+    void and8( int8_t &r, int8_t opnd ) {
         r   &= opnd;
         set_nz(r);
         cc &= ~CC_V;
     }
-    void bit8( char r, char opnd ) {
+    void bit8( int8_t r, int8_t opnd ) {
         r   &= opnd;
         set_nz(r);
         cc &= ~CC_V;
     }
-    void eor( char &r, char opnd ) {
+    void eor( int8_t &r, int8_t opnd ) {
         r   ^= opnd;
         set_nz(r);
         cc &= ~CC_V;
     }
-    void or8( char &r, char opnd ) {
+    void or8( int8_t &r, int8_t opnd ) {
         r   |= opnd;
         set_nz(r);
         cc &= ~CC_V;
     }
-    void add( char &r, char opnd, char cin ) {
+    void add( int8_t &r, int8_t opnd, int8_t cin ) {
         int rxn = r;
         int rop = opnd;
         if( ((r&0xf)+(opnd&0xf)+cin)>0xf ) cc |= CC_H; else cc &= ~CC_H;
@@ -58,7 +62,7 @@ class Emu {
         set_nz(r);
         if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
-    void cmp( char r, char opnd ) {
+    void cmp( int8_t r, int8_t opnd ) {
         int rxn = r;
         int rop = opnd;
         if( ((rxn&0xff) - (rop&0xff))&0x100 ) cc |= CC_C; else cc &= ~CC_C;
@@ -67,7 +71,7 @@ class Emu {
         set_nz(r);
         if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
-    void sub( char &r, char opnd, char cin ) {
+    void sub( int8_t &r, int8_t opnd, int8_t cin ) {
         int rxn = r;
         int rop = opnd;
         if( ((rxn&0xff) - (rop&0xff)-cin)&0x100 ) cc |= CC_C; else cc &= ~CC_C;
@@ -76,12 +80,17 @@ class Emu {
         set_nz(r);
         if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
-    void ld( char &r, char opnd ) {
+    void ld( int8_t &r, int8_t opnd ) {
         r = opnd;  // limited sum
         set_nz(r);
         cc &= ~CC_V;
     }
-    void exg( char opnd ) {
+    void ld16( int16_t &r, int& addr ) {
+        r = (rom[addr++]<<8)|rom[addr++];
+        set_nz16(r);
+        cc &= ~CC_V;
+    }
+    void exg( int8_t opnd ) {
         unsigned left  = get_exg(opnd>>4);
         unsigned right = get_exg(opnd);
         switch( (opnd>>4)&7 ) {
@@ -101,7 +110,7 @@ class Emu {
         case 5: u = left; break;
         }
     }
-    void tfr( char opnd ) {
+    void tfr( int8_t opnd ) {
         unsigned right = get_exg(opnd);
         switch( (opnd>>4)&7 ) {
         case 0: a = right; break;
@@ -113,9 +122,10 @@ class Emu {
         }
     }
 public:
-    const char *rom;
-    char a, b, cc;
-    short int x,y,u,s;
+    const int8_t *rom;
+    int8_t a, b;
+    uint8_t cc;
+    int16_t x,y,u,s;
     Emu(UUT &_uut) : uut(_uut) {
         a=b=0; cc=0x50;
         x = y = u = s;
@@ -147,6 +157,10 @@ public:
         case ANDCC: cc &= rom[addr++]; break;
         case EXG: exg( rom[addr++] ); break;
         case TFR: tfr( rom[addr++] ); break;
+        case LDX: ld16( x, addr ); break;
+        case LDY: ld16( y, addr ); break;
+        case LDU: ld16( u, addr ); break;
+        case LDS: ld16( s, addr ); break;
         }
         bool good = true;
         good = good && (a == (char)(uut.a));
@@ -185,7 +199,7 @@ class Test {
     Emu emu;
     bool trace;
 
-    char *rom;
+    int8_t *rom;
 
     void random_op(int &k, int maxbytes ) {
         if( maxbytes<=0 ) return;
@@ -208,6 +222,13 @@ class Test {
                 rom[k++] = (char)op;
                 rom[k++] = (char)rand();
                 return;
+            case LDX: case LDY:
+            case LDU: case LDS:
+                if( maxbytes<3 ) break;
+                rom[k++] = (char)op;
+                rom[k++] = (char)rand();
+                rom[k++] = (char)rand();
+                return;
             case EXG: case TFR:
                 if( maxbytes<2 ) break;
                 rom[k++] = (char)op;
@@ -221,7 +242,7 @@ class Test {
     }
     void make_rom() {
         const int ROM_LEN=0xA000;
-        rom = new char[ROM_LEN];
+        rom = new int8_t[ROM_LEN];
         memset( rom, 0, ROM_LEN );
         for(int k=0;k<ROM_LEN-16;) {
             random_op( k, 2 );

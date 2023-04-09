@@ -21,3 +21,7 @@
 #define ANDCC 0x3C
 #define EXG   0x3E
 #define TFR   0x3F
+#define LDX   0x42
+#define LDY   0x44
+#define LDU   0x46
+#define LDS   0x48
