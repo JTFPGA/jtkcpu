@@ -8,29 +8,50 @@
 const int ROM_START=0x6000;
 
 class Emu {
+    enum { CC_H=0x20, CC_N=8, CC_Z=4, CC_V=2, CC_C=1 };
     UUT &uut;
+    void add( char &r, char opnd ) {
+        int rxn = r;
+        int rop = opnd;
+        if( ((r&0xf)+(opnd&0xf))>0xf ) cc |= CC_H; else cc &= ~CC_H;
+        if( ((rxn&0xff) + (rop&0xff))>0xff ) cc |= CC_C; else cc &= ~CC_C;
+        r += opnd;  // limited sum
+        rxn += rop; // more bits
+        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
+        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+        if( (rxn<0 && r>0) || (rxn>0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
+    }
+    void ld( char &r, char opnd ) {
+        r = opnd;  // limited sum
+        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
+        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+        cc &= ~CC_V;
+    }
 public:
     const char *rom;
-    char a, b;
-    Emu(UUT &_uut) : uut(_uut) { a=b=0; }
+    char a, b, cc;
+    Emu(UUT &_uut) : uut(_uut) { a=b=0; cc=0x50; }
     bool Cmp(int addr) {
         addr -= ROM_START;
         char op = rom[addr++];
         switch(op) {
-        case 0x10: a =rom[addr++]; break;
-        case 0x11: b =rom[addr++]; break;
-        case 0x14: a+=rom[addr++]; break;
-        case 0x15: b+=rom[addr++]; break;
+        case 0x10: ld(a, rom[addr++]); break;
+        case 0x11: ld(b, rom[addr++]); break;
+        case 0x14: add( a, rom[addr++] ); break;
+        case 0x15: add( b, rom[addr++] ); break;
         }
         bool good = true;
         good = good && (a == (char)(uut.a));
         good = good && (b == (char)(uut.b));
+        good = good && (cc == (char)(uut.cc));
         return good;
     }
     void Dump(int addr) {
         printf("Diverged at %X\n",addr);
-        printf("a = %02X   -- %02X\n", ((int)a)&0xff, uut.a );
-        printf("b = %02X   -- %02X\n", ((int)b)&0xff, uut.b );
+        printf("        EMU -- SIM\n");
+        printf("a  = %02X   -- %02X\n", ((int)a)&0xff, uut.a );
+        printf("b  = %02X   -- %02X\n", ((int)b)&0xff, uut.b );
+        printf("cc = %02X   -- %02X\n", ((int)cc)&0xff, uut.cc );
         printf("ROM... ");
         addr -= ROM_START;
         for( int k=0; k<4; k++ ) {
