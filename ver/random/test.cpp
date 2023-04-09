@@ -11,6 +11,25 @@ const int ROM_START=0x6000;
 class Emu {
     enum { CC_H=0x20, CC_N=8, CC_Z=4, CC_V=2, CC_C=1 };
     UUT &uut;
+    void set_nz( char &r ) {
+        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
+        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+    }
+    void and8( char &r, char opnd ) {
+        r   &= opnd;
+        set_nz(r);
+        cc &= ~CC_V;
+    }
+    void eor( char &r, char opnd ) {
+        r   ^= opnd;
+        set_nz(r);
+        cc &= ~CC_V;
+    }
+    void or8( char &r, char opnd ) {
+        r   |= opnd;
+        set_nz(r);
+        cc &= ~CC_V;
+    }
     void add( char &r, char opnd, char cin ) {
         int rxn = r;
         int rop = opnd;
@@ -18,8 +37,7 @@ class Emu {
         if( ((rxn&0xff) + (rop&0xff)+cin)&0x100 ) cc |= CC_C; else cc &= ~CC_C;
         r   += opnd + cin;  // limited sum
         rxn += rop  + cin; // more bits
-        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
-        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+        set_nz(r);
         if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
     void sub( char &r, char opnd, char cin ) {
@@ -28,14 +46,12 @@ class Emu {
         if( ((rxn&0xff) - (rop&0xff)-cin)&0x100 ) cc |= CC_C; else cc &= ~CC_C;
         r   -= opnd + cin;  // limited sum
         rxn -= rop  + cin; // more bits
-        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
-        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+        set_nz(r);
         if( (rxn<0 && r>=0) || (rxn>=0 && r<0) ) cc |= CC_V; else cc &= ~CC_V;
     }
     void ld( char &r, char opnd ) {
         r = opnd;  // limited sum
-        if( r==0 ) cc |= CC_Z; else cc &= ~CC_Z;
-        if( r<0  ) cc |= CC_N; else cc &= ~CC_N;
+        set_nz(r);
         cc &= ~CC_V;
     }
 public:
@@ -56,6 +72,13 @@ public:
         case SUBB: sub( b, rom[addr++], 0 ); break;
         case SBCA: sub( a, rom[addr++], cc&1 ); break;
         case SBCB: sub( b, rom[addr++], cc&1 ); break;
+        case ANDA: and8( a, rom[addr++] ); break;
+        case ANDB: and8( b, rom[addr++] ); break;
+        case EORA: eor( a, rom[addr++] ); break;
+        case EORB: eor( b, rom[addr++] ); break;
+        case ORA:  or8( a, rom[addr++] ); break;
+        case ORB:  or8( b, rom[addr++] ); break;
+        case ANDCC: cc &= rom[addr++]; break;
         }
         bool good = true;
         good = good && (a == (char)(uut.a));
@@ -98,6 +121,10 @@ class Test {
             case ADCA: case ADCB:
             case SUBA: case SUBB:
             case SBCA: case SBCB:
+            case ANDA: case ANDB:
+            case EORA: case EORB:
+            case ORA:  case ORB:
+            case ANDCC:
                 if( maxbytes<2 ) break;
                 rom[k++] = (char)op;
                 rom[k++] = (char)rand();
