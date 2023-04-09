@@ -16,3 +16,4 @@
 #define ORB   0x31
 #define ANDCC 0x3C
 #define EXG   0x3E
+#define TFR   0x3F

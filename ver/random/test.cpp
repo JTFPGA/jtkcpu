@@ -87,6 +87,17 @@ class Emu {
         case 5: u = left; break;
         }
     }
+    void tfr( char opnd ) {
+        unsigned right = get_exg(opnd);
+        switch( (opnd>>4)&7 ) {
+        case 0: a = right; break;
+        case 1: b = right; break;
+        case 2: x = right; break;
+        case 3: y = right; break;
+        case 4: s = right; break;
+        case 5: u = right; break;
+        }
+    }
 public:
     const char *rom;
     char a, b, cc;
@@ -117,6 +128,7 @@ public:
         case ORB:  or8( b, rom[addr++] ); break;
         case ANDCC: cc &= rom[addr++]; break;
         case EXG: exg( rom[addr++] ); break;
+        case TFR: tfr( rom[addr++] ); break;
         }
         bool good = true;
         good = good && (a == (char)(uut.a));
@@ -176,7 +188,7 @@ class Test {
                 rom[k++] = (char)op;
                 rom[k++] = (char)rand();
                 return;
-            case EXG:
+            case EXG: case TFR:
                 if( maxbytes<2 ) break;
                 rom[k++] = (char)op;
                 do{
