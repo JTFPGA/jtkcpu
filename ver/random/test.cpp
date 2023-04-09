@@ -33,6 +33,11 @@ class Emu {
         set_nz(r);
         cc &= ~CC_V;
     }
+    void bit8( char r, char opnd ) {
+        r   &= opnd;
+        set_nz(r);
+        cc &= ~CC_V;
+    }
     void eor( char &r, char opnd ) {
         r   ^= opnd;
         set_nz(r);
@@ -133,6 +138,8 @@ public:
         case SBCB: sub( b, rom[addr++], cc&1 ); break;
         case ANDA: and8( a, rom[addr++] ); break;
         case ANDB: and8( b, rom[addr++] ); break;
+        case BITA: bit8( a, rom[addr++] ); break;
+        case BITB: bit8( b, rom[addr++] ); break;
         case EORA: eor( a, rom[addr++] ); break;
         case EORB: eor( b, rom[addr++] ); break;
         case ORA:  or8( a, rom[addr++] ); break;
@@ -192,6 +199,7 @@ class Test {
             case SUBA: case SUBB:
             case SBCA: case SBCB:
             case ANDA: case ANDB:
+            case BITA: case BITB:
             case EORA: case EORB:
             case ORA:  case ORB:
             case CMPA: case CMPB:

@@ -10,6 +10,8 @@
 #define SBCB  0x21
 #define ANDA  0x24
 #define ANDB  0x25
+#define BITA  0x28
+#define BITB  0x29
 #define EORA  0x2C
 #define EORB  0x2D
 #define ORA   0x30
