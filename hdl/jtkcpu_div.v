@@ -19,7 +19,7 @@
 module jtkcpu_div(
     input             rst,
     input             clk,
-    input             cen,
+    input             cen /* synthesis direct_enable */,
     input      [15:0] op0, // dividend
     input      [ 7:0] op1, // divisor
     input             len,

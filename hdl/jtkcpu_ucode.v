@@ -19,7 +19,7 @@
 module jtkcpu_ucode(
     input            rst,
     input            clk,
-    input            cen,
+    input            cen /* synthesis direct_enable */,
 
     input     [ 7:0] cc,
     input     [ 7:0] op,     // data fetched from memory

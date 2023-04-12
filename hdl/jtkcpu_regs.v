@@ -19,7 +19,7 @@
 module jtkcpu_regs(
     input               rst,
     input               clk,
-    input               cen,
+    input               cen /* synthesis direct_enable */,
     input               cen2,
 
     input        [15:0] pc,

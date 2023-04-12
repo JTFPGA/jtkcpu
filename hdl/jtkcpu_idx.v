@@ -19,7 +19,7 @@
 module jtkcpu_idx(
     input             rst,
     input             clk,
-    input             cen,
+    input             cen /* synthesis direct_enable */,
 
     input      [15:0] idx_reg,
     input      [15:0] idx_racc, // a,b,d or dp

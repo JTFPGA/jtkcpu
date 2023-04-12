@@ -19,7 +19,7 @@
 module jtkcpu_ctrl(
     input             rst,
     input             clk,
-    input             cen,
+    input             cen /* synthesis direct_enable */,
 
     input      [ 7:0] op,
     input      [15:0] mdata,

@@ -19,7 +19,7 @@
 module jtkcpu_alu(
     input             rst,
     input             clk,
-    input             cen,
+    input             cen /* synthesis direct_enable */,
 
     input      [ 7:0] op,
     input      [15:0] opnd0,
