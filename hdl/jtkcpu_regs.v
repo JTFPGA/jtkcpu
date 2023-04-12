@@ -25,34 +25,7 @@ module jtkcpu_regs(
     input        [15:0] pc,
     input        [15:0] mdata,     // postbyte used to select specific registers
     input        [ 7:0] op,        // op code used to select specific registers
-
     input               opnd0_mem,
-    // Stack
-    input        [ 7:0] psh_sel,
-    input               psh_hihalf,
-    input               psh_ussel,
-    input               pul_en,
-    input               psh_dec,
-    input               stack_busy,
-    output       [ 7:0] stack_bit,
-    output   reg [ 7:0] psh_mux,
-    output   reg        up_pul_pc,
-    output       [15:0] psh_addr,
-
-    // Exchange / Transfer
-    input               up_tfr,
-    input               up_exg,
-
-    // Index addressing
-    input        [ 2:0] idx_rsel,   // register to modify
-    input        [ 1:0] idx_asel,   // accumulator used
-    output       [15:0] idx_reg,
-    output       [15:0] idx_racc,
-    input        [15:0] idx_addr,
-    input               idx_post,
-    input               idx_pre,
-    input               idxw,
-    output reg   [ 7:0] dp,
 
     // Register update
     input        [31:0] alu,
@@ -68,13 +41,18 @@ module jtkcpu_regs(
     input               up_div,
     input               up_lea,
 
+    // Exchange / Transfer
+    input               up_tfr,
+    input               up_exg,
+
     // MOVE/BSET
     input               up_move,
     input               incx,
     input               decu,
+
     // Flags from ALU
-    input               up_cc,
     input        [ 7:0] alu_cc,
+    input               up_cc,
     // Flags from control
     input               int_en,
     input               set_e,
@@ -85,6 +63,31 @@ module jtkcpu_regs(
     // Direct increment/decrement
     input               dec_x,
     input               dec_b,
+
+    // Stack
+    input        [ 7:0] psh_sel,
+    input               psh_hihalf,
+    input               psh_ussel,
+    input               pul_en,
+    input               psh_dec,
+    input               stack_busy,
+
+    output       [15:0] psh_addr,
+    output       [ 7:0] stack_bit,
+    output   reg [ 7:0] psh_mux,
+    output   reg        up_pul_pc,
+
+    // Index addressing
+    input        [15:0] idx_addr,
+    input        [ 2:0] idx_rsel,   // register to modify
+    input        [ 1:0] idx_asel,   // accumulator used
+    input               idx_post,
+    input               idx_pre,
+    input               idxw,
+
+    output       [15:0] idx_racc,
+    output       [15:0] idx_reg,
+    output   reg [ 7:0] dp,
 
     output   reg [15:0] opnd0,
     output   reg [15:0] opnd1,
@@ -114,7 +117,6 @@ wire        idx_x, idx_y, idx_u, idx_s;
 
 assign d   = { a, b };
 assign stack_bit = pul_en ? pul_bit : psh_bit;
-
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
 // Indexed increments/decrements
@@ -137,20 +139,20 @@ always @* begin
     case( mdata[6:4] )
         3'b000:  dtfr[7:0] = a;
         3'b001:  dtfr[7:0] = b;
-        3'b010:  dtfr = x;
-        3'b011:  dtfr = y;
-        3'b100:  dtfr = s;
-        3'b101:  dtfr = u;
+        3'b010:  dtfr      = x;
+        3'b011:  dtfr      = y;
+        3'b100:  dtfr      = s;
+        3'b101:  dtfr      = u;
         default:;
     endcase
 
     case( mdata[2:0] )
         3'b000:  stfr[7:0] = a;
         3'b001:  stfr[7:0] = b;
-        3'b010:  stfr = x;
-        3'b011:  stfr = y;
-        3'b100:  stfr = s;
-        3'b101:  stfr = u;
+        3'b010:  stfr      = x;
+        3'b011:  stfr      = y;
+        3'b100:  stfr      = s;
+        3'b101:  stfr      = u;
         default:;
     endcase
 end
@@ -170,10 +172,10 @@ always @(posedge clk, posedge rst) begin
                 CLRD,     NEGD,     ABSD,      STD: opnd0 <= {a, b};
 
             CMPX_IMM, CMPX_IDX, STX, DIVXB: opnd0 <= x;
-            CMPY_IMM, CMPY_IDX, STY, LMUL:    opnd0 <= y;
-            CMPU_IMM, CMPU_IDX, STU:          opnd0 <= u;
-            CMPS_IMM, CMPS_IDX, STS:          opnd0 <= s;
-            LEAX, LEAY, LEAU, LEAS:           opnd0 <= idx_addr;
+            CMPY_IMM, CMPY_IDX, STY, LMUL:  opnd0 <= y;
+            CMPU_IMM, CMPU_IDX, STU:        opnd0 <= u;
+            CMPS_IMM, CMPS_IDX, STS:        opnd0 <= s;
+            LEAX, LEAY, LEAU, LEAS:         opnd0 <= idx_addr;
             SEX: opnd0 <= { a, b };
             ANDCC, ORCC: opnd0 <= {a, cc};
 
@@ -188,16 +190,15 @@ end
 
 always @* begin
     case ( op )
-        DIVXB:    opnd1 = {8'h0,  b};
-        ABX, LMUL:  opnd1 = x;
-        default:    opnd1 = mdata;
+        DIVXB:     opnd1 = {8'h0,  b};
+        ABX, LMUL: opnd1 = x;
+        default:   opnd1 = mdata;
     endcase
 end
 
 // U/S next value
 always @* begin
     inc_pul = psh_sel!=0 && stack_busy;
-
     psh_dec_u = 0;
     psh_dec_s = 0;
     if ( psh_dec && psh_sel!=0 ) begin
@@ -224,7 +225,6 @@ always @* begin
         else
             nx_u[ 7:0] = mdata[7:0];
     end
-
     if( !psh_dec && inc_pul &&  psh_ussel ) nx_u = u + 16'd1;
     if( !psh_dec && inc_pul && !psh_ussel ) nx_s = s + 16'd1;
 end
@@ -374,8 +374,6 @@ always @(posedge clk, posedge rst) begin
                 default:;
             endcase
         end
-        //if( clr_i ) cc[CC_I] <= 0;
-        //if( clr_f ) cc[CC_F] <= 0;
     end
 end
 

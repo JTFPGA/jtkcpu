@@ -21,25 +21,24 @@ module jtkcpu_pshpul(
     input               clk,
     input               cen /* synthesis direct_enable */,
 
-    input        [ 7:0] op,
     input        [15:0] postdata,
+    input        [ 7:0] op,
     input        [ 7:0] cc,
+    input        [ 7:0] psh_bit,
     input               psh_all,
-    input               rti_cc,
-    input               rti_other,
-
     input               pul_go,
     input               psh_go,
     input               psh_pc,
     input               psh_cc,
-    input        [ 7:0] psh_bit,
-    output   reg        hihalf,
-    output   reg        pul_en,
-    output              psh_dec,
+    input               rti_cc,
+    input               rti_other,
 
     output   reg [ 7:0] psh_sel,
-    output              busy,
-    output   reg        us_sel
+    output   reg        hihalf,
+    output   reg        pul_en,
+    output   reg        us_sel,
+    output              psh_dec,
+    output              busy
 
 );
 

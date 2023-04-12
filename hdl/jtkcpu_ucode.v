@@ -21,88 +21,91 @@ module jtkcpu_ucode(
     input            clk,
     input            cen /* synthesis direct_enable */,
 
+    input     [15:0] mdata,
     input     [ 7:0] cc,
     input     [ 7:0] op,     // data fetched from memory
-    input     [15:0] mdata,
-    output           intsrv,
+
+    // status inputs
+    input            alu_busy,
+    input            mem_busy,
+    input            stack_busy,
+    input            branch,
+    input            irq_n,
+    input            nmi_n,
+    input            firq_n,
+    input            uz,
 
     // indexed addressing
     output reg [2:0] idx_rsel,
     output reg [1:0] idx_asel,
     output reg       idx_post,
-    output           idx_pre,
-    output reg       idxw,
-    output reg       idx_ld,
-    output           idx_8,
-    output           idx_16,
     output reg       idx_acc,
+    output reg       idx_ld,
+    output reg       idxw,
+    output           idx_pre,
     output           idx_dp,
     output           idx_en,
+    output           idx_16,
+    output           idx_8,
     output           data2addr,
-    // status inputs
-    input           alu_busy,
-    input           mem_busy,
-    input           stack_busy,
-    input           branch,
-    input           irq_n,
-    input           nmi_n,
-    input           firq_n,
-    input           uz,
+
     // control outputs from ucode
-    output          addrx,
-    output          addry,
-    output          branch_bnz,
-    output          buserror,
-    output          clr_e,
-    output          decb,
-    output          decu,
-    output          decx,
-    output          div_en,
-    output          idx_adv,
-    output          incx,
-    output          int_en,
-    output          memhi,
-    output          ni,
-    output          niuz,
-    output          opd,
-    output          pc_jmp,
-    output          psh_all,
-    output          psh_cc,
-    output          psh_go,
-    output          psh_pc,
-    output          pul_go,
-    output          rti_cc,
-    output          rti_other,
-    output          set_e,
-    output          set_f,
-    output          set_i,
-    output          set_opn0_b,
-    output          set_opn0_mem,
-    output          set_pc_branch16,
-    output          set_pc_branch8,
-    output          shd_en,
-    output          uc_loop,
-    output          up_ab,
-    output          up_abx,
-    output          up_cc,
-    output          up_exg,
-    output          up_ld16,
-    output          up_ld8,
-    output          up_lda,
-    output          up_ldb,
-    output          up_lea,
-    output          up_lines,
-    output          up_lmul,
-    output          up_move,
-    output          up_tfr,
-    output          up_div,
-    output          we,
+    output           addrx,
+    output           addry,
+    output           branch_bnz,
+    output           buserror,
+    output           clr_e,
+    output           decb,
+    output           decu,
+    output           decx,
+    output           div_en,
+    output           idx_adv,
+    output           incx,
+    output           int_en,
+    output           memhi,
+    output           ni,
+    output           niuz,
+    output           opd,
+    output           pc_jmp,
+    output           psh_all,
+    output           psh_cc,
+    output           psh_go,
+    output           psh_pc,
+    output           pul_go,
+    output           rti_cc,
+    output           rti_other,
+    output           set_e,
+    output           set_f,
+    output           set_i,
+    output           set_opn0_b,
+    output           set_opn0_mem,
+    output           set_pc_branch16,
+    output           set_pc_branch8,
+    output           shd_en,
+    output           uc_loop,
+    output           up_ab,
+    output           up_abx,
+    output           up_cc,
+    output           up_exg,
+    output           up_ld16,
+    output           up_ld8,
+    output           up_lda,
+    output           up_ldb,
+    output           up_lea,
+    output           up_lines,
+    output           up_lmul,
+    output           up_move,
+    output           up_tfr,
+    output           up_div,
+    output           we,
 
     // other outputs
-    output    [3:0] intvec
+    output    [3:0]  intvec,
+    output           intsrv
 );
 
 `include "jtkcpu.inc"
+`include "jtkcpu_ucode.inc"
 
 // Op codes = 8 bits, many op-codes will be parsed in the
 // same way. Let's assume we only need 64 ucode routines
@@ -111,10 +114,6 @@ module jtkcpu_ucode(
 // To do: group op codes in categories that can be parsed
 // using the same ucode. 32 categories used for op codes
 // another 32 categories reserved for common routines
-
-// localparam UCODE_AW = 10; // 1024 ucode lines
-
-`include "jtkcpu_ucode.inc"
 
 localparam [UCODE_AW-OPCAT_AW-1:0] OPLEN=0;
 
@@ -257,11 +256,6 @@ always @* begin
     endcase
 end
 
-// get ucode data from a hex file
-// initial begin
-//     $readmemh( mem, "jtkcpu_ucode.hex");
-// end
-
 assign intvec = cur_int & {4{int_en}};
 assign intsrv = do_nmi || (!firq_n && !cc_f) || (!irq_n && !cc_i);
 
@@ -273,7 +267,6 @@ always @(posedge clk) if( cen )  begin
     if( error_cnt==0 ) begin
         $display("\nJTKCPU Error: simulation finished because of bus error");
         $finish;
-        // $finish;
     end
 end
 `endif
@@ -296,12 +289,12 @@ always @(posedge clk) begin
         do_nmi     <= 0;
         niuzl      <= 0;
     end else if( cen && !buserror ) begin
-        nil       <= ni | niuzl;
-        niuzl     <= niuz & uz;
-        post_idx  <= nx_cat;
-        idx_post  <= 0;
-        idx_ld    <= 0;
-        nmin_l    <= nmi_n;
+        nil        <= ni | niuzl;
+        niuzl      <= niuz & uz;
+        post_idx   <= nx_cat;
+        idx_post   <= 0;
+        idx_ld     <= 0;
+        nmin_l     <= nmi_n;
 
         if( !nmi_n && nmin_l ) do_nmi <= 1; // NMI is edge triggered
         if( !mem_busy && !alu_busy && !stack_busy && !niuz && !niuzl ) begin

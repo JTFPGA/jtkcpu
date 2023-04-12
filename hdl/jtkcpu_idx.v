@@ -21,18 +21,18 @@ module jtkcpu_idx(
     input             clk,
     input             cen /* synthesis direct_enable */,
 
-    input      [15:0] idx_reg,
     input      [15:0] idx_racc, // a,b,d or dp
-    input      [ 7:0] dp,
+    input      [15:0] idx_reg,
     input      [15:0] mdata,
+    input      [ 7:0] dp,
 
     // Control
-    input             idx_8,
-    input             idx_16,
-    input             idx_acc,
-    input             idx_ld,
-    input             idx_dp,
     input             data2addr,
+    input             idx_acc,
+    input             idx_dp,
+    input             idx_ld,
+    input             idx_16,
+    input             idx_8,
 
     output reg [15:0] addr
 );

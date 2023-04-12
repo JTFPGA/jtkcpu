@@ -21,50 +21,53 @@
 module jtkcpu_memctrl(
     input             rst,
     input             clk,
-    input             cen2,      // This should 2x faster than the rest of the CPU
-    input             cen,  // cen2 of the control unit
+    input             cen2,  // This should 2x faster than the rest of the CPU
+    input             cen,   // cen2 of the control unit
 
     // inputs to address mux
     input      [15:0] pc,
-    input             up_move,
     input      [15:0] idx_addr,
-    input             idx_adv,
     input      [15:0] regs_x,
     input      [15:0] regs_y,
-
-    // Stack
-    input      [15:0] psh_addr,
-    input             psh_dec,
-    input             stack_busy,
-    input      [ 7:0] psh_mux,
-    // memory interface
-    input      [ 7:0] din,
-    output reg [ 7:0] dout,
-    output reg [15:0] addr,
-    output reg [ 7:0] lines,
-    output reg        we,
-
-    // Data fetched can be 8 or 16 bits
-    output reg [ 7:0] op,
-    output reg [15:0] data,
-    output reg        busy,  // data not ready
-    output reg        up_pc, // PC updated after processing an interrupt
-    output reg        is_op, // the data[7:0] output is an OP code
+    input             up_move,
+    input             idx_adv,
 
     // select addressing mode
-    input             memhi,
-    input             halt,   // hold the current address
+    input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
     input             up_lines,
     input             idx_en,
     input             addrx,
     input             addry,
     input             fetch,
+    input             memhi,
+    input             halt,   // hold the current address
     input             opd,    // the next byte (word) is an operand
-    input      [ 3:0] intvec, // interrupt number. Set after the register pushing step
 
     // Write requests
     input      [15:0] alu_dout,
-    input             wrq
+    input             wrq,
+
+    // Stack
+    input      [15:0] psh_addr,
+    input      [ 7:0] psh_mux,
+    input             psh_dec,
+    input             stack_busy,
+
+    // memory interface
+    input      [ 7:0] din,
+
+    output reg [15:0] addr,
+    output reg [ 7:0] dout,
+    output reg [ 7:0] lines,
+    output reg        we,
+
+    // Data fetched can be 8 or 16 bits
+    output reg [15:0] data,
+    output reg [ 7:0] op,
+    output reg        up_pc, // PC updated after processing an interrupt
+    output reg        is_op, // the data[7:0] output is an OP code
+    output reg        busy   // data not ready
+
 );
 
 `include "jtkcpu.inc"
@@ -108,7 +111,6 @@ always @(posedge clk, posedge rst) begin
             is_int <= 0;
             // Select the active address
             if( is_int ) begin // Keep the address constant while waiting
-                // is_op <= 1;    // for the PC to get the interrupt intvec
                 up_pc <= 1;
             end else if( mem_en ) begin
                 addr <= pc;

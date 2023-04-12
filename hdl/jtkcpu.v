@@ -47,8 +47,8 @@ wire [ 7:0] a, b, cc, dp;
 wire        is_op;
 `endif
 
-wire [15:0] opnd0, opnd1;
 wire [31:0] rslt;
+wire [15:0] opnd0, opnd1;
 wire [15:0] mdata;
 wire [15:0] psh_addr;
 wire [15:0] nx_u, nx_s;
@@ -60,18 +60,19 @@ wire [ 2:0] idx_sel;
 wire        alu_busy, mem_busy, stack_busy,
             hihalf, branch, memhi, shd_en, int_en,
             up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
-            up_exg, up_tfr, up_abx, up_div,
-            pul_en, psh_dec, us_sel, opnd0_mem, div_en,
-            wrq, fetch, opd, addrx, addry, up_lines, up_lea, up_lmul,
+            up_exg,   up_tfr, up_abx,  up_div,
+            up_lines, up_lea, up_lmul, up_pul_pc, up_move,
+            psh_dec,  us_sel,  pul_en, opnd0_mem, div_en,
+            wrq, fetch, opd, addrx, addry,
             dec_b, dec_x, incx, decu,
-            clr_e, set_e, set_f, set_i, up_move,
-            up_pul_pc;
+            clr_e, set_e, set_f, set_i;
+
 // Indexed addressing
 wire [15:0] idx_addr, idx_reg, idx_racc;
 wire [ 2:0] idx_rsel;
 wire [ 1:0] idx_asel;
-wire        idx_post, idx_pre, idxw,   idx_ld, idx_adv,
-            idx_8,    idx_16,  idx_acc,idx_dp, idx_en,
+wire        idx_post, idx_pre, idxw,  idx_ld, idx_en,
+            idx_acc,  idx_adv, idx_8, idx_16, idx_dp,
             data2addr, uz;
 
 reg         clken=0 ,
@@ -300,8 +301,6 @@ jtkcpu_regs u_regs(
     .set_i        ( set_i        ),
     .set_f        ( set_f        ),
     .clr_e        ( clr_e        ),
-    // .clr_i        ( clr_i        ),
-    // .clr_f        ( clr_f        ),
     .dec_x        ( dec_x        ),
     .dec_b        ( dec_b        ),
     .psh_dec      ( psh_dec      ),

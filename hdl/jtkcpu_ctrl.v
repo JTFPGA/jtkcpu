@@ -21,15 +21,24 @@ module jtkcpu_ctrl(
     input             clk,
     input             cen /* synthesis direct_enable */,
 
-    input      [ 7:0] op,
     input      [15:0] mdata,
     input      [ 7:0] psh_bit,
+    input      [ 7:0] op,
     input      [ 7:0] cc,
 
     input             halt,
 
     input             up_pc,
     input             up_pul_pc,
+
+     // System status
+    input             irq_n,
+    input             nmi_n,
+    input             firq_n,
+    input             alu_busy,
+    input             mem_busy,
+    input             uz,
+
 
     // indexed addressing
     input     [15:0] idx_addr,
@@ -45,14 +54,6 @@ module jtkcpu_ctrl(
     output           idx_dp,
     output           idx_en,
     output           data2addr,
-
-    // System status
-    input             irq_n,
-    input             nmi_n,
-    input             firq_n,
-    input             alu_busy,
-    input             mem_busy,
-    input             uz,
 
     // stack
     output     [ 7:0] psh_sel,
@@ -106,48 +107,35 @@ module jtkcpu_ctrl(
 
     output reg [15:0] pc
 
-
-    // to do: add status signals from other modules as inputs
-
-    // to do: add control signals to other modules as outputs
-
 );
 
 `include "jtkcpu.inc"
 
-// to do: signals that are resolved within the
-// module should be here as wires. Watchout for buses
-wire branch, ni;
-wire pul_go,   psh_go,  psh_all, psh_cc, psh_pc,
+wire branch, set_opn0_b, ni;
+wire pul_go,  psh_go, psh_all, psh_cc, psh_pc,
      uc_loop, niuz,
-     up_ld16,  up_ld8,  up_lda, up_ldb, up_ab,
-     rti_cc,   rti_other,
-     pc_jmp,   set_pc_branch16, set_pc_branch8, pc_inc1, pc_inc2,
+     up_ld16, up_ld8,  up_lda, up_ldb,  up_ab,
+     rti_cc,  rti_other,
+     set_pc_branch16, set_pc_branch8, branch_bnz;
+     pc_jmp, pc_inc1, pc_inc2,
      buserror, intsrv,
 
-     addr_data,
-     addr_idx,
-     idx_step,
-     set_opn0_b,
-     branch_bnz;
+     //addr_data, addr_idx, idx_step,
 
-// assign up_a = ( up_ld8 & ~(op[0]^is_inh) ) ;
-// assign up_b = ( up_ld8 &  (op[0]^is_inh) ) ;
+assign up_a    = ( up_ld8 && ~op[0] ) || up_lda;
+assign up_b    = ( up_ld8 &&  op[0] ) || up_ldb || up_div;
 
-assign up_a = ( up_ld8 && ~op[0] ) || up_lda;
-assign up_b = ( up_ld8 &&  op[0] ) || up_ldb || up_div;
-
-assign up_d = (up_ld16 && op[3:1]==0) || up_ab;
-assign up_x = (up_ld16 && op[3:1]==1) || (up_lea && op[1:0]==LEAX[1:0]) || up_lmul || up_div;
-assign up_y = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lmul;
-assign up_u = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
-assign up_s = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
+assign up_d    = (up_ld16 && op[3:1]==0) || up_ab;
+assign up_x    = (up_ld16 && op[3:1]==1) || (up_lea && op[1:0]==LEAX[1:0]) || up_lmul || up_div;
+assign up_y    = (up_ld16 && op[3:1]==2) || (up_lea && op[1:0]==LEAY[1:0]) || up_lmul;
+assign up_u    = (up_ld16 && op[3:1]==3) || (up_lea && op[1:0]==LEAU[1:0]);
+assign up_s    = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 assign pc_inc1 = idx_post && !idxw && idx_rsel==7;
 assign pc_inc2 = idx_post &&  idxw && idx_rsel==7;
-assign fetch = ni || (niuz&&uz);
+assign fetch   = ni || (niuz&&uz);
 
-wire sbranch = (set_pc_branch8  & branch) | ( branch_bnz & ~cc[CC_Z]);
-wire lbranch = (set_pc_branch16 & branch);
+wire sbranch   = (set_pc_branch8  & branch) | ( branch_bnz & ~cc[CC_Z]);
+wire lbranch   = (set_pc_branch16 & branch);
 reg  bdone;
 
 always @(posedge clk, posedge rst) begin

@@ -48,14 +48,14 @@ reg        shd_busy, alu16, up_z, up_n;
 reg        c_out, v_out, z_out, n_out, h_out, e_out, i_out, f_out;
 
 // Multi-bit shift
+reg  [15:0] shd_data;
 reg  [ 3:0] shd_cnt;
 wire [ 3:0] shd_mux;
-reg  [15:0] shd_data;
 // Divider
-reg         div_sign = 0;
-wire        div_v;
-wire [ 7:0] div_rem;
 wire [15:0] div_quot;
+wire [ 7:0] div_rem;
+wire        div_v;
+reg         div_sign = 0;
 
 assign cc_out   = { e_out, f_out, h_out, i_out, n_out, z_out, v_out, c_out };
 assign msb      = alu16 ? 4'd15 : 4'd7;
@@ -124,8 +124,8 @@ always @* begin
     e_out   = cc_in[CC_E];
     i_out   = cc_in[CC_I];
     f_out   = cc_in[CC_F];
+    rslt    = opnd0;  // default value
     rslt_hi = 0;
-    rslt  = opnd0;  // default value
 
     case (op)
         TSTA, TSTB, TSTD,
