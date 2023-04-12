@@ -116,11 +116,9 @@ wire pul_go,  psh_go, psh_all, psh_cc, psh_pc,
      uc_loop, niuz,
      up_ld16, up_ld8,  up_lda, up_ldb,  up_ab,
      rti_cc,  rti_other,
-     set_pc_branch16, set_pc_branch8, branch_bnz;
+     set_pc_branch16, set_pc_branch8, branch_bnz,
      pc_jmp, pc_inc1, pc_inc2,
-     buserror, intsrv,
-
-     //addr_data, addr_idx, idx_step,
+     buserror, intsrv;
 
 assign up_a    = ( up_ld8 && ~op[0] ) || up_lda;
 assign up_b    = ( up_ld8 &&  op[0] ) || up_ldb || up_div;
