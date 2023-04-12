@@ -169,24 +169,25 @@ always @* begin
         LSR,  ROR,  ASR,  ASL,  ROL:                  begin opcat  = PARSE_IDX;
                                                             nx_cat = MEM_ALU_IDX;
                                                             end
-        CMPA_IMM, CMPB_IMM, ANDCC, ORCC:                    opcat = CMP8;
+        CMPA_IMM, CMPB_IMM, ANDCC, ORCC,
+        BITA_IMM, BITB_IMM:                                 opcat = CMP8;
         CMPD_IMM, CMPX_IMM, CMPY_IMM, CMPU_IMM,CMPS_IMM:    opcat = CMP16;
         // Operand in indexed memory
-        CMPA_IDX, CMPB_IDX:                           begin opcat  = PARSE_IDX;
+        CMPA_IDX, CMPB_IDX, BITA_IDX, BITB_IDX:       begin opcat  = PARSE_IDX;
                                                             nx_cat = CMP8_IDX;
                                                             end
         CMPX_IDX, CMPY_IDX, CMPD_IDX,
         CMPU_IDX, CMPS_IDX:                           begin opcat  = PARSE_IDX;
                                                             nx_cat = CMP16_IDX;
                                                             end
-        BITA_IMM, BITB_IMM:                                 opcat  = BIT_ALU;
-        BITA_IDX, BITB_IDX:                           begin opcat  = PARSE_IDX;
-                                                            nx_cat = BIT_ALU_IDX;
-                                                            end
+        //BITA_IMM, BITB_IMM:                                 opcat  = BIT_ALU;
+        //BITA_IDX, BITB_IDX:                           begin opcat  = PARSE_IDX;
+        //                                                    nx_cat = BIT_ALU_IDX;
+        //                                                    end
         ANDA_IDX, ADDA_IDX, SUBA_IDX, LDA_IDX,
         EORA_IDX, ADCA_IDX, SBCA_IDX, ORA_IDX,
-        ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,  ORB_IDX,
-        EORB_IDX, ADCB_IDX, SBCB_IDX:                 begin opcat  = PARSE_IDX;
+        ANDB_IDX, ADDB_IDX, SUBB_IDX, LDB_IDX,
+        EORB_IDX, ADCB_IDX, SBCB_IDX, ORB_IDX:        begin opcat  = PARSE_IDX;
                                                             nx_cat = SINGLE_ALU_IDX;
                                                             end
         LEAU, LEAX, LEAS, LEAY:                       begin opcat  = PARSE_IDX;
