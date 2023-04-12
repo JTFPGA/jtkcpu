@@ -102,7 +102,6 @@ module jtkcpu_ctrl(
     output            up_y,
     output            up_u,
     output            up_s,
-    output            up_data,
     output            opnd0_mem,
 
     output reg [15:0] pc
@@ -202,7 +201,6 @@ jtkcpu_ucode u_ucode(
     .decb              ( decb              ),
     .decx              ( decx              ),
     .up_abx            ( up_abx            ),
-    .up_data           ( up_data           ),
     // Indexed addressing
     .idx_rsel          ( idx_rsel          ),
     .idx_asel          ( idx_asel          ),
