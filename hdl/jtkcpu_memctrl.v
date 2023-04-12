@@ -127,7 +127,7 @@ always @(posedge clk, posedge rst) begin
                     is_op <= 0;
                     addr  <= idx_addr + { 15'd0, idx_adv };
                 end
-                if( (wrq || psh_dec) && cen ) we <= 1;
+                if( ( (wrq&&op!=TST) || psh_dec) && cen ) we <= 1;
             end
             // interrupt vectors
             if( intvec!=0 && !is_int) begin
