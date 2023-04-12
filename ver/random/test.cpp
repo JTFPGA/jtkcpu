@@ -310,6 +310,7 @@ public:
                 }
                 is_opl = uut.is_op;
             }
+            if( uut.contextp()->gotFinish() ) return false;
         }
         return true;
     }
