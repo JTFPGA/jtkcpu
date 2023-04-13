@@ -111,14 +111,13 @@ module jtkcpu_ctrl(
 
 `include "jtkcpu.inc"
 
-wire branch, set_opn0_b, ni;
+wire branch,  niuz,   ni;
 wire pul_go,  psh_go, psh_all, psh_cc, psh_pc,
-     uc_loop, niuz,
      up_ld16, up_ld8,  up_lda, up_ldb,  up_ab,
      rti_cc,  rti_other,
      set_pc_branch16, set_pc_branch8, branch_bnz,
      pc_jmp, pc_inc1, pc_inc2,
-     buserror, intsrv;
+     intsrv;
 
 assign up_a    = ( up_ld8 && ~op[0] ) || up_lda;
 assign up_b    = ( up_ld8 &&  op[0] ) || up_ldb || up_div;
@@ -182,7 +181,6 @@ jtkcpu_ucode u_ucode(
     .up_move           ( up_move           ),
     .decu              ( decu              ),
     .incx              ( incx              ),
-    .buserror          ( buserror          ),
     .clr_e             ( clr_e             ),
     .decb              ( decb              ),
     .decx              ( decx              ),
@@ -223,12 +221,10 @@ jtkcpu_ucode u_ucode(
     .set_e             ( set_e             ),
     .set_f             ( set_f             ),
     .set_i             ( set_i             ),
-    .set_opn0_b        ( set_opn0_b        ),
     .set_opn0_mem      ( opnd0_mem         ),
     .set_pc_branch16   ( set_pc_branch16   ),
     .set_pc_branch8    ( set_pc_branch8    ),
     .shd_en            ( shd_en            ),
-    .uc_loop           ( uc_loop           ),
     .up_ab             ( up_ab             ),
     .up_cc             ( up_cc             ),
     .up_ld16           ( up_ld16           ),

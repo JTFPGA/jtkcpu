@@ -105,23 +105,24 @@ always @(posedge clk, posedge rst) begin
             addr <= addr + 1'd1;  // pick up the next byte
             busy <= 0;
             // Data writes
-            dout <= alu_dout[7:0];
-            if( we ) we <= 1; // keep it high for one more cycle
-        end else if( !up_pc ) begin
+            //dout <= alu_dout[7:0];
+            //if( we ) we <= 1; // keep it high for one more cycle
+        end else
+        if( !up_pc ) begin
             is_int <= 0;
             // Select the active address
             if( is_int ) begin // Keep the address constant while waiting
                 up_pc <= 1;
             end else if( mem_en ) begin
-                addr <= pc;
+                addr  <= pc;
                 is_op <= 1;
                 if( opd        ) begin is_op <= 0; end
                 if( psh_dec    ) begin
                     is_op <= 0;
-                    addr <= psh_addr - 16'd1;
+                    addr  <= psh_addr - 16'd1;
                 end else if( stack_busy ) begin
                     is_op <= 0;
-                    addr <= psh_addr;
+                    addr  <= psh_addr;
                 end
                 if( addrx      ) begin is_op <= 0; addr <= regs_x;   end
                 if( addry      ) begin is_op <= 0; addr <= regs_y;   end
@@ -147,7 +148,6 @@ always @(posedge clk, posedge rst) begin
             // Capture data
             if( is_op ) begin
                 op <= din;
-                // $display("OP=%02X",op);
             end
             if( !hold && !wrq ) begin
                 if(memhi) begin

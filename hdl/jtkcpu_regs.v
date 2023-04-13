@@ -87,7 +87,6 @@ module jtkcpu_regs(
 
     output       [15:0] idx_racc,
     output       [15:0] idx_reg,
-    output   reg [ 7:0] dp,
 
     output   reg [15:0] opnd0,
     output   reg [15:0] opnd1,
@@ -100,6 +99,7 @@ module jtkcpu_regs(
     output   reg [ 7:0] a,
     output   reg [ 7:0] b,
     output   reg [ 7:0] cc,
+    output   reg [ 7:0] dp,
     output   reg        uz
 );
 
@@ -119,17 +119,17 @@ assign stack_bit = pul_en ? pul_bit : psh_bit;
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
 // Indexed increments/decrements
-assign idx_x    = idx_rsel==2,
-       idx_y    = idx_rsel==3,
-       idx_u    = idx_rsel==5,
-       idx_s    = idx_rsel==6;
-assign idx_reg  = idx_x ? x : idx_y ? y : idx_u ? u : idx_s ? s : pc;
-assign idx_racc = idx_asel==0 ? { {8{a[7]}},a } : idx_asel==1 ? { {8{b[7]}},b } : { a, b };
-assign idx_upx  = (idx_post || idx_pre) && idx_x,
-       idx_upy  = (idx_post || idx_pre) && idx_y,
-       idx_upu  = (idx_post || idx_pre) && idx_u,
-       idx_ups  = (idx_post || idx_pre) && idx_s;
-assign idx_step = idx_post ? (idxw ? 16'd2 : 16'd1) : (idxw ? -16'd2 : -16'd1);
+assign idx_x     = idx_rsel==2,
+       idx_y     = idx_rsel==3,
+       idx_u     = idx_rsel==5,
+       idx_s     = idx_rsel==6;
+assign idx_reg   = idx_x ? x : idx_y ? y : idx_u ? u : idx_s ? s : pc;
+assign idx_racc  = idx_asel==0 ? { {8{a[7]}},a } : idx_asel==1 ? { {8{b[7]}},b } : { a, b };
+assign idx_upx   = (idx_post || idx_pre) && idx_x,
+       idx_upy   = (idx_post || idx_pre) && idx_y,
+       idx_upu   = (idx_post || idx_pre) && idx_u,
+       idx_ups   = (idx_post || idx_pre) && idx_s;
+assign idx_step  = idx_post ? (idxw ? 16'd2 : 16'd1) : (idxw ? -16'd2 : -16'd1);
 
 // exg/tfr
 always @* begin
@@ -163,7 +163,7 @@ always @(posedge clk, posedge rst) begin
         case ( op )
             ADDB_IMM, SUBB_IMM, ANDB_IMM, EORB_IMM, ORB_IMM, CLRB, NEGB, ASRB, ABX,
             ADDB_IDX, SUBB_IDX, ANDB_IDX, EORB_IDX, ORB_IDX, COMB, TSTB, ASLB, MUL,
-            ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,
+            ADCB_IMM, SBCB_IMM, BITB_IMM, CMPB_IMM, DECB,    LSRB, ROLB,       SEX,
             ADCB_IDX, SBCB_IDX, BITB_IDX, CMPB_IDX, INCB,          RORB, ABSB, STB: opnd0 <= {a, b}; // "a" will be ignored
 
             CMPD_IDX, ADDD_IMM, SUBD_IMM, LSRD_IMM, RORD_IMM, ASRD_IMM, ASLD_IMM, ROLD_IMM,
@@ -175,7 +175,7 @@ always @(posedge clk, posedge rst) begin
             CMPU_IMM, CMPU_IDX, STU:        opnd0 <= u;
             CMPS_IMM, CMPS_IDX, STS:        opnd0 <= s;
             LEAX, LEAY, LEAU, LEAS:         opnd0 <= idx_addr;
-            SEX: opnd0 <= { a, b };
+
             ANDCC, ORCC: opnd0 <= {a, cc};
 
             default : opnd0 <= {a, a};
@@ -264,23 +264,23 @@ end
 // PULL
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        up_pul_cc    <= 0; // output
-        up_pul_a     <= 0; // define all as regs
+        up_pul_cc    <= 0;
+        up_pul_a     <= 0;
         up_pul_b     <= 0;
         up_pul_dp    <= 0;
         up_pul_x     <= 0;
         up_pul_y     <= 0;
         up_pul_other <= 0;
-        up_pul_pc    <= 0; // output
+        up_pul_pc    <= 0;
     end else if( cen ) begin
-        up_pul_cc    <= 0; // output
-        up_pul_a     <= 0; // define all as regs
+        up_pul_cc    <= 0;
+        up_pul_a     <= 0;
         up_pul_b     <= 0;
         up_pul_dp    <= 0;
         up_pul_x     <= 0;
         up_pul_y     <= 0;
         up_pul_other <= 0;
-        up_pul_pc    <= 0; // output
+        up_pul_pc    <= 0;
         casez( psh_sel )
             8'b????_???1: up_pul_cc    <= pul_en;
             8'b????_??10: up_pul_a     <= pul_en;
@@ -296,7 +296,7 @@ always @(posedge clk, posedge rst) begin
 end
 
 always @(posedge clk, posedge rst) begin
-    if( rst ) begin // CHECK reset values, especially CC
+    if( rst ) begin
         a  <= 0;
         b  <= 0;
         dp <= 0;

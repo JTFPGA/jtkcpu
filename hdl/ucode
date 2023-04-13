@@ -195,7 +195,7 @@ LOOPX:              OPD,
                     NI
 
 LOOPB:              OPD
-                    OPN0=B, DECB, UP_CC
+                    DECB, UP_CC
                     BRANCH_BNZ,
                     NI
 

@@ -53,7 +53,6 @@ module jtkcpu_ucode(
     output           addrx,
     output           addry,
     output           branch_bnz,
-    output           buserror,
     output           clr_e,
     output           decb,
     output           decu,
@@ -77,12 +76,10 @@ module jtkcpu_ucode(
     output           set_e,
     output           set_f,
     output           set_i,
-    output           set_opn0_b,
     output           set_opn0_mem,
     output           set_pc_branch16,
     output           set_pc_branch8,
     output           shd_en,
-    output           uc_loop,
     output           up_ab,
     output           up_abx,
     output           up_cc,
@@ -118,6 +115,7 @@ reg                nmin_l, do_nmi;
 wire               idx_ret, idx_ind, idx_jmp,
                    set_idx_post, set_idx_acc, set_idxw;
 wire               cc_i, cc_f;
+wire               uc_loop, buserror;
 
 assign cc_i = cc[CC_I];
 assign cc_f = cc[CC_F];
