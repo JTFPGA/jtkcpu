@@ -105,7 +105,7 @@ always @(posedge clk, posedge rst) begin
             addr <= addr + 1'd1;  // pick up the next byte
             busy <= 0;
             // Data writes
-            //dout <= alu_dout[7:0];
+            dout <= alu_dout[7:0];
             //if( we ) we <= 1; // keep it high for one more cycle
         end else
         if( !up_pc ) begin
