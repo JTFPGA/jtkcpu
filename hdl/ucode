@@ -16,6 +16,39 @@
 #   Version: 1.0
 #   Date: 3-03-2023
 
+########### INTERRUPTS ####################
+RESET:              INT_EN, I=1, F=1
+                    NOP
+                    NOP
+                    NOP
+                    NI
+                    NOP
+
+# Do not make FIRQ, IRQ or NMI ucode longer than 6 instructions
+# or it will fail
+FIRQ:               PSH_CC, PSH_GO
+                    F=1, I=1
+                    NOP
+                    INT_EN, E=0, F=1, I=1
+                    NOP
+                    NI
+
+IRQ:                PSH_ALL, PSH_GO
+                    I=1
+                    NOP
+                    INT_EN, E=1, I=1
+                    NOP
+                    NI
+
+NMI:                PSH_ALL, PSH_GO
+                    I=1, F=1
+                    NOP
+                    INT_EN, E=1, I=1, F=1
+                    NOP
+                    NI
+
+BUSERROR:           BUSERROR
+
 ########## INDEX ADDR ##################
 PARSE_IDX:          OPD
                     IDX_JMP
@@ -268,36 +301,3 @@ PUL:                OPD
                     NOP
                     NOP
                     NI
-
-########### INTERRUPTS ####################
-RESET:              INT_EN, I=1, F=1
-                    NOP
-                    NOP
-                    NOP
-                    NI
-                    NOP
-
-# Do not make FIRQ, IRQ or NMI ucode longer than 6 instructions
-# or it will fail
-FIRQ:               PSH_CC, PSH_GO
-                    F=1, I=1
-                    NOP
-                    INT_EN, E=0, F=1, I=1
-                    NOP
-                    NI
-
-IRQ:                PSH_ALL, PSH_GO
-                    I=1
-                    NOP
-                    INT_EN, E=1, I=1
-                    NOP
-                    NI
-
-NMI:                PSH_ALL, PSH_GO
-                    I=1, F=1
-                    NOP
-                    INT_EN, E=1, I=1, F=1
-                    NOP
-                    NI
-
-BUSERROR:           BUSERROR
