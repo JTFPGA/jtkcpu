@@ -112,10 +112,9 @@ reg  [ 7:0] psh_bit, pul_bit;
 reg  [15:0] stfr, dtfr;
 wire [15:0] psh_other;
 wire        idx_upx, idx_upy, idx_upu, idx_ups;
-wire [15:0] idx_step, d;
+wire [15:0] idx_step;
 wire        idx_x, idx_y, idx_u, idx_s;
 
-assign d   = { a, b };
 assign stack_bit = pul_en ? pul_bit : psh_bit;
 assign psh_addr  = psh_ussel ? u : s;
 assign psh_other = psh_ussel ? s : u;
