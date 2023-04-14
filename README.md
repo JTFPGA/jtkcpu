@@ -25,7 +25,7 @@ Crazy Cop (Japan)                            | crazycop       | thunderx.cpp   |
 Crime Fighters (World 2 players)             | crimfght       | crimfght.cpp   | YM2151, K007232          | KCPU, Z80          | Yes           |
 Escape Kids (Asia, 4 Players)                | esckids        | vendetta.cpp   | YM2151,          K053260 | KCPU, Z80          | No            |
 Gang Busters (set 1)                         | gbusters       | thunderx.cpp   | YM2151, K007232          | KCPU, Z80          | No            |
-Haunted Castle (version M)                   | hcastle        | hcastle.cpp    | YM3812, K007232, K053260 | KCPU, Z80          | Yes, pdf      |
+Haunted Castle (version M)                   | hcastle        | hcastle.cpp    | YM3812, K007232, K051649 | KCPU, Z80          | Yes, pdf      |
 Parodius DA! (World, set 1)                  | parodius       | parodius.cpp   | YM2151,          K053260 | KCPU, Z80          | No, (pcb)     |
 Quarth (Japan)                               | quarth         | blockhl.cpp    | YM2151                   | KCPU, Z80          | No            |
 Rollergames (US)                             | rollerg        | rollerg.cpp    | YM3812,          K053260 | KCPU, Z80          | No            |
