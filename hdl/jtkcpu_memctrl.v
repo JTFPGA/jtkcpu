@@ -84,7 +84,7 @@ assign mem_en = fetch | opd | stack_busy | addrx | addry | idx_en;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        addr   <= 0;
+        addr   <= RST;  // Using RST instead of 0 fixes boot up issues on MiSTer
         data   <= 0;
         busy   <= 0;
         up_pc  <= 0;
