@@ -222,11 +222,11 @@ BSETD:              NIUZ
                     UC_LOOP
 
 ############### LOAD/STORE OPERATIONS ############
-STORE8:             IDX_EN, WE,
+STORE8:             IDX_EN, WE, UP_CC
                     NI
 
 STORE16:            IDX_EN, WE, MEMHI
-                    IDX_EN, WE, IDX_ADV
+                    IDX_EN, WE, IDX_ADV, UP_CC
                     NI
 
 LEA:                UP_LEA, UP_CC
