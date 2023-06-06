@@ -94,7 +94,7 @@ always @(posedge clk, posedge rst) begin
         waitvec<= 0;
     end else if( cen2 && !halt ) begin
         // signals active for a single clock cycle:
-        up_pc  <= 0;
+        if( cen ) up_pc  <= 0;
         we     <= 0;
         dout   <= psh_dec ? psh_mux :
                     memhi ? alu_dout[15:8] :
