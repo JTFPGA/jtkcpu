@@ -131,15 +131,15 @@ always @(posedge clk) if(cen) begin
     case( addr )
         9'o000: ucode <= 59'h4001800;    // RESET
         9'o004: ucode <= 59'h10000000;
-        9'o010: ucode <= 59'h3000000000;    // FIRQ
+        9'o010: ucode <= 59'h3000000200;    // FIRQ
         9'o011: ucode <= 59'h1800;
         9'o013: ucode <= 59'h4001A00;
         9'o015: ucode <= 59'h10000000;
-        9'o020: ucode <= 59'h2800000000;    // IRQ
+        9'o020: ucode <= 59'h2800000400;    // IRQ
         9'o021: ucode <= 59'h1000;
         9'o023: ucode <= 59'h4001400;
         9'o025: ucode <= 59'h10000000;
-        9'o030: ucode <= 59'h2800000000;    // NMI
+        9'o030: ucode <= 59'h2800000400;    // NMI
         9'o031: ucode <= 59'h1800;
         9'o033: ucode <= 59'h4001C00;
         9'o035: ucode <= 59'h10000000;

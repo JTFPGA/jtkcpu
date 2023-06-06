@@ -1,22 +1,22 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Wed Mar 29 04:19:21 2023
+[*] Mon Jun  5 20:25:22 2023
 [*]
-[dumpfile] "/home/jtejada/jtmisc/ip/jtkcpu/ver/top/test.lxt"
-[dumpfile_mtime] "Wed Mar 29 04:18:07 2023"
-[dumpfile_size] 300243
-[savefile] "/home/jtejada/jtmisc/ip/jtkcpu/ver/top/test.gtkw"
-[timestart] 3123
-[size] 1278 996
-[pos] -1 -1
-*-7.722390 3555 1675 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[dumpfile] "/home/jtejada/jtcores/modules/jtkcpu/ver/top/test.lxt"
+[dumpfile_mtime] "Mon Jun  5 20:24:48 2023"
+[dumpfile_size] 1106471
+[savefile] "/home/jtejada/jtcores/modules/jtkcpu/ver/top/test.gtkw"
+[timestart] 6003
+[size] 1262 1024
+[pos] -1 -28
+*-7.636448 -1 1675 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] test.
 [treeopen] test.uut.
 [treeopen] test.uut.u_ctrl.
 [sst_width] 223
 [signals_width] 211
 [sst_expanded] 1
-[sst_vpaned_height] 292
+[sst_vpaned_height] 579
 @28
 test.uut.u_ctrl.u_ucode.buserror[0]
 test.uut.clk[0]
@@ -57,11 +57,13 @@ test.uut.u_memctrl.is_op[0]
 @200
 -
 -ADDR
-@23
-test.uut.u_memctrl.addr[15:0]
 @22
+test.uut.u_memctrl.addr[15:0]
+@2023
 [color] 2
+^1 /home/jtejada/jtcores/modules/jtkcpu/cfg/op.gtkwave
 test.uut.u_memctrl.op[7:0]
+@22
 test.uut.u_memctrl.data[15:0]
 @200
 -ALU

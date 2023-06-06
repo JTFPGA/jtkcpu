@@ -43,7 +43,7 @@ LOOP:   ; Spend some time here, the IRQ should be ignored because of default CC
         NOP
         PSHS CC         ; check that the CC was restored correctly
         PULS A
-        CMPA #0
+        CMPA #$80
         BNE BAD
 LOOP2:
         CMPX #$1234     ; these registers should be the same after the IRQ service
