@@ -77,7 +77,7 @@ localparam FIRQ = 16'hFFF6,
            NMI  = 16'hFFFC,
            RST  = 16'hFFFE;
 
-reg  is_int, hold;
+reg  is_int, hold, waitvec;
 wire mem_en;
 
 assign mem_en = fetch | opd | stack_busy | addrx | addry | idx_en;
@@ -91,6 +91,7 @@ always @(posedge clk, posedge rst) begin
         is_op  <= 0;
         is_int <= 0;
         lines  <= 0;
+        waitvec<= 0;
     end else if( cen2 && !halt ) begin
         // signals active for a single clock cycle:
         up_pc  <= 0;
@@ -100,6 +101,7 @@ always @(posedge clk, posedge rst) begin
                   up_move ? data[7:0] : alu_dout[7:0];
         hold   <= psh_dec;
         if( up_lines ) lines <= data[7:0];
+        if( intvec==0 ) waitvec <= 0;
         if( busy ) begin
             data[15:8] <= din; // get the MSB half and
             addr <= addr + 1'd1;  // pick up the next byte
@@ -113,6 +115,7 @@ always @(posedge clk, posedge rst) begin
             // Select the active address
             if( is_int ) begin // Keep the address constant while waiting
                 up_pc <= 1;
+                waitvec <= 1;
             end else if( mem_en ) begin
                 addr  <= pc;
                 is_op <= 1;
@@ -133,7 +136,7 @@ always @(posedge clk, posedge rst) begin
                 if( ( (wrq&&op!=TST) || psh_dec) && cen ) we <= 1;
             end
             // interrupt vectors
-            if( intvec!=0 && !is_int) begin
+            if( intvec!=0 && !is_int && !waitvec ) begin
                 busy   <= 1;
                 is_op  <= 0;
                 is_int <= 1;
