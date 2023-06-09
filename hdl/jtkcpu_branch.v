@@ -42,6 +42,7 @@ always @* begin
         BLT,LBLT: branch =    cc[CC_N] != cc[CC_V];
         BGT,LBGT: branch =  ( cc[CC_N] == cc[CC_V] ) && !cc[CC_Z];
         BLE,LBLE: branch = !((cc[CC_N] == cc[CC_V] ) && !cc[CC_Z]);
+        BSWI: branch = 1;
         default : branch = 0;
     endcase
 end

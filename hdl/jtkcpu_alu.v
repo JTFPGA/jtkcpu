@@ -211,8 +211,9 @@ always @* begin
             v_out = 0;
         end
         NEGA,NEGB,NEG: begin  // NEG, NEGA , NEGB
-            { c_out, rslt[7:0] } = ~{ opnd0[7], opnd0[7:0] } + 9'b1;
-            v_out = opnd0[7]==rslt[7];
+            rslt[7:0] = ~opnd0[7:0] + 8'b1;
+            c_out = opnd0[7:0]!=0; // done this way to match MAME's result
+            v_out = opnd0[7]==rslt[7] && opnd0[7:0]!=0;
         end
         NEGD,NEGW: begin
             { c_out, rslt } = ~{ opnd0[15], opnd0 } + 17'b1;

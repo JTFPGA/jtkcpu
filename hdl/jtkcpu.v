@@ -73,7 +73,7 @@ wire [ 2:0] idx_rsel;
 wire [ 1:0] idx_asel;
 wire        idx_post, idx_pre, idxw,  idx_ld, idx_en,
             idx_acc,  idx_adv, idx_8, idx_16, idx_dp,
-            data2addr, uz;
+            idx_pc,   data2addr, uz;
 
 reg         clken=0 ,
             clken2=0,
@@ -282,6 +282,7 @@ jtkcpu_regs u_regs(
     .idx_post     ( idx_post     ),
     .idx_pre      ( idx_pre      ),
     .idxw         ( idxw         ),
+    .idx_pc       ( idx_pc       ),
 
     .up_a         ( up_a         ),
     .up_b         ( up_b         ),
@@ -330,6 +331,7 @@ jtkcpu_idx u_idx(
     .idx_16       ( idx_16       ),
     .idx_acc      ( idx_acc      ),
     .idx_dp       ( idx_dp       ),
+    .idx_pc       ( idx_pc       ),
     .data2addr    ( data2addr    ),
 
     .addr         ( idx_addr     )

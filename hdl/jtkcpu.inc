@@ -204,4 +204,5 @@ localparam [7:0]
     ABSB         = 8'hCD,
     ABSD         = 8'hCE,
     BSETA_X_U    = 8'hCF,
-    BSETD_X_U    = 8'hD0;
+    BSETD_X_U    = 8'hD0,
+    BSWI         = 8'hF0;  // JT specific, BRA and then SWI to IRQ

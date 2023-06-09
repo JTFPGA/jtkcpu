@@ -84,6 +84,7 @@ module jtkcpu_regs(
     input               idx_post,
     input               idx_pre,
     input               idxw,
+    output              idx_pc,
 
     output       [15:0] idx_racc,
     output       [15:0] idx_reg,
@@ -122,7 +123,8 @@ assign psh_other = psh_ussel ? s : u;
 assign idx_x     = idx_rsel==2,
        idx_y     = idx_rsel==3,
        idx_u     = idx_rsel==5,
-       idx_s     = idx_rsel==6;
+       idx_s     = idx_rsel==6,
+       idx_pc    = idx_rsel==7;
 assign idx_reg   = idx_x ? x : idx_y ? y : idx_u ? u : idx_s ? s : pc;
 assign idx_racc  = idx_asel==0 ? { {8{a[7]}},a } : idx_asel==1 ? { {8{b[7]}},b } : { a, b };
 assign idx_upx   = (idx_post || idx_pre) && idx_x,

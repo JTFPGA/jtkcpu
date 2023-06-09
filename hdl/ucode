@@ -47,6 +47,14 @@ NMI:                E=1, PSH_ALL, PSH_GO
                     NOP
                     NI
 
+BRSWI:              OPD
+                    PC=BRANCH8
+                    NOP
+                    FAKE_IRQ=1
+                    NOP
+                    NI
+
+
 BUSERROR:           BUSERROR
 
 ########## INDEX ADDR ##################

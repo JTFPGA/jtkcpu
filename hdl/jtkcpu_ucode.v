@@ -83,6 +83,7 @@ module jtkcpu_ucode(
     output           up_ab,
     output           up_abx,
     output           up_cc,
+    output           up_div,
     output           up_exg,
     output           up_ld16,
     output           up_ld8,
@@ -93,7 +94,6 @@ module jtkcpu_ucode(
     output           up_lmul,
     output           up_move,
     output           up_tfr,
-    output           up_div,
     output           we,
 
     // other outputs
@@ -111,14 +111,19 @@ reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
 reg                idx_postl, nil, niuzl, idx_ind_rq;
-reg                nmin_l, do_nmi;
+reg                nmin_l, do_nmi,
+                   irq_bsy; // used for debugging purposes
 wire               idx_ret, idx_ind, idx_jmp,
                    set_idx_post, set_idx_acc, set_idxw;
 wire               cc_i, cc_f;
-wire               uc_loop, buserror;
+wire               uc_loop, buserror, set_fake_irq, eff_irqn;
+reg                fake_irq, clr_fake_irq; // fake irq is used on the custom
+                    // BSWI instruction, which mixes a branch with a SWI
+                    // and is helpful for debugging game problems
 
 assign cc_i = cc[CC_I];
 assign cc_f = cc[CC_F];
+assign eff_irqn = irq_n & ~fake_irq;
 
 always @* begin
     case( {mdata[7],mdata[2:0]} )
@@ -214,6 +219,7 @@ always @* begin
         PUSHU, PUSHS:           opcat  = PSH;
         PULLU, PULLS:           opcat  = PUL;
         NOP:                    opcat  = NOPE;
+        BSWI:                   opcat  = BRSWI;
         SETLINES_IMM:           opcat  = SETLNS;
         SETLINES_IDX:   begin   opcat  = PARSE_IDX;
                                 nx_cat = SETLNS_IDX;
@@ -236,7 +242,7 @@ always @* begin
 end
 
 assign intvec = cur_int & {4{int_en}};
-assign intsrv = do_nmi || (!firq_n && !cc_f) || (!irq_n && !cc_i);
+assign intsrv = do_nmi || (!firq_n && !cc_f) || (!eff_irqn && !cc_i);
 
 `ifdef SIMULATION
 integer error_cnt=-1;
@@ -267,6 +273,9 @@ always @(posedge clk) begin
         nmin_l     <= 0;
         do_nmi     <= 0;
         niuzl      <= 0;
+        irq_bsy    <= 0;
+        fake_irq   <= 0;
+        clr_fake_irq <= 0;
     end else if( cen && !buserror ) begin
         nil        <= ni | niuzl;
         niuzl      <= niuz & uz;
@@ -275,23 +284,34 @@ always @(posedge clk) begin
         idx_ld     <= 0;
         nmin_l     <= nmi_n;
 
+        if( set_fake_irq ) fake_irq <= 1;
         if( !nmi_n && nmin_l ) do_nmi <= 1; // NMI is edge triggered
         if( !mem_busy && !alu_busy && !stack_busy && !niuz && !niuzl ) begin
             addr <= addr + 1'd1; // keep processing an opcode routine
         end
+        if( rti_cc ) irq_bsy <= 1;
+        if( int_en || ni ) irq_bsy <= 0;
         if( ni ) begin
+            if( clr_fake_irq ) begin
+                fake_irq <= 0;
+                clr_fake_irq <= 0;
+            end
             if( do_nmi ) begin // pending NMI
                 do_nmi  <= 0;
                 cur_int <= 4'b0100;
                 addr    <= { NMI, OPLEN };
+                irq_bsy <= 1;
                 nil <= 0;
             end else if( !firq_n && !cc_f ) begin  // FIRQ triggered by level
                 cur_int <= 4'b0010;
                 addr    <= { FIRQ, OPLEN };
+                irq_bsy <= 1;
                 nil <= 0;
-            end else if ( !irq_n && !cc_i ) begin  // IRQ triggered by level
+            end else if ( !eff_irqn && !cc_i ) begin  // IRQ triggered by level
                 cur_int <= 4'b0001;
                 addr    <= { IRQ, OPLEN };
+                irq_bsy <= 1;
+                clr_fake_irq <= 1;
                 nil <= 0;
             end
         end
