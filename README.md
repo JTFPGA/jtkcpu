@@ -22,7 +22,7 @@ Aliens (World set 1)                         | aliens         | aliens.cpp     |
 Block Hole / Quarth (Japan)                  | blockhl        | blockhl.cpp    | YM2151                   | KCPU, Z80         | K051960-52109 | No            |
 Chequered Flag                               | chqflag        | chqflag.cpp    | YM2151, K007232          | 052001, Z80       | K051316-51960 | No            |
 Crazy Cop (Japan)                            | crazycop       | thunderx.cpp   | YM2151, K007232          | 052256, Z80       | K051960-52109 | No            |
-Crime Fighters (World 2 players)             | crimfght       | crimfght.cpp   | YM2151, K007232          | KCPU, Z80         | K051960-52109 | Yes           |
+Crime Fighters (World 2 players)             | crimfght       | crimfght.cpp   | YM2151, K007232          | K52001, Z80       | K051960-52109 | Yes           |
 Escape Kids (Asia, 4 Players)                | esckids        | vendetta.cpp   | YM2151,          K053260 | 053248, Z80       | K053247-52109 | No            |
 Gang Busters (set 1)                         | gbusters       | thunderx.cpp   | YM2151, K007232          | KCPU, Z80         |               | No            |
 Haunted Castle (version M)                   | hcastle        | hcastle.cpp    | YM3812, K007232, K051649 | 052001, Z80       | K007121       | Yes, pdf      |
