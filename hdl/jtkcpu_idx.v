@@ -45,7 +45,6 @@ always @* begin
     if( idx_8   ) offset = { {8{mdata[7]}}, mdata[7:0] };
     if( idx_16  ) offset = mdata;
     if( idx_acc ) offset = idx_racc;
-    if( idx_pc  ) offset = offset - (16'd1<<idx_16);
 end
 
 always @(posedge clk, posedge rst) begin

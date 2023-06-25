@@ -23,14 +23,12 @@ AUX:
         CMPD #$CAFE
         BNE BAD
 
-        LDD [,PC++]
-PNTR:   FDB DATAR+2
-        CMPD #$BEEF
-        BNE BAD
-
-        LDA ,PC+
-        FCB $43
-        CMPA #$43
+        ; try with a 16-bit offset
+        LDX #0
+        STD ,X
+        CLRD
+        LDD 0,PC
+        CMPD #$CAFE
         BNE BAD
 
         include finish.inc

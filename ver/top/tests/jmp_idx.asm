@@ -12,29 +12,26 @@
 ; 7 -> set to trigger NMI.  Clear manually
 
 TESTCTRL EQU $1000
+DATAW    EQU $0100
 
         ORG $F000
-RESET:
-        BRA CNT
-DATAR:  FDB   $CAFE, $BEEF, $DED0
-CNT:
-        LDD DATAR,PC
-AUX:
-        CMPD #$CAFE
-        BNE BAD
+RESET:  NOP
+        ; store the jump destination minus an offset
+        LDD #NEAR
+        LDY #$100
+        STD 2,Y
+        LDA #2
 
-        LDD [,PC++]
-PNTR:   FDB DATAR+2
-        CMPD #$BEEF
-        BNE BAD
-
-        LDA ,PC+
-        FCB $43
-        CMPA #$43
-        BNE BAD
+        JMP [A,Y]
+        BRA BAD
+        DC.B    [$23]0
+        BRA BAD
+NEAR:
+        BRA END
 
         include finish.inc
 
+DATAR:  FDB   $1234, $5678, $9ABC, $DEF0
 
         DC.B  [$FFFE-*]0
         FDB   RESET

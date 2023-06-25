@@ -116,7 +116,7 @@ wire pul_go,  psh_go, psh_all, psh_cc, psh_pc,
      up_ld16, up_ld8,  up_lda, up_ldb,  up_ab,
      rti_cc,  rti_other,
      set_pc_branch16, set_pc_branch8, branch_bnz,
-     pc_jmp, pc_inc1, pc_inc2,
+     pc_jmp, pc_inc1, pc_inc2, pc_step,
      intsrv;
 
 assign up_a    = ( up_ld8 && ~op[0] ) || up_lda;
@@ -130,6 +130,7 @@ assign up_s    = (up_ld16 && op[3:1]==4) || (up_lea && op[1:0]==LEAS[1:0]);
 assign pc_inc1 = idx_post && !idxw && idx_rsel==7;
 assign pc_inc2 = idx_post &&  idxw && idx_rsel==7;
 assign fetch   = ni || (niuz&&uz);
+assign pc_step = (ni&&!intsrv) || opd || pc_inc1 || (niuz && uz );
 
 wire sbranch   = (set_pc_branch8  & branch) | ( branch_bnz & ~cc[CC_Z]);
 wire lbranch   = (set_pc_branch16 & branch);
@@ -140,11 +141,11 @@ always @(posedge clk, posedge rst) begin
         pc    <= 0;
         bdone <= 0;
     end else if(cen) begin
-        pc <= ( (ni&&!intsrv) || opd || pc_inc1 || (niuz && uz ))? pc+16'd1 :
-                        pc_inc2 ? pc+16'd2 :
+        pc <= pc_jmp  ? idx_addr :
+              pc_step ? pc+16'd1 :
+              pc_inc2 ? pc+16'd2 :
               sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
               lbranch && !bdone ? mdata+pc :
-              pc_jmp       ? idx_addr :
               up_pc        ? mdata    : pc;
         bdone <= sbranch | lbranch;
         if( up_pul_pc && pul_en ) begin
