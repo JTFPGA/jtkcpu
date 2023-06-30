@@ -105,7 +105,8 @@ module jtkcpu_ctrl(
     output            up_s,
     output            opnd0_mem,
 
-    output reg [15:0] pc
+    output reg [15:0] pc, pcbad,
+    output            buserror
 
 );
 
@@ -140,6 +141,7 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin
         pc    <= 0;
         bdone <= 0;
+        pcbad <= 0;
     end else if(cen) begin
         pc <= pc_jmp  ? idx_addr :
               pc_step ? pc+16'd1 :
@@ -147,6 +149,7 @@ always @(posedge clk, posedge rst) begin
               sbranch && !bdone ? { {8{mdata[7]}}, mdata[7:0]}+pc :
               lbranch && !bdone ? mdata+pc :
               up_pc        ? mdata    : pc;
+        if( buserror ) pcbad <= pc;
         bdone <= sbranch | lbranch;
         if( up_pul_pc && pul_en ) begin
             if( hihalf )  pc[15:8] <= mdata[7:0];
@@ -160,6 +163,7 @@ jtkcpu_ucode u_ucode(
     .rst               ( rst               ),
     .clk               ( clk               ),
     .cen               ( cen               ),
+    .buserror          ( buserror          ),
 
     .cc                ( cc                ),
     .op                ( op                ),

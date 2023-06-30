@@ -25,6 +25,7 @@ module jtkcpu_ucode(
     input     [ 7:0] cc,
     input     [ 7:0] op,     // data fetched from memory
 
+    output           buserror,
     // status inputs
     input            alu_busy,
     input            mem_busy,
@@ -116,7 +117,7 @@ reg                nmin_l, do_nmi,
 wire               idx_ret, idx_ind, idx_jmp,
                    set_idx_post, set_idx_acc, set_idxw;
 wire               cc_i, cc_f;
-wire               uc_loop, buserror, set_fake_irq, eff_irqn;
+wire               uc_loop, set_fake_irq, eff_irqn;
 reg                fake_irq, clr_fake_irq; // fake irq is used on the custom
                     // BSWI instruction, which mixes a branch with a SWI
                     // and is helpful for debugging game problems

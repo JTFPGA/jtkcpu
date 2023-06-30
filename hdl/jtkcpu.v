@@ -29,11 +29,13 @@ module jtkcpu(
     input               dtack,
 
     // memory bus
+    //output            as
     input        [ 7:0] din,
     output       [ 7:0] dout,
     output       [23:0] addr,
-    output              we    // write enable
-    //output              as
+    output              we,    // write enable
+    output       [15:0] pcbad,
+    output              buserror
 `ifdef JTKCPU_DEBUG ,
     output       [15:0] x, y, u, s, pc,
     output       [ 7:0] a, b, cc, dp,
@@ -93,6 +95,9 @@ jtkcpu_ctrl u_ctrl(
     .rst          ( rst          ),
     .clk          ( clk          ),
     .cen          ( clken        ),
+
+    .buserror     ( buserror     ),
+    .pcbad        ( pcbad        ),
 
     .op           ( op           ),
     .mdata        ( mdata        ),
