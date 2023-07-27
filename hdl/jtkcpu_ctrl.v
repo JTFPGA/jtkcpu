@@ -106,8 +106,8 @@ module jtkcpu_ctrl(
     output            opnd0_mem,
 
     output reg [15:0] pc, pcbad,
-    output            buserror
-
+    output            buserror,
+    output            str_busy
 );
 
 `include "jtkcpu.inc"
@@ -164,6 +164,7 @@ jtkcpu_ucode u_ucode(
     .clk               ( clk               ),
     .cen               ( cen               ),
     .buserror          ( buserror          ),
+    .str_busy          ( str_busy          ),
 
     .cc                ( cc                ),
     .op                ( op                ),

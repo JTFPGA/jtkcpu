@@ -26,6 +26,7 @@ module jtkcpu_ucode(
     input     [ 7:0] op,     // data fetched from memory
 
     output           buserror,
+    output reg       str_busy, // signal a long string operation
     // status inputs
     input            alu_busy,
     input            mem_busy,
@@ -142,6 +143,14 @@ always @* begin
         4'b1_111: idx_cat = IDX_ACC;
         default:  idx_cat = BUSERROR;
     endcase
+end
+
+always @(posedge clk, posedge rst) begin
+    if( rst ) begin
+        str_busy <= 0;
+    end else begin
+        if( niuz ) str_busy <= ~uz;
+    end
 end
 
 // Conversion of opcodes to op category
