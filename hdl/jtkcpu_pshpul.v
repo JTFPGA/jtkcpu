@@ -52,7 +52,10 @@ assign psh_dec  = dec_en & busy;
 assign postbyte = rti_cc    ? 8'h01 :
                   psh_pc    ? 8'h80 :
                   psh_cc    ? 8'h81 :
-                  rti_other ? ( cc[CC_E] ? 8'hFE : 8'h80 ) : // pull all but CC or only PC
+                  // the CC is read from postdata (memory output) directly
+                  // because it takes an extra cycle for it to be available
+                  // at the register
+                  rti_other ? ( postdata[{1'b0,CC_E}] ? 8'hFE : 8'h80 ) : // pull all but CC or only PC
                   psh_all   ? 8'hFF : postdata[7:0];
 
 always @(posedge clk or posedge rst) begin
