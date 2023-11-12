@@ -1,6 +1,6 @@
 # JTKCPU
 
-Verilog core compatible with Konami's 052001
+Verilog core compatible with Konami's 052001 and 052526. The later supports more instructions, but the exact distinction among the two CPUs is not clear.
 
 You can show your appreciation through
 * [Patreon](https://patreon.com/jotego), by supporting releases
