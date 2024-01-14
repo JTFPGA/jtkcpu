@@ -176,10 +176,15 @@ func dump_inc( a ...string) {
 func make_case( rom []int64, all elements ) (s string) {
 	nem_len := len(all.mnemonics)
 	i := "    "
-	s += fmt.Sprintf("always @(posedge clk) if(cen) begin\n%scase( addr )\n",i)
+	s += fmt.Sprintf(`
+always @(posedge clk,posedge rst) begin
+	if(rst) begin
+		ucode <= 0;
+	end else if(cen) begin
+	%scase( addr )`,i)
 	for k, each := range rom {
 		if each!=0 {
-			s += fmt.Sprintf("%s%s9'o%03o: ucode <= %d'h%03X;", i,i, k, nem_len, each )
+			s += fmt.Sprintf("\t%s%s9'o%03o: ucode <= %d'h%03X;", i,i, k, nem_len, each )
 			opcat := k/MAX_ROUTINE
 			if all.lbl_rev[opcat] != "" && (k%MAX_ROUTINE==0) {
 				s += fmt.Sprintf("    // %s", all.lbl_rev[opcat])
@@ -187,7 +192,7 @@ func make_case( rom []int64, all elements ) (s string) {
 			s += fmt.Sprintf("\n")
 		}
 	}
-	s += fmt.Sprintf("%s%sdefault: ucode <= 0;\n%sendcase\nend\n",i,i,i)
+	s += fmt.Sprintf("\t%s%sdefault: ucode <= 0;\n\t%sendcase\n\tend\nend\n",i,i,i)
 	return s
 }
 
