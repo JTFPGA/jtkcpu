@@ -241,7 +241,9 @@ jtkcpu_ucode u_ucode(
     .up_lines          ( up_lines          ),
     .up_lmul           ( up_lmul           ),
     .up_div            ( up_div            ),
-    .we                ( wrq               )
+    .we                ( wrq               ),
+    // Debug
+    .irq_bsy           (                   )
 
 );
 

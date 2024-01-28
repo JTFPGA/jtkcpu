@@ -100,7 +100,9 @@ module jtkcpu_ucode(
 
     // other outputs
     output    [3:0]  intvec,
-    output           intsrv
+    output           intsrv,
+    // debug
+    output reg       irq_bsy    // set as output to preven a Quartus warning
 );
 
 `include "jtkcpu.inc"
@@ -113,8 +115,7 @@ reg [UCODE_AW-1:0] addr; // current ucode position read
 reg [OPCAT_AW-1:0] opcat, post_idx, nx_cat, idx_cat;
 reg          [3:0] cur_int;
 reg                idx_postl, nil, niuzl, idx_ind_rq;
-reg                nmin_l, do_nmi,
-                   irq_bsy; // used for debugging purposes
+reg                nmin_l, do_nmi;
 wire               idx_ret, idx_ind, idx_jmp,
                    set_idx_post, set_idx_acc, set_idxw;
 wire               cc_i, cc_f;
