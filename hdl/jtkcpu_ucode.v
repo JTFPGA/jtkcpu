@@ -142,6 +142,7 @@ always @* begin
         4'b1_000,
         4'b1_001,
         4'b1_111: idx_cat = IDX_ACC;
+        4'b1_010: idx_cat = IDX_UNK;
         default:  idx_cat = BUSERROR;
     endcase
 end

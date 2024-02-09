@@ -78,7 +78,7 @@ IDX_OFFSET8:        OPD                         # 4 -  8-bit offset
 IDX_OFFSET16:       OPD, MEMHI                  # 5 - 16-bit offset
                     OPD
                     IDX_16, IDX_IND
-IDX_IND:            IDX_EN, MEMHI              # 6 - ,R
+IDX_IND:            IDX_EN, MEMHI               # 6 - ,R
                     IDX_EN, IDX_ADV
                     DATA2ADDR, IDX_RET
 IDX_EXT:            OPD, MEMHI                  # 7 Extended
@@ -87,8 +87,8 @@ IDX_EXT:            OPD, MEMHI                  # 7 Extended
 IDX_DP:             OPD                         # 1,4  - DP
                     IDX_DP, IDX_IND
 IDX_ACC:            NOP
-                    IDX_ACC=1, IDX_IND            # 1,other  - A, B or D
-
+                    IDX_ACC=1, IDX_IND          # 1,other  - A, B or D
+IDX_UNK:            IDX_IND                     # 1,2 unknown. Seen in 08 A2 LEAX ????
 
 ########## ALU OPERATIONS ##################
 SINGLE_ALU:         OPD
