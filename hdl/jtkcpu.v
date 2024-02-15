@@ -16,6 +16,7 @@
     Version: 1.0
     Date: 14-02-2023 */
 
+/* verilator tracing_off */
 module jtkcpu(
     input               rst,
     input               clk,
@@ -44,9 +45,11 @@ module jtkcpu(
 );
 
 `ifndef JTKCPU_DEBUG
+`ifdef VERILATOR_KEEP_CPU /* verilator tracing_on */  `endif
 wire [15:0] x, y, u, s, pc;
 wire [ 7:0] a, b, cc, dp;
 wire        is_op;
+`ifdef VERILATOR_KEEP_CPU /* verilator tracing_off */ `endif
 `endif
 
 wire [31:0] rslt;
