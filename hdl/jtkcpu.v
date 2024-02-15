@@ -62,8 +62,7 @@ wire [ 7:0] op, postbyte;
 wire [ 7:0] stack_bit, psh_sel, psh_mux;
 wire [ 3:0] intvec;
 wire [ 2:0] idx_sel;
-wire        alu_busy, mem_busy, stack_busy, str_busy,
-            hihalf, branch, memhi, shd_en, int_en,
+wire        hihalf, branch, memhi, shd_en, int_en,
             up_a, up_b, up_d, up_cc, up_x, up_y, up_u, up_s, up_pc,
             up_exg,   up_tfr, up_abx,  up_div,
             up_lines, up_lea, up_lmul, up_pul_pc, up_move,
@@ -71,6 +70,9 @@ wire        alu_busy, mem_busy, stack_busy, str_busy,
             wrq, fetch, opd, addrx, addry,
             dec_b, dec_x, incx, decu,
             clr_e, set_e, set_f, set_i;
+`ifdef VERILATOR_KEEP_CPU /* verilator tracing_on */  `endif
+wire        alu_busy, mem_busy, stack_busy, str_busy;
+`ifdef VERILATOR_KEEP_CPU /* verilator tracing_off */ `endif
 
 // Indexed addressing
 wire [15:0] idx_addr, idx_reg, idx_racc;
